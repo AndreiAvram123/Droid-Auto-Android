@@ -34,7 +34,6 @@ fun SignInScreen(){
         UsernameTextField()
         Spacer(modifier = Modifier.height(Dimens.medium.dp))
         SignInButton()
-        
     }
 }
 
