@@ -3,8 +3,42 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id("dagger.hilt.android.plugin")
+    id "com.starter.easylauncher" version "$easylauncher_version"
 }
 apply plugin: 'kotlin-kapt'
+
+def getKeystoreProperties(String fileName) {
+    def properties = new Properties()
+    properties.setProperty("keyAlias", "")
+    properties.setProperty("keyPassword", "")
+    properties.setProperty("storeFile", "")
+    properties.setProperty("storePassword", "")
+    try {
+        def propsFile = rootProject.file(fileName)
+        // Attempt to get keystore properties from local file first (to build locally) before
+        // attempting to fetch from environment variables second (to build on the build server)
+        if (propsFile.exists()) {
+            properties.load(new FileInputStream(propsFile))
+        } else {
+            getPropertiesFromEnvironmentVariables(properties)
+        }
+    } catch (Exception e) {
+        properties = null
+        println "Unable to read KeyStore"
+        e.printStackTrace()
+    }
+    return properties
+}
+
+
+static def getPropertiesFromEnvironmentVariables(Properties properties) {
+    properties.setProperty("keyAlias", System.getenv("BITRISEIO_ANDROID_KEYSTORE_ALIAS"))
+    properties.setProperty("keyPassword", System.getenv("BITRISEIO_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"))
+    properties.setProperty("storeFile", System.getenv("BITRISE_KEY_DOWNLOAD_PATH"))
+    properties.setProperty("storePassword", System.getenv("BITRISEIO_ANDROID_KEYSTORE_PASSWORD"))
+}
+def RELEASE_KEYSTORE = getKeystoreProperties('keystore_local.properties')
+
 
 android {
     compileSdk 31
@@ -19,13 +53,6 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
-        }
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
@@ -46,6 +73,77 @@ android {
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+    signingConfigs {
+        debug {
+            if (RELEASE_KEYSTORE != null) {
+                storeFile file(RELEASE_KEYSTORE.getProperty("storeFile"))
+                storePassword RELEASE_KEYSTORE.getProperty("storePassword")
+                keyAlias RELEASE_KEYSTORE.getProperty("keyAlias")
+                keyPassword RELEASE_KEYSTORE.getProperty("keyPassword")
+            }
+        }
+
+        release {
+            if (RELEASE_KEYSTORE != null) {
+                storeFile file(RELEASE_KEYSTORE.getProperty("storeFile"))
+                storePassword RELEASE_KEYSTORE.getProperty("storePassword")
+                keyAlias RELEASE_KEYSTORE.getProperty("keyAlias")
+                keyPassword RELEASE_KEYSTORE.getProperty("keyPassword")
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            testCoverageEnabled true
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+
+        release {
+            shrinkResources true
+            minifyEnabled true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    flavorDimensions "environment"
+    productFlavors {
+        dev {
+            dimension "environment"
+            applicationIdSuffix ".dev"
+        }
+        staging {
+            dimension "environment"
+            applicationIdSuffix ".qa"
+        }
+        prod {
+            dimension "environment"
+        }
+    }
+
+    easylauncher {
+        defaultFlavorNaming true
+
+        def versionLabel = "${android.defaultConfig.versionName}-${android.defaultConfig.versionCode}"
+
+        productFlavors {
+            dev {
+                filters = [
+                        chromeLike(label: versionLabel),
+                        blueRibbonFilter()
+                ]
+            }
+            staging {
+                filters = [
+                        chromeLike(label: versionLabel),
+                        grayRibbonFilter()
+                ]
+            }
+            prod {
+                enable false
+            }
         }
     }
 }
