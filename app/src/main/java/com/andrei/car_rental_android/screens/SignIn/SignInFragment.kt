@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.andrei.car_rental_android.baseConfig.BaseFragment
+import com.andrei.car_rental_android.ui.Dimens
 import dagger.hilt.android.AndroidEntryPoint
 
 @Composable
@@ -31,7 +32,7 @@ fun SignInScreen(){
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
         UsernameTextField()
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(Dimens.medium.dp))
         SignInButton()
     }
 }
