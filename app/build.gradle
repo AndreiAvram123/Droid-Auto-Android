@@ -30,7 +30,6 @@ def getKeystoreProperties(String fileName) {
     return properties
 }
 
-
 static def getPropertiesFromEnvironmentVariables(Properties properties) {
     properties.setProperty("keyAlias", System.getenv("BITRISEIO_ANDROID_KEYSTORE_ALIAS"))
     properties.setProperty("keyPassword", System.getenv("BITRISEIO_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"))
