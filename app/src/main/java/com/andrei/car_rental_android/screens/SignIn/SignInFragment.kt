@@ -19,27 +19,28 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.andrei.car_rental_android.baseConfig.BaseFragment
+import com.andrei.car_rental_android.navigation.Screen
 import com.andrei.car_rental_android.ui.Dimens
 import dagger.hilt.android.AndroidEntryPoint
 
 @Composable
-@Preview
-fun SignInScreen(){
-    Column(modifier = Modifier.padding(horizontal = 32.dp)
+fun SignInScreen(navController: NavController){
+    Column(modifier = Modifier
+        .padding(horizontal = 32.dp)
         .fillMaxWidth()
         .fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
         UsernameTextField()
         Spacer(modifier = Modifier.height(Dimens.medium.dp))
-        SignInButton()
+        SignInButton(navController)
     }
 }
 
 @Composable
 fun UsernameTextField(){
-    val viewModel:SignInViewModel = hiltViewModel<SignInViewModelImpl>()
     var username:String by remember {
         mutableStateOf("")
     }
@@ -50,11 +51,10 @@ fun UsernameTextField(){
             .fillMaxWidth())
 }
 @Composable
-fun SignInButton(){
-    val context = LocalContext.current
+fun SignInButton(navController: NavController){
     Button(onClick = {
-        Toast.makeText(context,"something",Toast.LENGTH_SHORT).show()
+        navController.navigate(Screen.HomeScreen.screenName)
     }) {
-        Text(text = "Click me")
+         Text(text = "Click me to navigate")
     }
 }
