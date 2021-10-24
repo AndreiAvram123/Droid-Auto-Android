@@ -4,11 +4,14 @@ buildscript {
         compose_version = '1.0.4'
         kotlin_version = '1.5.31'
         hilt_version = '2.39.1'
+        easylauncher_version = "4.1.1"
 
     }
     repositories {
         google()
         mavenCentral()
+        maven { url "https://jitpack.io" }
+
     }
     dependencies {
         classpath("com.google.dagger:hilt-android-gradle-plugin:$hilt_version")
