@@ -119,6 +119,7 @@ android {
         staging {
             dimension "environment"
             applicationIdSuffix ".qa"
+            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_QA")]
         }
         prod {
             dimension "environment"
