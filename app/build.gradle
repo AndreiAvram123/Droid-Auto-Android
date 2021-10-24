@@ -4,6 +4,8 @@ plugins {
     id 'kotlin-android'
     id("dagger.hilt.android.plugin")
     id "com.starter.easylauncher" version "$easylauncher_version"
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+
 }
 apply plugin: 'kotlin-kapt'
 
@@ -117,6 +119,7 @@ android {
         staging {
             dimension "environment"
             applicationIdSuffix ".qa"
+            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_QA")]
         }
         prod {
             dimension "environment"
@@ -150,12 +153,20 @@ android {
 
 dependencies {
     def lifecycle_version = '2.4.0-rc01'
+
+
+    //coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+
+
+    //maps
+    implementation("com.google.maps.android:maps-v3-ktx:2.2.0")
+    implementation 'com.google.maps.android:maps-utils-ktx:3.2.0'
+
     //navigation
     implementation("androidx.navigation:navigation-compose:2.4.0-alpha10")
 
-
-
-    //dependency injecion
+    //dependency injection
     implementation("com.google.dagger:hilt-android:$hilt_version")
     kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0-alpha03")

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.andrei.car_rental_android.navigation.MainNavigation
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.theme.CarrentalandroidTheme
@@ -29,12 +30,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SignInScreen()
+          MainNavigation()
         }
     }
 }
 @Composable
 @Preview
 fun DefaultPreview(){
-   SignInScreen()
+    MainNavigation()
 }
