@@ -3,6 +3,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id("dagger.hilt.android.plugin")
+    id 'com.google.gms.google-services'
     id "com.starter.easylauncher" version "$easylauncher_version"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 
@@ -117,7 +118,7 @@ android {
             applicationIdSuffix ".dev"
             manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_DEV")]
         }
-        staging {
+        qa {
             dimension "environment"
             applicationIdSuffix ".qa"
             manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_STAGING")]
