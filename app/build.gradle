@@ -115,14 +115,16 @@ android {
         dev {
             dimension "environment"
             applicationIdSuffix ".dev"
+            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_DEV")]
         }
         staging {
             dimension "environment"
             applicationIdSuffix ".qa"
-            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_QA")]
+            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_STAGING")]
         }
         prod {
             dimension "environment"
+            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_QA")]
         }
     }
 
