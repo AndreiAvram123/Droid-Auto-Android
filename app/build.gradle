@@ -9,6 +9,7 @@ plugins {
 
 }
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.android.application'
 
 def getKeystoreProperties(String fileName) {
     def properties = new Properties()
@@ -163,8 +164,10 @@ dependencies {
 
 
     //maps
-    implementation("com.google.maps.android:maps-v3-ktx:2.2.0")
-    implementation 'com.google.maps.android:maps-utils-ktx:3.2.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
+    implementation 'com.google.maps.android:android-maps-utils:2.3.0'
+    implementation 'com.google.maps.android:maps-ktx:3.2.0'
+
 
     //navigation
     implementation("androidx.navigation:navigation-compose:2.4.0-alpha10")

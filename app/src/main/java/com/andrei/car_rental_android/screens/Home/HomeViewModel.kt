@@ -3,7 +3,7 @@ package com.andrei.car_rental_android.screens.Home
 import com.andrei.car_rental_android.RequestState
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.CarRepository
-import com.google.android.libraries.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay

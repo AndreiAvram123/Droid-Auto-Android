@@ -19,10 +19,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.RequestState
-import com.google.android.libraries.maps.CameraUpdateFactory
-import com.google.android.libraries.maps.MapView
-import com.google.android.libraries.maps.model.LatLng
-import com.google.android.libraries.maps.model.MarkerOptions
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+
 import com.google.maps.android.ktx.awaitMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
