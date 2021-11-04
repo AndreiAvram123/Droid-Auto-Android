@@ -10,7 +10,7 @@ import com.andrei.car_rental_android.screens.SignIn.SignInScreen
 @Composable
 fun MainNavigation(){
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Screen.HomeScreen.screenName){
+    NavHost(navController = navController, startDestination = Screen.SignInScreen.screenName){
         composable(route = Screen.SignInScreen.screenName) {
             SignInScreen(navController)
         }

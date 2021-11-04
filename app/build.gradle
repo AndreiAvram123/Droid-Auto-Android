@@ -118,15 +118,18 @@ android {
             dimension "environment"
             applicationIdSuffix ".dev"
             manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_DEV")]
+            buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-dev.herokuapp.com/"'
         }
         qa {
             dimension "environment"
             applicationIdSuffix ".qa"
             manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_STAGING")]
+            buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-staging.herokuapp.com/"'
         }
         prod {
             dimension "environment"
             manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_QA")]
+            buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-prod.herokuapp.com/"'
         }
     }
 
@@ -157,6 +160,12 @@ android {
 
 dependencies {
     def lifecycle_version = '2.4.0-rc01'
+    
+
+
+    //retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
 
     //coroutines
