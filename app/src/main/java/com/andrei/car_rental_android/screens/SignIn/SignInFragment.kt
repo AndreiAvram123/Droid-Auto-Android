@@ -35,7 +35,6 @@ import com.andrei.car_rental_android.ui.Dimens
 fun SignInScreen(navController: NavController){
         MainUI()
 }
-
 @Composable
 fun MainUI(){
     Column(modifier = Modifier
