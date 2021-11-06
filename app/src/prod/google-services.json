@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1002663503669:android:bb4a8536045030525d4e7c",
+        "mobilesdk_app_id": "1:1002663503669:android:66f40932b795c3455d4e7c",
         "android_client_info": {
-          "package_name": "com.andrei.car_rental_android.dev"
+          "package_name": "com.andrei.car_rental_android"
         }
       },
       "oauth_client": [
@@ -36,9 +36,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1002663503669:android:598f02d141772aef5d4e7c",
+        "mobilesdk_app_id": "1:1002663503669:android:bb4a8536045030525d4e7c",
         "android_client_info": {
-          "package_name": "com.andrei.car_rental_android.prod"
+          "package_name": "com.andrei.car_rental_android.dev"
         }
       },
       "oauth_client": [
