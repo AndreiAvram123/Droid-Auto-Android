@@ -1,73 +1,64 @@
 package com.andrei.car_rental_android.screens.Home
 
-import android.graphics.Bitmap
 import android.os.Bundle
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
-import com.google.android.libraries.maps.CameraUpdateFactory
-import com.google.android.libraries.maps.MapView
-import com.google.android.libraries.maps.model.MarkerOptions
-import com.google.maps.android.ktx.awaitMap
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import com.andrei.car_rental_android.engine.configuration.RequestState
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 
 @Composable
 fun HomeScreen(navController: NavController) {
+    val viewModel: HomeViewModel = hiltViewModel<HomeViewModelImpl>()
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-       MapView()
+        MapView(nearbyCarsState = viewModel.nearbyCars.collectAsState().value)
     }
 }
-
 @Composable
-fun MapView() {
+fun MapView(nearbyCarsState: RequestState<List<LatLng>>) {
     val mapView = rememberMapWithLifecycle()
-    val viewModel: HomeViewModel = hiltViewModel<HomeViewModelImpl>()
-    val nearbyCars = viewModel.nearbyCars.collectAsState()
-    val mapBitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-        val coroutineScope = rememberCoroutineScope()
-            AndroidView(factory = {
-                mapView
+
+        AndroidView(factory = {
+              mapView
             }) {
-                coroutineScope.launch {
-                    val map = it.awaitMap()
-                    map.uiSettings.isZoomControlsEnabled = true
-                    if (nearbyCars.value.isNotEmpty()) {
-                        map.moveCamera(CameraUpdateFactory.newLatLng(nearbyCars.value.first()))
+            it.getMapAsync { map ->
+                when(nearbyCarsState){
+                    is RequestState.Success ->{
+                        map.uiSettings.isZoomControlsEnabled = true
+                       nearbyCarsState.data.forEach {location ->
+                           val marker = MarkerOptions().position(location)
+                           map.addMarker(marker)
+                       }
                     }
-                    nearbyCars.value.forEach { location ->
-                        val marker = MarkerOptions().title("Soemthing").position(location)
-                        map.addMarker(marker)
+                    is RequestState.Loading ->{
                     }
                 }
             }
         }
-}
 
+    }
+
+
+}
     @Composable
     fun rememberMapWithLifecycle(): MapView {
         val context = LocalContext.current
