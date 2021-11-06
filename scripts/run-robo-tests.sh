@@ -6,6 +6,6 @@ set -x
 
 gcloud firebase test android run \
   --type robo \
-  --app "$BITRISE_APK_PATH" \
+  --app  app/prod/release/app-prod-release.apk \
   --device model=Pixel3,version=30,orientation=portrait \
   --timeout 90s

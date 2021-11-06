@@ -17,3 +17,7 @@ local.properties
 Untitled
 
 app/car-rental-key.keystore
+
+app/prod/release/
+
+app/qa/release/

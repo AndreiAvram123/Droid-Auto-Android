@@ -1,6 +1,5 @@
 package com.andrei.car_rental_android.screens.SignIn
 
-import android.inputmethodservice.Keyboard
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -14,12 +13,9 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -151,7 +147,7 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
 fun SignInLayout(loginViewModel: LoginViewModel){
     val loginState = loginViewModel.loginUiState.collectAsState()
     val context = LocalContext.current
-    when(val loginStateValue = loginState.value){
+    when(loginState.value){
         is LoginViewModel.LoginUIState.Loading -> {
             CircularProgressIndicator()
         }

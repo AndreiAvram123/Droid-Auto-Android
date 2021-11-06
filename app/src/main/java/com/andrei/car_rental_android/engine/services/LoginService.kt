@@ -5,7 +5,6 @@ import com.andrei.car_rental_android.engine.request.LoginRequest
 import com.andrei.car_rental_android.engine.response.LoginResponse
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface LoginService {

@@ -6,8 +6,6 @@ import com.andrei.car_rental_android.engine.request.LoginRequest
 import com.andrei.car_rental_android.engine.response.LoginResponse
 import com.andrei.car_rental_android.engine.services.LoginService
 import kotlinx.coroutines.flow.Flow
-import retrofit2.http.Body
-import retrofit2.http.POST
 import javax.inject.Inject
 
 interface LoginRepository {
