@@ -13,4 +13,4 @@ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyr
 # Update the package list and install the Cloud SDK
 sudo apt-get update && sudo apt-get install  --yes --force-yes google-cloud-sdk
 
-gcloud auth activate-service-account --key-file=../../Desktop/car-rental-android-1fdfc-65c371b85820.json --project car-rental-android-1fdfc
+gcloud auth activate-service-account --key-file="$GOOGLE_CLOUD_PRIVATE_KEY_PATH" --project car-rental-android-1fdfc
