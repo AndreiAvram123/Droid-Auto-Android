@@ -1,5 +1,6 @@
 package com.andrei.car_rental_android.ui.theme
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
@@ -13,12 +14,14 @@ private val DarkColorPalette = darkColors(
     secondary = Teal200
 )
 
+@SuppressLint("ConflictingOnColor")
 private val LightColorPalette = lightColors(
-    primary = Color.White,
+    primary = CrayolaBlue,
     primaryVariant = Color.White,
-    secondary = Color.Black,
+    secondary = Color.White,
     surface = Color.White,
-    onPrimary = Color.Black
+     onSurface = Color.Black
+
 
     /* Other default colors to override
     background = Color.White,

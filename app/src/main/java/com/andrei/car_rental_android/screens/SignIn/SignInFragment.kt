@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Password
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +27,6 @@ import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
-import com.andrei.car_rental_android.ui.theme.LoginBackgroundColor
 
 @Composable
 
@@ -45,9 +47,9 @@ fun MainColumn() {
     val loginViewModel = hiltViewModel<LoginViewModelImpl>()
     val loginUIState = loginViewModel.loginUiState.collectAsState()
 
-      Box(modifier = Modifier.background(LoginBackgroundColor)) {
+      Box(modifier = Modifier.background(Color.White)) {
         BottomedCenteredColumn {
-            UsernameTextField(
+            EmailTextField(
                 viewModel = loginViewModel,
                 modifier = Modifier.padding(bottom = Dimens.medium.dp)
             )
@@ -78,7 +80,7 @@ fun BottomedCenteredColumn(content: @Composable ()->Unit ){
 }
 
 @Composable
-fun UsernameTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
+fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
     val usernameState = viewModel.usernameState.collectAsState()
 
     val focusManager = LocalFocusManager.current
@@ -95,10 +97,17 @@ fun UsernameTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
             viewModel.setUsername(it)
         },
         label = {
-            Text(text = stringResource(R.string.screen_sign_in_email))
-        }
+            TextFieldLabel(text = stringResource(R.string.screen_sign_in_email))
+        },
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = Color.Transparent
+        ),
+        leadingIcon = {
+            Icon(imageVector = Icons.Filled.Email, contentDescription = null)
+        },
     )
 }
+
 
 @Composable
 fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
@@ -119,18 +128,32 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
                 viewModel.setPassword(it)
             },
             label = {
-                Text(text = stringResource(id = R.string.screen_sign_in_password))
+                TextFieldLabel(text = stringResource(R.string.screen_sign_in_password))
+            },
+            leadingIcon = {
+                Icon(imageVector = Icons.Filled.Password, contentDescription = null)
             },
             trailingIcon = {
                 if (passwordValidationState is LoginViewModel.ValidationStateField.Error) {
                     Text(text = stringResource(R.string.screen_sign_in_password))
                 }
-            }
+            },
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color.Transparent
+            )
         )
         if (passwordValidationState is LoginViewModel.ValidationStateField.Error) {
             TextFieldErrorMessage(passwordState.value)
         }
     }
+}
+
+@Composable
+private fun TextFieldLabel(text:String){
+    Text(
+        text = text,
+        fontSize = Dimens.mediumTextSize
+    )
 }
 
 
@@ -173,7 +196,6 @@ fun SignInButton(modifier: Modifier = Modifier){
         Text(
             fontWeight = FontWeight.Bold,
             fontSize = Dimens.medium.sp,
-            color = MaterialTheme.colors.secondary,
             modifier = Modifier.padding(vertical = Dimens.small.dp),
             text = stringResource(R.string.screen_sign_in_login)
         )
@@ -183,15 +205,21 @@ fun SignInButton(modifier: Modifier = Modifier){
 fun InvalidCredentialsDialog(dialogOpened: MutableState<Boolean>, onDismiss: ()-> Unit){
     if(dialogOpened.value) {
         AlertDialog(
-            modifier = Modifier.background(Color.Black),
+            backgroundColor = MaterialTheme.colors.surface,
             onDismissRequest = {
                 dialogOpened.value = false
             },
             title = {
-                Text(text = stringResource(R.string.screen_sign_in_invalid_credentials_dialog_title))
+                Text(
+                    text = stringResource(R.string.screen_sign_in_invalid_credentials_dialog_title),
+                    color = MaterialTheme.colors.onSurface
+                )
             },
             text ={
-                Text(text = stringResource(id = R.string.screen_sign_in_invalid_credentials_dialog_content))
+                Text(
+                    text = stringResource(id = R.string.screen_sign_in_invalid_credentials_dialog_content),
+                    color = MaterialTheme.colors.onSurface
+                )
             },
             confirmButton = {
                 Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
