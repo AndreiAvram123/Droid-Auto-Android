@@ -59,8 +59,8 @@ fun MainColumn() {
             )
             WrapperSignInButton(loginUIState = loginUIState)
         }
-          val dialogOpened = mutableStateOf(loginUIState.value is LoginViewModel.LoginUIState.InvalidCredentials)
-          InvalidCredentialsDialog(dialogOpened = dialogOpened){
+
+          InvalidCredentialsDialog(loginUIState = loginUIState){
               loginViewModel.resetUIState()
           }
 
@@ -202,12 +202,17 @@ fun SignInButton(modifier: Modifier = Modifier){
     }
 }
 @Composable
-fun InvalidCredentialsDialog(dialogOpened: MutableState<Boolean>, onDismiss: ()-> Unit){
-    if(dialogOpened.value) {
+fun InvalidCredentialsDialog(loginUIState: State<LoginViewModel.LoginUIState>, onDismiss: ()-> Unit){
+    var dialogOpened by  remember {
+        mutableStateOf(false)
+    }
+    dialogOpened = loginUIState.value is LoginViewModel.LoginUIState.InvalidCredentials
+
+    if(dialogOpened) {
         AlertDialog(
             backgroundColor = MaterialTheme.colors.surface,
             onDismissRequest = {
-                dialogOpened.value = false
+                dialogOpened = false
             },
             title = {
                 Text(
