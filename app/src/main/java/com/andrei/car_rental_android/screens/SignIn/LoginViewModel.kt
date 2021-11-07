@@ -16,6 +16,9 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
     abstract val usernameState:StateFlow<String>
     abstract val passwordState:StateFlow<String>
     abstract val loginUiState:StateFlow<LoginUIState>
+    abstract val usernameValidationState:StateFlow<ValidationStateField>
+    abstract val passwordValidationState:StateFlow<ValidationStateField>
+    abstract fun resetUIState()
     abstract fun setUsername(username:String)
     abstract fun setPassword(password:String)
     abstract fun login()
@@ -28,6 +31,11 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
         object InvalidCredentials:LoginUIState()
 
     }
+    sealed class ValidationStateField{
+        object Unvalidated:ValidationStateField()
+        data class Error(val error:String):ValidationStateField()
+        object Valid:ValidationStateField()
+    }
 }
 
 @HiltViewModel
@@ -39,6 +47,14 @@ class LoginViewModelImpl @Inject constructor(
     override val usernameState: MutableStateFlow<String> = MutableStateFlow("")
     override val passwordState: MutableStateFlow<String> = MutableStateFlow("")
     override val loginUiState: MutableStateFlow<LoginUIState> = MutableStateFlow(LoginUIState.Default)
+    override val usernameValidationState: MutableStateFlow<ValidationStateField> = MutableStateFlow(ValidationStateField.Unvalidated)
+    override val passwordValidationState: MutableStateFlow<ValidationStateField> = MutableStateFlow(ValidationStateField.Unvalidated)
+
+    override fun resetUIState() {
+        coroutineScope.launch {
+            loginUiState.emit(LoginUIState.Default)
+        }
+    }
 
     override fun setUsername(username: String) {
         coroutineScope.launch {
@@ -63,7 +79,7 @@ class LoginViewModelImpl @Inject constructor(
                          loginUiState.emit(LoginUIState.LoggedIn)
                      }
                      is RequestState.Loading -> {
-                         loginUiState.emit(LoginUIState.LoggedIn)
+                         loginUiState.emit(LoginUIState.Loading)
                      }
                      is RequestState.Error -> {
                          if(it.code == 401){

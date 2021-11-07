@@ -5,15 +5,24 @@ buildscript {
         kotlin_version = '1.5.31'
         hilt_version = '2.39.1'
         easylauncher_version = "4.1.1"
-
+        junitVersion = "5.8.1"
     }
     repositories {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        maven {
+            url  "https://mymavenrepo.com/repo/v2xm7gYVinuWT46Px3Xy/"
+        }
 
     }
     dependencies {
+
+        classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.0.0")
+
         classpath "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.0"
         classpath 'com.google.gms:google-services:4.3.10'
         classpath("com.google.dagger:hilt-android-gradle-plugin:$hilt_version")
@@ -25,7 +34,6 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
-
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
