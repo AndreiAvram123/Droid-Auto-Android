@@ -1,34 +1,30 @@
 package com.andrei.car_rental_android.screens.SignIn
 
 import android.widget.Toast
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.ui.Dimens
+import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
+import com.andrei.car_rental_android.ui.theme.LoginBackgroundColor
 
 @Composable
 
@@ -44,24 +40,12 @@ fun MainUI(){
     }
 }
 
-
 @Composable
-fun FullBackgroundImage(@DrawableRes imageRes:Int){
-    Image(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(),
-        contentScale = ContentScale.FillBounds,
-        painter = painterResource(imageRes),
-        contentDescription = null)
-}
-
-
-@Composable
-fun MainColumn(){
+fun MainColumn() {
     val loginViewModel = hiltViewModel<LoginViewModelImpl>()
-    Box {
-        //FullBackgroundImage(imageRes = R.drawable.mock_background)
+    val loginUIState = loginViewModel.loginUiState.collectAsState()
+
+      Box(modifier = Modifier.background(LoginBackgroundColor)) {
         BottomedCenteredColumn {
             UsernameTextField(
                 viewModel = loginViewModel,
@@ -71,8 +55,13 @@ fun MainColumn(){
                 viewModel = loginViewModel,
                 modifier = Modifier.padding(bottom = Dimens.large.dp)
             )
-            SignInLayout(loginViewModel = loginViewModel)
+            WrapperSignInButton(loginUIState = loginUIState)
         }
+          val dialogOpened = mutableStateOf(loginUIState.value is LoginViewModel.LoginUIState.InvalidCredentials)
+          InvalidCredentialsDialog(dialogOpened = dialogOpened){
+              loginViewModel.resetUIState()
+          }
+
     }
 }
 
@@ -88,21 +77,13 @@ fun BottomedCenteredColumn(content: @Composable ()->Unit ){
         }
 }
 
-@Preview
-@Composable
-fun defaultPreview(){
-   MainUI()
-}
-
-
 @Composable
 fun UsernameTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
     val usernameState = viewModel.usernameState.collectAsState()
 
     val focusManager = LocalFocusManager.current
 
-    OutlinedTextField(
-        shape = RoundedCornerShape(Dimens.medium.dp),
+    TextField(
         maxLines = 1,
         modifier = modifier.fillMaxWidth(),
         value = usernameState.value,
@@ -123,30 +104,40 @@ fun UsernameTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
 fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
     val passwordState = viewModel.passwordState.collectAsState()
     val focusManager = LocalFocusManager.current
-
-    OutlinedTextField(
-        shape = RoundedCornerShape(Dimens.medium.dp),
-        maxLines = 1,
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions (onDone = {
-           focusManager.clearFocus(true)
-        }),
-        modifier = modifier.fillMaxWidth(),
-        value = passwordState.value,
-        onValueChange ={
-            viewModel.setPassword(it)
-        },
-        label = {
-            Text(text = stringResource(R.string.screen_sign_in_password))
+    val passwordValidationState = viewModel.passwordValidationState.collectAsState().value
+    Column {
+        TextField(
+            maxLines = 1,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.clearFocus(true)
+            }),
+            modifier = modifier.fillMaxWidth(),
+            value = passwordState.value,
+            onValueChange = {
+                viewModel.setPassword(it)
+            },
+            label = {
+                Text(text = stringResource(id = R.string.screen_sign_in_password))
+            },
+            trailingIcon = {
+                if (passwordValidationState is LoginViewModel.ValidationStateField.Error) {
+                    Text(text = stringResource(R.string.screen_sign_in_password))
+                }
+            }
+        )
+        if (passwordValidationState is LoginViewModel.ValidationStateField.Error) {
+            TextFieldErrorMessage(passwordState.value)
         }
-    )
+    }
 }
+
+
 @Composable
-fun SignInLayout(loginViewModel: LoginViewModel){
-    val loginState = loginViewModel.loginUiState.collectAsState()
+fun WrapperSignInButton(loginUIState: State<LoginViewModel.LoginUIState>){
     val context = LocalContext.current
-    when(loginState.value){
+    when(loginUIState.value){
         is LoginViewModel.LoginUIState.Loading -> {
             CircularProgressIndicator()
         }
@@ -158,7 +149,6 @@ fun SignInLayout(loginViewModel: LoginViewModel){
             SignInButton()
         }
         is LoginViewModel.LoginUIState.InvalidCredentials -> {
-            Toast.makeText(context,"Invalid credentials ",Toast.LENGTH_SHORT).show()
             SignInButton()
         }
         is LoginViewModel.LoginUIState.ServerError -> {
@@ -176,14 +166,46 @@ fun SignInButton(modifier: Modifier = Modifier){
         .padding(
             vertical = Dimens.huge.dp
         ),
+        shape = MaterialTheme.shapes.large,
         onClick = {
             viewModel.login()
         }) {
         Text(
+            fontWeight = FontWeight.Bold,
+            fontSize = Dimens.medium.sp,
+            color = MaterialTheme.colors.secondary,
             modifier = Modifier.padding(vertical = Dimens.small.dp),
             text = stringResource(R.string.screen_sign_in_login)
         )
     }
+}
+@Composable
+fun InvalidCredentialsDialog(dialogOpened: MutableState<Boolean>, onDismiss: ()-> Unit){
+    if(dialogOpened.value) {
+        AlertDialog(
+            modifier = Modifier.background(Color.Black),
+            onDismissRequest = {
+                dialogOpened.value = false
+            },
+            title = {
+                Text(text = stringResource(R.string.screen_sign_in_invalid_credentials_dialog_title))
+            },
+            text ={
+                Text(text = stringResource(id = R.string.screen_sign_in_invalid_credentials_dialog_content))
+            },
+            confirmButton = {
+                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                    Button(onClick = {
+                         onDismiss()
+                    }) {
+                        Text(
+                            text = stringResource(id = R.string.screen_sign_in_invalid_credentials_dialog_positive_bt)
+                        )
+                    }
+                }
+            }
+        )
+}
 }
 
 

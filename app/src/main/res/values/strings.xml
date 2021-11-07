@@ -1,7 +1,13 @@
 <resources>
     <string name="app_name">car-rental-android</string>
 
+    <!--Screen sign in-->
     <string name="screen_sign_in_email">Email</string>
     <string name="screen_sign_in_password">Password</string>
     <string name="screen_sign_in_login">Login</string>
+    <string name="screen_sign_in_invalid_credentials_dialog_title">Please try again…</string>
+    <string name="screen_sign_in_invalid_credentials_dialog_content">The email and password you entered do not match our records.Please double check and try again.</string>
+    <string name="screen_sign_in_invalid_credentials_dialog_positive_bt">OK</string>
+
+
 </resources>
