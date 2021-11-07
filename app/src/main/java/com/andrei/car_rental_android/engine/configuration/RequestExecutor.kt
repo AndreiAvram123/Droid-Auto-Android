@@ -27,25 +27,26 @@ class RequestExecutorImpl @Inject constructor(
 ):RequestExecutor {
 
     override fun <DataType> performRequest(serviceCall: ServiceCall<DataType>) = flow {
+        emit(RequestState.Loading)
         try{
-       val response = serviceCall()
-        val body = response.body()
-        if(response.isSuccessful && body != null){
-             emit(RequestState.Success(body.data))
-        }else if (response.code() == 401) {
-            // Should not reach this
-            emit(RequestState.Error(response.message(), response.code()))
-        } else {
-            emit(RequestState.Error(response.errorBody().toString(), response.code()))
-        }
-    } catch (e: Exception) {
-        when (e) {
-            is ConnectException, is UnknownHostException, is InterruptedIOException -> {
-                emit(RequestState.ConnectionError)
+            val response = serviceCall()
+            val body = response.body()
+            if(response.isSuccessful && body != null){
+                emit(RequestState.Success(body.data))
+            }else if (response.code() == 401) {
+                // Should not reach this
+                emit(RequestState.Error(response.message(), response.code()))
+            } else {
+                emit(RequestState.Error(response.errorBody().toString(), response.code()))
             }
-            else -> throw e
+        } catch (e: Exception) {
+            when (e) {
+                is ConnectException, is UnknownHostException, is InterruptedIOException -> {
+                    emit(RequestState.ConnectionError)
+                }
+                else -> throw e
+            }
         }
-    }
     }.flowOn(networkDispatcher)
 
 }

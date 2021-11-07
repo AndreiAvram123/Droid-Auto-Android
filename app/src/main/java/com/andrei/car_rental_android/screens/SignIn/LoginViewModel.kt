@@ -79,7 +79,7 @@ class LoginViewModelImpl @Inject constructor(
                          loginUiState.emit(LoginUIState.LoggedIn)
                      }
                      is RequestState.Loading -> {
-                         loginUiState.emit(LoginUIState.LoggedIn)
+                         loginUiState.emit(LoginUIState.Loading)
                      }
                      is RequestState.Error -> {
                          if(it.code == 401){
