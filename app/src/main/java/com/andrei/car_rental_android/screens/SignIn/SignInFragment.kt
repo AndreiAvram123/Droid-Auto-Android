@@ -20,20 +20,29 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
+import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 @Composable
 
 fun SignInScreen(navController: NavController){
-        MainUI()
+    MainUI()
+    Button(onClick ={
+        navController.navigate("register")
+    } ) {
+
+        Text(text = "navigate")
+    }
 }
 @Composable
+@Preview
 fun MainUI(){
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -47,7 +56,7 @@ fun MainColumn() {
     val loginViewModel = hiltViewModel<LoginViewModelImpl>()
     val loginUIState = loginViewModel.loginUiState.collectAsState()
 
-      Box(modifier = Modifier.background(Color.White)) {
+    Box(modifier = Modifier.background(Color.White)) {
         BottomedCenteredColumn {
             EmailTextField(
                 viewModel = loginViewModel,
@@ -60,9 +69,9 @@ fun MainColumn() {
             WrapperSignInButton(loginUIState = loginUIState)
         }
 
-          InvalidCredentialsDialog(loginUIState = loginUIState){
-              loginViewModel.resetUIState()
-          }
+        InvalidCredentialsDialog(loginUIState = loginUIState){
+            loginViewModel.resetUIState()
+        }
 
     }
 }
@@ -75,8 +84,8 @@ fun BottomedCenteredColumn(content: @Composable ()->Unit ){
         .padding(Dimens.huge.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom){
-            content()
-        }
+        content()
+    }
 }
 
 @Composable
@@ -91,7 +100,7 @@ fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
         value = usernameState.value,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         keyboardActions = KeyboardActions(onNext = {
-          focusManager.moveFocus(FocusDirection.Down)
+            focusManager.moveFocus(FocusDirection.Down)
         }),
         onValueChange ={
             viewModel.setUsername(it)
@@ -146,14 +155,6 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier){
             TextFieldErrorMessage(passwordState.value)
         }
     }
-}
-
-@Composable
-private fun TextFieldLabel(text:String){
-    Text(
-        text = text,
-        fontSize = Dimens.mediumTextSize
-    )
 }
 
 
@@ -229,7 +230,7 @@ fun InvalidCredentialsDialog(loginUIState: State<LoginViewModel.LoginUIState>, o
             confirmButton = {
                 Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                     Button(onClick = {
-                         onDismiss()
+                        onDismiss()
                     }) {
                         Text(
                             text = stringResource(id = R.string.screen_sign_in_invalid_credentials_dialog_positive_bt)
@@ -238,7 +239,7 @@ fun InvalidCredentialsDialog(loginUIState: State<LoginViewModel.LoginUIState>, o
                 }
             }
         )
-}
+    }
 }
 
 
