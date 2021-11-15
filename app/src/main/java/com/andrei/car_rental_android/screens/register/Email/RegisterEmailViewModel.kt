@@ -3,20 +3,17 @@ package com.andrei.car_rental_android.screens.register.Email
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.screens.register.base.ValidationState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 abstract class RegisterEmailViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
    abstract val email:StateFlow<String>
    abstract val emailValidationState:StateFlow<ValidationState>
    abstract fun setEmail(newValue:String)
-   var validationOffsetTime = 2000
+   var validationOffsetTime = 2000L
 }
 
 @HiltViewModel
@@ -45,7 +42,8 @@ class RegisterEmailViewModelImpl @Inject constructor(
     }
     private fun validateEmail(){
         //cancel previous job if it is still running
-        
+        validationJob?.cancel("Need to cancel previous validation")
+
     }
 
 }

@@ -3,9 +3,11 @@ package com.andrei.car_rental_android.screens.register
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.TextField
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -30,24 +32,32 @@ fun RegisterEmailScreen(navController: NavController){
 @Preview
 private fun MainContent(onNavigateForward : ()-> Unit = {}){
     val viewModel:RegisterEmailViewModel = hiltViewModel<RegisterEmailViewModelImpl>()
-  RegisterScreenSurface {
-      Column(
-          modifier = Modifier.fillMaxSize(),
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.Center
-      ) {
-          EmailTextField(state = , onValueChanged = )
-      }
-  }
+    RegisterScreenSurface {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            EmailTextField(
+                modifier = Modifier.fillMaxWidth(),
+                state = viewModel.email.collectAsState()
+                , onValueChanged ={
+                    viewModel.setEmail(it)
+                } )
+        }
+    }
 }
 
 @Composable
-private fun EmailTextField(state: State<String>,
-                           onValueChanged: (newValue:String)-> Unit){
-    TextField(
+private fun EmailTextField(
+    modifier: Modifier = Modifier,
+    state: State<String>,
+    onValueChanged: (newValue:String)-> Unit){
+    OutlinedTextField(
+        modifier = modifier,
         value = state.value,
         onValueChange = {
-           onValueChanged()
+            onValueChanged(it)
         },
         placeholder = {
             TextFieldLabel(text = stringResource(R.string.screen_email_email))

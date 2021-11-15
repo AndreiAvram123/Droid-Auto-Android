@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -116,7 +116,7 @@ fun SurnameField(modifier: Modifier = Modifier,
                  onValueChanged : (newValue:String) -> Unit){
     val focusManager = LocalFocusManager.current
 
-    TextField(
+    OutlinedTextField(
         singleLine= true,
         modifier = modifier.fillMaxWidth(),
         value = state.value,
@@ -139,7 +139,7 @@ fun FirstNameField(modifier:Modifier = Modifier,
                    onValueChanged : (newValue:String) -> Unit){
     val focusManager = LocalFocusManager.current
 
-    TextField(
+    OutlinedTextField(
         singleLine= true ,
         modifier = modifier.fillMaxWidth(),
         value = state.value,
