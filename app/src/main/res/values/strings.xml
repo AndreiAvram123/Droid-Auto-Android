@@ -17,4 +17,7 @@
     <string name="screen_user_name_surname">Surname</string>
     <string name="screen_user_name_continue">Continue</string>
 
+    <!--Screen email -->
+    <string name="screen_email_email">Email</string>
+
 </resources>

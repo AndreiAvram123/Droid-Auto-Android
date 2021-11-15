@@ -1,11 +1,9 @@
 package com.andrei.car_rental_android.screens.register
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -25,7 +23,9 @@ import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.navigation.RegistrationScreen
+import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
+
 
 
 @Composable
@@ -41,9 +41,7 @@ fun UserNameScreen(navController: NavController) {
 @Preview
 @Composable
 private fun MainContent(navigateToNextScreen:()->Unit = {}) {
-    Box(modifier = Modifier
-        .background(MaterialTheme.colors.surface)
-        .padding(horizontal = Dimens.medium.dp)) {
+   RegisterScreenSurface {
 
         val viewModel : UsernameViewModel = hiltViewModel<UsernameViewModelImpl>()
 
