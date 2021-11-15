@@ -1,4 +1,4 @@
-package com.andrei.car_rental_android.screens.register
+package com.andrei.car_rental_android.screens.register.Email
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,21 +16,29 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
-import com.andrei.car_rental_android.screens.register.Email.RegisterEmailViewModel
-import com.andrei.car_rental_android.screens.register.Email.RegisterEmailViewModelImpl
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 
 
 @Composable
 fun RegisterEmailScreen(navController: NavController){
     Column(modifier = Modifier.fillMaxSize()) {
-        MainContent()
+        MainContent(onNavigateForward = {
+
+        })
     }
 }
-
 @Composable
 @Preview
-private fun MainContent(onNavigateForward : ()-> Unit = {}){
+fun RegisterEmailScreenPreview(){
+    MainContent{
+
+    }
+
+}
+
+
+@Composable
+private fun MainContent(onNavigateForward : ()-> Unit){
     val viewModel:RegisterEmailViewModel = hiltViewModel<RegisterEmailViewModelImpl>()
     RegisterScreenSurface {
         Column(
@@ -43,7 +51,9 @@ private fun MainContent(onNavigateForward : ()-> Unit = {}){
                 state = viewModel.email.collectAsState()
                 , onValueChanged ={
                     viewModel.setEmail(it)
-                } )
+                },
+                validationState = viewModel.emailValidationState.collectAsState()
+            )
         }
     }
 }
@@ -52,13 +62,21 @@ private fun MainContent(onNavigateForward : ()-> Unit = {}){
 private fun EmailTextField(
     modifier: Modifier = Modifier,
     state: State<String>,
-    onValueChanged: (newValue:String)-> Unit){
+    onValueChanged: (newValue:String)-> Unit,
+    validationState:State<RegisterEmailViewModel.EmailValidationState>
+){
+    val invalid = when(validationState.value){
+       is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> true
+        else -> false
+    }
+
     OutlinedTextField(
         modifier = modifier,
         value = state.value,
         onValueChange = {
             onValueChanged(it)
         },
+        isError = invalid,
         placeholder = {
             TextFieldLabel(text = stringResource(R.string.screen_email_email))
         }

@@ -2,7 +2,7 @@ package com.andrei.car_rental_android.screens.SignIn
 
 import app.cash.turbine.test
 import com.andrei.car_rental_android.BaseViewModelTest
-import com.andrei.car_rental_android.engine.LoginRepository
+import com.andrei.car_rental_android.engine.repositories.LoginRepository
 import com.andrei.car_rental_android.engine.request.LoginRequest
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,7 +20,7 @@ class LoginViewModelTest : BaseViewModelTest(){
 
     private lateinit var sut: LoginViewModel
 
-    private val loginRepository:LoginRepository = mockk(relaxed = true)
+    private val loginRepository: LoginRepository = mockk(relaxed = true)
 
     @BeforeAll
     fun setUpTests() {

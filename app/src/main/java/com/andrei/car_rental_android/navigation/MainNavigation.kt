@@ -7,13 +7,13 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.andrei.car_rental_android.screens.Home.HomeScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
-import com.andrei.car_rental_android.screens.register.RegisterEmailScreen
+import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
 import com.andrei.car_rental_android.screens.register.UserNameScreen
 
 @Composable
 fun MainNavigation(){
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Screen.SignInScreen.screenName){
+    NavHost(navController = navController, startDestination = Screen.UserNameScreen.screenName){
         composable(route = Screen.SignInScreen.screenName) {
             SignInScreen(navController)
         }

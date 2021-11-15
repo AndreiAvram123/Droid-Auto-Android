@@ -1,4 +1,4 @@
-package com.andrei.car_rental_android.engine
+package com.andrei.car_rental_android.engine.repositories
 
 import com.andrei.car_rental_android.engine.configuration.RequestExecutor
 import com.andrei.car_rental_android.engine.configuration.RequestState
@@ -15,7 +15,7 @@ interface LoginRepository {
 class LoginRepositoryImpl @Inject constructor(
     private val loginService: LoginService,
     private val requestExecutor: RequestExecutor
-):LoginRepository{
+): LoginRepository {
 
     override fun login(loginRequest: LoginRequest):Flow<RequestState<LoginResponse>> =  requestExecutor.performRequest{
        loginService.login(loginRequest)

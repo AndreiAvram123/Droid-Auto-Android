@@ -2,6 +2,7 @@ package com.andrei.car_rental_android.DI
 
 import com.andrei.car_rental_android.BuildConfig
 import com.andrei.car_rental_android.engine.services.LoginService
+import com.andrei.car_rental_android.engine.services.RegisterService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,6 +28,11 @@ object NetworkModule {
     @Provides
     fun provideLoginService(retrofit: Retrofit):LoginService{
         return retrofit.create(LoginService::class.java)
+    }
+    @Singleton
+    @Provides
+    fun provideRegisterService(retrofit: Retrofit):RegisterService{
+        return retrofit.create(RegisterService::class.java)
     }
 
 }
