@@ -1,5 +1,6 @@
 package com.andrei.car_rental_android.screens.register.Email
 
+import android.util.Patterns
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.configuration.RequestState
 import com.andrei.car_rental_android.engine.repositories.RegisterRepository
@@ -26,6 +27,7 @@ abstract class RegisterEmailViewModel(coroutineProvider:CoroutineScope?) : BaseV
         sealed class EmailValidationError:EmailValidationState(){
             object EmailAlreadyTaken: EmailValidationError()
             object Unknown:EmailValidationError()
+            object InvalidFormat: EmailValidationError()
         }
     }
 }
@@ -54,6 +56,7 @@ class RegisterEmailViewModelImpl @Inject constructor(
            //cancel previous collection action on new email value received
            email.collectLatest {
                cancelPreviousValidation()
+               //don't validate immediately
                delay(validationOffsetTime)
                validateEmail()
            }
@@ -68,30 +71,34 @@ class RegisterEmailViewModelImpl @Inject constructor(
 
     private fun cancelPreviousValidation(){
         //cancel previous job if it is still running
+        //and return the validation state to default
         validationJob?.cancel("Need to cancel previous validation")
+        emailValidationState.tryEmit(EmailValidationState.Default)
     }
     private fun validateEmail(){
-        if(email.value.isEmailValid()) {
-            validationJob = coroutineScope.launch {
-                registerRepository.checkIfEmailIsUsed(email.value).collect { requestState -> when (requestState) {
-                        is RequestState.Success -> {
-                            emailValidationState.emit(EmailValidationState.Valid)
-                        }
-                        is RequestState.ConnectionError -> {
+        if(email.value.isNotBlank()) {
+            if(email.value.isEmailValid()) {
+                validationJob = coroutineScope.launch {
+                    registerRepository.checkIfEmailIsUsed(email.value).collect { requestState ->
+                        when (requestState) {
+                            is RequestState.Success -> {
+                                emailValidationState.emit(EmailValidationState.Valid)
+                            }
+                            is RequestState.ConnectionError -> {
 
-                        }
-                        is RequestState.Error -> {
-                            emailValidationState.emit(requestState.mapToEmailValidationError())
-                        }
-                        is RequestState.Loading -> {
-                            emailValidationState.emit(EmailValidationState.Validating)
+                            }
+                            is RequestState.Error -> {
+                                emailValidationState.emit(requestState.mapToEmailValidationError())
+                            }
+                            is RequestState.Loading -> {
+                                emailValidationState.emit(EmailValidationState.Validating)
+                            }
                         }
                     }
                 }
+            }else{
+                    emailValidationState.tryEmit(EmailValidationState.EmailValidationError.InvalidFormat)
             }
-        }else{
-            //TODO
-            //if the email entered is not even valid locally
         }
     }
 
@@ -105,6 +112,6 @@ class RegisterEmailViewModelImpl @Inject constructor(
             }
         }
     }
-    private fun String.isEmailValid():Boolean = this.isNotBlank()
+    private fun String.isEmailValid():Boolean = this.matches(Patterns.EMAIL_ADDRESS.toRegex())
 
 }

@@ -18,7 +18,7 @@ import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
-import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessageWithIcon
+import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 
 @Composable
@@ -102,13 +102,26 @@ private fun EmailTextFieldColumn(
                 TextFieldLabel(text = stringResource(R.string.screen_email_email))
             }
         )
-        if(invalid){
-            TextFieldErrorMessageWithIcon(
-                errorMessage = "Invalid email"
-            )
-        }
+        EmailValidationError(validationState)
     }
 
+}
+@Composable
+fun EmailValidationError(
+    validationState:State<RegisterEmailViewModel.EmailValidationState>
+){
+  if(validationState.value is RegisterEmailViewModel.EmailValidationState.EmailValidationError){
+      val errorMessage = when(validationState.value){
+          is RegisterEmailViewModel.EmailValidationState.EmailValidationError.InvalidFormat -> stringResource(
+              R.string.screen_email_invalid_email_format
+          )
+          is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> stringResource(
+              R.string.screen_email_already_taken
+          )
+          else -> stringResource(R.string.screen_email_unknown_error)
+      }
+      TextFieldErrorMessage(errorMessage)
+  }
 }
 
 
