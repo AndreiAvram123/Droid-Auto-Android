@@ -16,48 +16,65 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
+import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
-import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
+import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessageWithIcon
 
 
 @Composable
-fun RegisterEmailScreen(navController: NavController){
-    Column(modifier = Modifier.fillMaxSize()) {
-        MainContent(onNavigateForward = {
-           //TODO
+fun RegisterEmailScreen(navController: NavController) {
+    RegisterScreenSurface {
+        MainContent(navigateForward = {
+            //TODO
             //add navigation to next screen
         })
     }
 }
 
+
 @Composable
-@Preview
-fun RegisterEmailScreenPreview(){
-    MainContent{
-
-    }
-
+@Preview(showBackground = true, showSystemUi = true)
+private fun MainContent(navigateForward : ()-> Unit = {}){
+    val viewModel:RegisterEmailViewModel = hiltViewModel<RegisterEmailViewModelImpl>()
+            CenterContent(viewModel = viewModel)
+            BottomContent(
+                viewModel = viewModel,
+                navigateForward = navigateForward
+            )
 }
 
-
 @Composable
-private fun MainContent(onNavigateForward : ()-> Unit){
-    val viewModel:RegisterEmailViewModel = hiltViewModel<RegisterEmailViewModelImpl>()
-    RegisterScreenSurface {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            EmailTextFieldColumn(
-                modifier = Modifier.fillMaxWidth(),
-                state = viewModel.email.collectAsState()
-                , onValueChanged ={
-                    viewModel.setEmail(it)
-                },
-                validationState = viewModel.emailValidationState.collectAsState()
-            )
-        }
+private fun CenterContent(viewModel: RegisterEmailViewModel){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        EmailTextFieldColumn(
+            modifier = Modifier.fillMaxWidth(),
+            state = viewModel.email.collectAsState()
+            , onValueChanged ={
+                viewModel.setEmail(it)
+            },
+            validationState = viewModel.emailValidationState.collectAsState()
+        )
+    }
+}
+@Composable
+private fun BottomContent(
+    viewModel: RegisterEmailViewModel,
+    navigateForward:() -> Unit
+){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        ContinueButton(
+            enabled = viewModel.nextButtonEnabled.collectAsState(),
+            onClick = {
+                navigateForward()
+            }
+        )
     }
 }
 
@@ -70,7 +87,7 @@ private fun EmailTextFieldColumn(
     validationState:State<RegisterEmailViewModel.EmailValidationState>
 ){
     val invalid = when(validationState.value){
-       is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> true
+        is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> true
         else -> false
     }
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -86,7 +103,9 @@ private fun EmailTextFieldColumn(
             }
         )
         if(invalid){
-            TextFieldErrorMessage(errorMessage = "Invalid email")
+            TextFieldErrorMessageWithIcon(
+                errorMessage = "Invalid email"
+            )
         }
     }
 

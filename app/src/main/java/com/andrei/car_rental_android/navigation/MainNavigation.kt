@@ -8,7 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.andrei.car_rental_android.screens.Home.HomeScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
-import com.andrei.car_rental_android.screens.register.UserNameScreen
+import com.andrei.car_rental_android.screens.register.FirstNameLastNameScreen
 
 @Composable
 fun MainNavigation(){
@@ -21,12 +21,12 @@ fun MainNavigation(){
             HomeScreen(navController)
         }
         composable(route = Screen.UserNameScreen.screenName) {
-            UserNameScreen(navController)
+            FirstNameLastNameScreen(navController)
         }
         //register navigation
         navigation(startDestination = Screen.UserNameScreen.screenName, route = "register"){
             composable(route = Screen.UserNameScreen.screenName){
-                UserNameScreen(navController)
+                FirstNameLastNameScreen(navController)
             }
             composable(route = RegistrationScreen.EmailScreen.screenName){
                 RegisterEmailScreen(navController)

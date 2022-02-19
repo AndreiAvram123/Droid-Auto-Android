@@ -14,6 +14,7 @@ import javax.inject.Inject
 abstract class RegisterEmailViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
    abstract val email:StateFlow<String>
    abstract val emailValidationState:StateFlow<EmailValidationState>
+   abstract val nextButtonEnabled:StateFlow<Boolean>
    abstract fun setEmail(newValue:String)
    var validationOffsetTime = 1000L
 
@@ -38,6 +39,7 @@ class RegisterEmailViewModelImpl @Inject constructor(
     override val email: MutableStateFlow<String> = MutableStateFlow("")
 
     override val emailValidationState: MutableStateFlow<EmailValidationState> = MutableStateFlow(EmailValidationState.Default)
+    override val nextButtonEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     override fun setEmail(newValue: String) {
        coroutineScope.launch {
@@ -56,7 +58,13 @@ class RegisterEmailViewModelImpl @Inject constructor(
                validateEmail()
            }
        }
+       coroutineScope.launch {
+           emailValidationState.collect {
+               nextButtonEnabled.emit(it is EmailValidationState.Valid)
+           }
+       }
     }
+
 
     private fun cancelPreviousValidation(){
         //cancel previous job if it is still running

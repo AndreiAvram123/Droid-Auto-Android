@@ -3,7 +3,6 @@ package com.andrei.car_rental_android.screens.register
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -23,13 +22,14 @@ import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.navigation.RegistrationScreen
+import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
 
 
 
 @Composable
-fun UserNameScreen(navController: NavController) {
+fun FirstNameLastNameScreen(navController: NavController) {
     MainContent(
         navigateToNextScreen = {
             navController.navigate(RegistrationScreen.EmailScreen.screenName)
@@ -54,14 +54,12 @@ private fun MainContent(navigateToNextScreen:()->Unit = {}) {
         Column(modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Bottom
         ) {
-            Row(horizontalArrangement = Arrangement.Center) {
                 ContinueButton(
                     enabled = viewModel.nextButtonEnabled.collectAsState(),
                     onClick = {
                        navigateToNextScreen()
                     }
                 )
-            }
         }
     }
 }
@@ -158,19 +156,4 @@ fun FirstNameField(modifier:Modifier = Modifier,
         },
     )
 
-}
-
-@Composable
-private fun ContinueButton(modifier: Modifier = Modifier,
-                           enabled:State<Boolean>,
-                            onClick:()->Unit){
-    Button(
-        modifier = modifier.fillMaxWidth(),
-        onClick = {
-          onClick()
-        },
-        enabled = enabled.value
-    ) {
-        Text(text = stringResource(R.string.screen_user_name_continue))
-    }
 }

@@ -12,19 +12,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.theme.LightRed
 
-@Composable
-fun TrailingIconValidationError(){
-    Icon(imageVector = Icons.Filled.Error,
-        tint = MaterialTheme.colors.error,
-        contentDescription = null)
-}
 
 @Composable
 fun TextFieldErrorMessage(errorMessage:String){
@@ -35,11 +27,10 @@ fun TextFieldErrorMessage(errorMessage:String){
         modifier = Modifier.padding(start = Dimens.small.dp)
     )
 }
-
-
 @Composable
-@Preview
-fun InvalidCredential(){
+fun TextFieldErrorMessageWithIcon(
+    errorMessage: String
+){
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,6 +43,6 @@ fun InvalidCredential(){
             tint = MaterialTheme.colors.error,
             contentDescription = null
         )
-        Text(text = stringResource(R.string.screen_sign_in_password))
+        Text(text = errorMessage)
     }
 }
