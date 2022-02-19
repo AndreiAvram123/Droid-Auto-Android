@@ -15,7 +15,7 @@ abstract class RegisterEmailViewModel(coroutineProvider:CoroutineScope?) : BaseV
    abstract val email:StateFlow<String>
    abstract val emailValidationState:StateFlow<EmailValidationState>
    abstract fun setEmail(newValue:String)
-   var validationOffsetTime = 2000L
+   var validationOffsetTime = 1000L
 
     sealed class EmailValidationState{
         object Default: EmailValidationState()
@@ -48,15 +48,21 @@ class RegisterEmailViewModelImpl @Inject constructor(
 
     init {
        coroutineScope.launch {
+           //collect the latest email value
+           //cancel previous collection action on new email value received
            email.collectLatest {
+               cancelPreviousValidation()
                delay(validationOffsetTime)
                validateEmail()
            }
        }
     }
-    private fun validateEmail(){
+
+    private fun cancelPreviousValidation(){
         //cancel previous job if it is still running
         validationJob?.cancel("Need to cancel previous validation")
+    }
+    private fun validateEmail(){
         if(email.value.isEmailValid()) {
             validationJob = coroutineScope.launch {
                 registerRepository.checkIfEmailIsUsed(email.value).collect { requestState -> when (requestState) {
@@ -75,6 +81,9 @@ class RegisterEmailViewModelImpl @Inject constructor(
                     }
                 }
             }
+        }else{
+            //TODO
+            //if the email entered is not even valid locally
         }
     }
 
@@ -88,7 +97,6 @@ class RegisterEmailViewModelImpl @Inject constructor(
             }
         }
     }
-    private fun String.isEmailValid():Boolean {
-        return this.isNotBlank()
-    }
+    private fun String.isEmailValid():Boolean = this.isNotBlank()
+
 }

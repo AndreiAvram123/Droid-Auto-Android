@@ -17,16 +17,19 @@ import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
+import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 
 @Composable
 fun RegisterEmailScreen(navController: NavController){
     Column(modifier = Modifier.fillMaxSize()) {
         MainContent(onNavigateForward = {
-
+           //TODO
+            //add navigation to next screen
         })
     }
 }
+
 @Composable
 @Preview
 fun RegisterEmailScreenPreview(){
@@ -46,7 +49,7 @@ private fun MainContent(onNavigateForward : ()-> Unit){
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            EmailTextField(
+            EmailTextFieldColumn(
                 modifier = Modifier.fillMaxWidth(),
                 state = viewModel.email.collectAsState()
                 , onValueChanged ={
@@ -58,8 +61,9 @@ private fun MainContent(onNavigateForward : ()-> Unit){
     }
 }
 
+
 @Composable
-private fun EmailTextField(
+private fun EmailTextFieldColumn(
     modifier: Modifier = Modifier,
     state: State<String>,
     onValueChanged: (newValue:String)-> Unit,
@@ -69,18 +73,23 @@ private fun EmailTextField(
        is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> true
         else -> false
     }
-
-    OutlinedTextField(
-        modifier = modifier,
-        value = state.value,
-        onValueChange = {
-            onValueChanged(it)
-        },
-        isError = invalid,
-        placeholder = {
-            TextFieldLabel(text = stringResource(R.string.screen_email_email))
+    Column(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            modifier = modifier,
+            value = state.value,
+            onValueChange = {
+                onValueChanged(it)
+            },
+            isError = invalid,
+            placeholder = {
+                TextFieldLabel(text = stringResource(R.string.screen_email_email))
+            }
+        )
+        if(invalid){
+            TextFieldErrorMessage(errorMessage = "Invalid email")
         }
-    )
+    }
+
 }
 
 
