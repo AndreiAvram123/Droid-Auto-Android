@@ -1,7 +1,7 @@
 package com.andrei.car_rental_android.screens.Home
 
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
-import com.andrei.car_rental_android.engine.CarRepository
+import com.andrei.car_rental_android.engine.repositories.CarRepository
 import com.andrei.car_rental_android.engine.configuration.RequestState
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
