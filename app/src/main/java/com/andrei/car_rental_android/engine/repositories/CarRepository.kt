@@ -1,4 +1,4 @@
-package com.andrei.car_rental_android.engine
+package com.andrei.car_rental_android.engine.repositories
 
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.engine.configuration.RequestState
@@ -13,7 +13,7 @@ interface CarRepository{
 
 class CarRepositoryImpl @Inject constructor(
 
-):CarRepository{
+): CarRepository {
 
     override fun fetchNearby(currentLocation: LatLng): Flow<RequestState<List<Car>>>  = flow {
 

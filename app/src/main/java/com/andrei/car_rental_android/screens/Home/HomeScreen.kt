@@ -1,8 +1,14 @@
 package com.andrei.car_rental_android.screens.Home
 
 import android.os.Bundle
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -50,6 +56,9 @@ fun MapView(nearbyCarsState: RequestState<List<LatLng>>) {
                        }
                     }
                     is RequestState.Loading ->{
+                    }
+                    else -> {
+
                     }
                 }
             }
