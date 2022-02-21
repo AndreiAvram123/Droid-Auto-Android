@@ -21,7 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
-import com.andrei.car_rental_android.navigation.RegistrationScreen
+import com.andrei.car_rental_android.navigation.Screen
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
@@ -32,7 +32,7 @@ import com.andrei.car_rental_android.ui.Dimens
 fun FirstNameLastNameScreen(navController: NavController) {
     MainContent(
         navigateToNextScreen = {
-            navController.navigate(RegistrationScreen.EmailScreen.screenName)
+            navController.navigate(Screen.RegistrationScreen.EmailScreen.screenName)
         }
 
     )

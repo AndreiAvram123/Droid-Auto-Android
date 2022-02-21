@@ -13,11 +13,11 @@ import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject
 
 abstract class RegisterEmailViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
-   abstract val email:StateFlow<String>
-   abstract val emailValidationState:StateFlow<EmailValidationState>
-   abstract val nextButtonEnabled:StateFlow<Boolean>
-   abstract fun setEmail(newValue:String)
-   var validationOffsetTime = 1000L
+    abstract val email:StateFlow<String>
+    abstract val emailValidationState:StateFlow<EmailValidationState>
+    abstract val nextButtonEnabled:StateFlow<Boolean>
+    abstract fun setEmail(newValue:String)
+    var validationOffsetTime = 1000L
 
     sealed class EmailValidationState{
         object Default: EmailValidationState()
@@ -44,36 +44,32 @@ class RegisterEmailViewModelImpl @Inject constructor(
     override val nextButtonEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     override fun setEmail(newValue: String) {
-       coroutineScope.launch {
-               email.emit(newValue)
-       }
+        coroutineScope.launch {
+            emailValidationState.emit(EmailValidationState.Default)
+            email.emit(newValue)
+        }
     }
     private var validationJob: Job? = null
 
     init {
-       coroutineScope.launch {
-           //collect the latest email value
-           //cancel previous collection action on new email value received
-           email.collectLatest {
-               cancelPreviousValidation()
-               //don't validate immediately
-               delay(validationOffsetTime)
-               validateEmail()
-           }
-       }
-       coroutineScope.launch {
-           emailValidationState.collect {
-               nextButtonEnabled.emit(it is EmailValidationState.Valid)
-           }
-       }
+        coroutineScope.launch {
+            email.collectLatest {
+                cancelPreviousValidation()
+                delay(validationOffsetTime)
+                validateEmail()
+            }
+        }
+        coroutineScope.launch {
+            emailValidationState.collect {
+                nextButtonEnabled.emit(it is EmailValidationState.Valid)
+            }
+        }
     }
 
 
     private fun cancelPreviousValidation(){
         //cancel previous job if it is still running
-        //and return the validation state to default
         validationJob?.cancel("Need to cancel previous validation")
-        emailValidationState.tryEmit(EmailValidationState.Default)
     }
     private fun validateEmail(){
         if(email.value.isNotBlank()) {
@@ -97,7 +93,7 @@ class RegisterEmailViewModelImpl @Inject constructor(
                     }
                 }
             }else{
-                    emailValidationState.tryEmit(EmailValidationState.EmailValidationError.InvalidFormat)
+                emailValidationState.tryEmit(EmailValidationState.EmailValidationError.InvalidFormat)
             }
         }
     }
