@@ -3,7 +3,6 @@ package com.andrei.car_rental_android.screens.register
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -16,34 +15,41 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
-import com.andrei.car_rental_android.navigation.RegistrationScreen
+import com.andrei.car_rental_android.navigation.RegisterEmailNavHelper
+import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
 
 
 
 @Composable
-fun UserNameScreen(navController: NavController) {
+fun FirstNameLastNameScreen(
+    navController: NavController,
+) {
     MainContent(
-        navigateToNextScreen = {
-            navController.navigate(RegistrationScreen.EmailScreen.screenName)
-        }
-
+       navigateForward = {firstName, lastName ->
+         navController.navigate(RegisterEmailNavHelper.getDestination(
+             RegisterEmailNavHelper.RegisterEmailNavArgs(
+                 firstName = firstName,
+                 lastName = lastName
+             )
+         ))
+       }
     )
 }
 
-@Preview
 @Composable
-private fun MainContent(navigateToNextScreen:()->Unit = {}) {
+private fun MainContent(
+    navigateForward:(firstName:String,
+                     lastName:String)->Unit,
+) {
    RegisterScreenSurface {
-
-        val viewModel : UsernameViewModel = hiltViewModel<UsernameViewModelImpl>()
+       val viewModel : UsernameViewModel = hiltViewModel<UsernameViewModelImpl>()
 
         Column(modifier = Modifier.fillMaxSize()) {
             ScreenHeadings()
@@ -54,14 +60,15 @@ private fun MainContent(navigateToNextScreen:()->Unit = {}) {
         Column(modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Bottom
         ) {
-            Row(horizontalArrangement = Arrangement.Center) {
                 ContinueButton(
                     enabled = viewModel.nextButtonEnabled.collectAsState(),
                     onClick = {
-                       navigateToNextScreen()
+                       navigateForward(
+                           viewModel.firstName.value,
+                           viewModel.lastName.value
+                       )
                     }
                 )
-            }
         }
     }
 }
@@ -102,7 +109,7 @@ private fun Fields(modifier: Modifier = Modifier,
             }
         )
         SurnameField(modifier = Modifier.padding(top = Dimens.medium.dp),
-            state = viewModel.surname.collectAsState(),
+            state = viewModel.lastName.collectAsState(),
             onValueChanged = {
                 viewModel.setSurname(it)
             }
@@ -158,19 +165,4 @@ fun FirstNameField(modifier:Modifier = Modifier,
         },
     )
 
-}
-
-@Composable
-private fun ContinueButton(modifier: Modifier = Modifier,
-                           enabled:State<Boolean>,
-                            onClick:()->Unit){
-    Button(
-        modifier = modifier.fillMaxWidth(),
-        onClick = {
-          onClick()
-        },
-        enabled = enabled.value
-    ) {
-        Text(text = stringResource(R.string.screen_user_name_continue))
-    }
 }

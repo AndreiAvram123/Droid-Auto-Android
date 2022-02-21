@@ -42,7 +42,7 @@ fun SignInScreen(navController: NavController){
     }
 }
 @Composable
-@Preview
+@Preview(showSystemUi = true, showBackground = true)
 fun MainUI(){
     Column(modifier = Modifier
         .fillMaxWidth()

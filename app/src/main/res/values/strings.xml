@@ -19,5 +19,18 @@
 
     <!--Screen email -->
     <string name="screen_email_email">Email</string>
+    <string name="screen_email_invalid_email_format">Uups..Seems like that\'s not a valid email</string>
+    <string name="screen_email_already_taken">Hmmm..Seems like this email is already used</string>
+    <string name="screen_email_unknown_error">That\'s on our side.It seems like we have a problem verifying this email </string>
 
+    <!--Screen password-->
+    <string name="screen_password_choose_password_title">Let\'s choose a password</string>
+    <string name="screen_password_enter_password_here">Enter a password here</string>
+    <string name="screen_password_reenter_password">Reenter your password here</string>
+    <string name="screen_password_reenter_password_invalid">Passwords do not match</string>
+    <string name="screen_password_include_lowercase_letter">Include at least one lowercase letter</string>
+    <string name="screen_password_include_uppercase_letter">Include at least one uppercase letter</string>
+    <string name="screen_password_include_number">Include at least one number</string>
+    <string name="screen_password_include_8_characters">Include at least 8 characters</string>
+    <string name="screen_password_include_special_character">Include at least one special character</string>
 </resources>
