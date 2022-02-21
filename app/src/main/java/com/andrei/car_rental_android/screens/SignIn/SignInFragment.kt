@@ -27,7 +27,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
-import com.andrei.car_rental_android.navigation.Route
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
@@ -36,7 +35,7 @@ import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 fun SignInScreen(navController: NavController){
     MainUI()
     Button(onClick ={
-        navController.navigate(Route.Register.name)
+        navController.navigate("register")
     } ) {
 
         Text(text = "navigate")

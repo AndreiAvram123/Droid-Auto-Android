@@ -1,11 +1,14 @@
 package com.andrei.car_rental_android.screens.register.password
 
+import com.andrei.car_rental_android.PasswordUtils.hasDigit
 import com.andrei.car_rental_android.PasswordUtils.hasLowercaseLetter
+import com.andrei.car_rental_android.PasswordUtils.hasMinRequiredLength
+import com.andrei.car_rental_android.PasswordUtils.hasSpecialChar
 import com.andrei.car_rental_android.PasswordUtils.hasUppercaseLetter
-import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -13,20 +16,29 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 abstract class CreatePasswordViewModel(coroutineProvider:CoroutineScope?):BaseViewModel(coroutineProvider) {
-    abstract val passwordState:StateFlow<String>
+    abstract val password:StateFlow<String>
+    abstract val reenteredPassword:StateFlow<String>
+    abstract val reenteredPasswordValidation:StateFlow<ReenteredPasswordValidation>
     abstract val passwordStrength:StateFlow<List<PasswordStrengthCriteria>?>
     abstract val nextButtonEnabled:StateFlow<Boolean>
 
     abstract fun setPassword(newPassword:String)
+    abstract fun setReenteredPassword(newReenteredPassword: String)
 
 
+
+    sealed class ReenteredPasswordValidation{
+        object NotValidated:ReenteredPasswordValidation()
+        object Valid:ReenteredPasswordValidation()
+        object Invalid:ReenteredPasswordValidation()
+    }
 
     enum class PasswordStrengthCriteria{
-         IncludesLowercaseLetter,
-         IncludesUppercaseLetter,
-         IncludesNumber,
-         IncludesSpecialCharacter,
-         IncludesMinNumberCharacters;
+        IncludesLowercaseLetter,
+        IncludesUppercaseLetter,
+        IncludesNumber,
+        IncludesSpecialCharacter,
+        IncludesMinNumberCharacters;
 
     }
 }
@@ -36,26 +48,51 @@ class CreatePasswordViewModelImpl @Inject constructor(
     coroutineProvider: CoroutineScope?
 ) : CreatePasswordViewModel(coroutineProvider){
 
-    override val passwordState: MutableStateFlow<String> = MutableStateFlow("")
+    override val password: MutableStateFlow<String> = MutableStateFlow("")
+    override val reenteredPassword: MutableStateFlow<String> = MutableStateFlow("")
+
+    override val reenteredPasswordValidation: MutableStateFlow<ReenteredPasswordValidation> = MutableStateFlow(ReenteredPasswordValidation.NotValidated)
     override val passwordStrength: MutableStateFlow<List<PasswordStrengthCriteria>?> = MutableStateFlow(null)
     override val nextButtonEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 
     override fun setPassword(newPassword: String) {
-       coroutineScope.launch {
-           passwordState.emit(newPassword)
-       }
+            password.tryEmit(newPassword)
     }
+
+    override fun setReenteredPassword(newReenteredPassword: String) {
+          reenteredPassword.tryEmit(newReenteredPassword)
+    }
+
+    private fun checkReenteredPassword() {
+        if(reenteredPassword.value.isNotBlank()){
+           if(reenteredPassword.value== password.value){
+              reenteredPasswordValidation.tryEmit(ReenteredPasswordValidation.Valid)
+           }else{
+               reenteredPasswordValidation.tryEmit(ReenteredPasswordValidation.Invalid)
+           }
+        }
+    }
+
+
     private suspend fun resetStates(){
-            nextButtonEnabled.emit(false)
-            passwordStrength.emit(null)
+        nextButtonEnabled.emit(false)
+        reenteredPasswordValidation.emit(ReenteredPasswordValidation.NotValidated)
+        reenteredPassword.emit("")
+        passwordStrength.emit(null)
     }
     init {
         coroutineScope.launch {
-            passwordState.collectLatest {
+            password.collectLatest {
                 resetStates()
                 evaluatePasswordStrength()
                 checkShouldEnableNextButton()
+            }
+        }
+        coroutineScope.launch {
+            reenteredPassword.collectLatest {
+                delay(1000L)
+                checkReenteredPassword()
             }
         }
     }
@@ -66,7 +103,7 @@ class CreatePasswordViewModelImpl @Inject constructor(
 
 
     private fun evaluatePasswordStrength() {
-        val password = passwordState.value
+        val password = password.value
         if (password.isNotBlank()) {
             val passwordStrengthList = mutableListOf<PasswordStrengthCriteria>()
             PasswordStrengthCriteria.values().forEach { criteria ->
@@ -81,9 +118,22 @@ class CreatePasswordViewModelImpl @Inject constructor(
                             passwordStrengthList.add(PasswordStrengthCriteria.IncludesUppercaseLetter)
                         }
                     }
-                    PasswordStrengthCriteria.IncludesNumber -> R.string.screen_password_include_number
-                    PasswordStrengthCriteria.IncludesSpecialCharacter -> R.string.screen_password_include_special_character
-                    PasswordStrengthCriteria.IncludesMinNumberCharacters -> R.string.screen_password_include_8_characters
+                    PasswordStrengthCriteria.IncludesNumber ->{
+                       if(password.hasDigit()){
+                           passwordStrengthList.add(PasswordStrengthCriteria.IncludesNumber)
+                       }
+                    }
+                    PasswordStrengthCriteria.IncludesSpecialCharacter -> {
+                        if(password.hasSpecialChar()){
+                            passwordStrengthList.add(PasswordStrengthCriteria.IncludesSpecialCharacter)
+                        }
+                    }
+
+                    PasswordStrengthCriteria.IncludesMinNumberCharacters -> {
+                       if(password.hasMinRequiredLength()){
+                           passwordStrengthList.add(PasswordStrengthCriteria.IncludesMinNumberCharacters)
+                       }
+                    }
                 }
             }
 

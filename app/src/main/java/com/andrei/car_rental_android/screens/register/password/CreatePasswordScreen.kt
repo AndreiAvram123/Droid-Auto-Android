@@ -13,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,6 +22,7 @@ import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
+import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 @Composable
 fun CreatePasswordScreen(navController: NavController){
@@ -56,25 +58,36 @@ private fun CenterContent(){
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center
     ){
+
         PasswordTextField(
-            state = viewModel.passwordState.collectAsState(),
+            state = viewModel.password.collectAsState(),
             onValueChanged = {
                 viewModel.setPassword(it)
             }
         )
         PasswordStrengthIndicators(
+            modifier = Modifier.padding(top = Dimens.medium.dp),
             passwordStrengthState = viewModel.passwordStrength.collectAsState()
         )
 
+       ReenterPasswordTextField(
+           modifier = Modifier.padding(top = Dimens.medium.dp),
+           state = viewModel.reenteredPassword.collectAsState() ,
+           onValueChanged = {
+               viewModel.setReenteredPassword(it)
+           },
+           validationState = viewModel.reenteredPasswordValidation.collectAsState()
+       )
     }
 }
+
 
 
 @Composable
 private fun PasswordTextField(
     modifier: Modifier = Modifier,
     state: State<String>,
-    onValueChanged:(newValue:String)->Unit,
+    onValueChanged:(newValue:String)->Unit
 ){
 
     OutlinedTextField(
@@ -83,8 +96,33 @@ private fun PasswordTextField(
         onValueChange = onValueChanged,
         placeholder = {
             Text(text = stringResource(R.string.screen_password_enter_password_here))
-        }
+        },
+        visualTransformation = PasswordVisualTransformation()
     )
+
+}
+
+@Composable
+private fun ReenterPasswordTextField(
+    modifier: Modifier = Modifier,
+    state:State<String>,
+    onValueChanged: (newValue: String) -> Unit,
+    validationState:State<CreatePasswordViewModel.ReenteredPasswordValidation>
+){
+    val isError = validationState.value is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid
+    OutlinedTextField(
+        modifier = modifier.fillMaxWidth(),
+        value = state.value,
+        onValueChange = onValueChanged,
+        placeholder = {
+            Text(text =  stringResource(R.string.screen_password_reenter_password))
+        },
+        visualTransformation = PasswordVisualTransformation(),
+        isError = isError
+    )
+    if(isError){
+        TextFieldErrorMessage(stringResource(R.string.screen_password_reenter_password_invalid))
+    }
 }
 
 @Composable
@@ -93,9 +131,7 @@ private fun PasswordStrengthIndicators(
     passwordStrengthState:State<List<CreatePasswordViewModel.PasswordStrengthCriteria>?>,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = Dimens.medium.dp),
+        modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.Start
     ) {
         val passwordStrength = passwordStrengthState.value

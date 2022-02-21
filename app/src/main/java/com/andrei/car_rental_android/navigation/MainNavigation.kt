@@ -44,16 +44,10 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
         composable(
             route = Screen.RegistrationScreen.RegisterEmail.route,
             arguments = RegisterEmailNavHelper.getArguments()
-        ) {backStack ->
-
-            RegisterEmailScreen(navController,RegisterEmailNavHelper.parseArguments(backStack))
+        ) { backStack -> RegisterEmailScreen(navController,RegisterEmailNavHelper.parseArguments(backStack))
         }
         composable(route = Screen.RegistrationScreen.PasswordScreen.route) {
             CreatePasswordScreen(navController)
         }
     }
-}
-
-sealed class Route(val name:String){
-    object Register: Route("Register")
 }
