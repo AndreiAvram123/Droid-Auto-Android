@@ -102,7 +102,7 @@ private fun PasswordStrengthIndicators(
 
         CreatePasswordViewModel.PasswordStrengthCriteria.values().forEach { criteria ->
             PasswordStrengthIndicator(
-                text = stringResource(criteria.hintStringResource()),
+                text = stringResource(getHintResourceForCriteria(criteria)),
                 state = when {
                     passwordStrength == null -> PasswordIndicatorState.Default
                     passwordStrength.contains(criteria) -> PasswordIndicatorState.Valid
@@ -113,13 +113,13 @@ private fun PasswordStrengthIndicators(
 
     }
 }
-fun CreatePasswordViewModel.PasswordStrengthCriteria.hintStringResource():Int{
-    return when(this){
-         CreatePasswordViewModel.PasswordStrengthCriteria.IncludesLowercaseLetter-> R.string.screen_password_include_lowercase_letter
-         CreatePasswordViewModel.PasswordStrengthCriteria.IncludesUppercaseLetter-> R.string.screen_password_include_uppercase_letter
-         CreatePasswordViewModel.PasswordStrengthCriteria.IncludesNumber -> R.string.screen_password_include_number
-         CreatePasswordViewModel.PasswordStrengthCriteria.IncludesSpecialCharacter -> R.string.screen_password_include_special_character
-         CreatePasswordViewModel.PasswordStrengthCriteria.IncludesMinNumberCharacters -> R.string.screen_password_include_8_characters
+fun getHintResourceForCriteria(criteria:CreatePasswordViewModel.PasswordStrengthCriteria):Int{
+    return when(criteria){
+        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesLowercaseLetter-> R.string.screen_password_include_lowercase_letter
+        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesUppercaseLetter-> R.string.screen_password_include_uppercase_letter
+        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesNumber -> R.string.screen_password_include_number
+        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesSpecialCharacter -> R.string.screen_password_include_special_character
+        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesMinNumberCharacters -> R.string.screen_password_include_8_characters
     }
 }
 
@@ -133,7 +133,10 @@ private fun PasswordStrengthIndicator(
 ){
     Row(modifier = Modifier.fillMaxWidth()) {
        PasswordStrengthCriteriaIcon(state = state)
-        Text(text = text)
+       Text(
+           text = text,
+           fontSize = Dimens.medium.sp
+       )
     }
 
 }

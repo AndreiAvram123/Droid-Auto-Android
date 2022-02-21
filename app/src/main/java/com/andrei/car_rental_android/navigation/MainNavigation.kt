@@ -18,12 +18,12 @@ fun MainNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.SignInScreen.screenName
+        startDestination = Screen.SignInScreen.route
     ) {
-        composable(route = Screen.SignInScreen.screenName) {
+        composable(route = Screen.SignInScreen.route) {
             SignInScreen(navController)
         }
-        composable(route = Screen.HomeScreen.screenName) {
+        composable(route = Screen.HomeScreen.route) {
             HomeScreen(navController)
         }
         registerGraph(navController)
@@ -34,17 +34,21 @@ fun MainNavigation() {
 fun NavGraphBuilder.registerGraph(navController:NavController) {
     //register navigation
     navigation(
-        startDestination = Screen.RegistrationScreen.PasswordScreen.screenName,
+        startDestination = Screen.RegistrationScreen.NamesScreen.route,
         route = "register"
     ) {
 
-        composable(route = Screen.RegistrationScreen.NamesScreen.screenName) {
+        composable(route = Screen.RegistrationScreen.NamesScreen.route) {
             FirstNameLastNameScreen(navController)
         }
-        composable(route = Screen.RegistrationScreen.EmailScreen.screenName) {
-            RegisterEmailScreen(navController)
+        composable(
+            route = Screen.RegistrationScreen.RegisterEmail.route,
+            arguments = RegisterEmailNavHelper.getArguments()
+        ) {backStack ->
+
+            RegisterEmailScreen(navController,RegisterEmailNavHelper.parseArguments(backStack))
         }
-        composable(route = Screen.RegistrationScreen.PasswordScreen.screenName) {
+        composable(route = Screen.RegistrationScreen.PasswordScreen.route) {
             CreatePasswordScreen(navController)
         }
     }

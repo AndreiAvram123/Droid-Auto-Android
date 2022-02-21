@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 abstract class UsernameViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
     abstract val firstName:StateFlow<String>
-    abstract val surname:StateFlow<String>
+    abstract val lastName:StateFlow<String>
     abstract fun setFirstName(newName:String)
     abstract fun setSurname(newName:String)
     abstract val nextButtonEnabled:StateFlow<Boolean>
@@ -25,7 +25,7 @@ class UsernameViewModelImpl @Inject constructor(
 
     override val firstName: MutableStateFlow<String> = MutableStateFlow("")
 
-    override val surname: MutableStateFlow<String> = MutableStateFlow("")
+    override val lastName: MutableStateFlow<String> = MutableStateFlow("")
 
     override fun setFirstName(newName: String) {
         coroutineScope.launch {
@@ -35,7 +35,7 @@ class UsernameViewModelImpl @Inject constructor(
 
     override fun setSurname(newName: String) {
         coroutineScope.launch {
-            surname.emit(newName)
+            lastName.emit(newName)
         }
     }
 
@@ -44,7 +44,7 @@ class UsernameViewModelImpl @Inject constructor(
 
     init {
         coroutineScope.launch {
-            combine(firstName, surname){
+            combine(firstName, lastName){
                 firstNameValue,surnameValue -> firstNameValue.isNotBlank() && surnameValue.isNotBlank()
             }.collect {
                 nextButtonEnabled.emit(it)

@@ -11,36 +11,48 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
+import com.andrei.car_rental_android.navigation.CreatePasswordNavHelper
+import com.andrei.car_rental_android.navigation.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 
 @Composable
-fun RegisterEmailScreen(navController: NavController) {
+fun RegisterEmailScreen(
+    navController: NavController,
+    registerEmailNavArgs: RegisterEmailNavHelper.RegisterEmailNavArgs
+) {
     RegisterScreenSurface {
-        MainContent(navigateForward = {
-            //TODO
-            //add navigation to next screen
+        MainContent(navigateForward = {email->
+            navController.navigate(CreatePasswordNavHelper.getDestination(
+                CreatePasswordNavHelper.CreatePasswordNavArgs(
+                    firstName = registerEmailNavArgs.firstName,
+                    lastName = registerEmailNavArgs.lastName,
+                    email = email
+                )
+            ))
         })
     }
 }
 
 
 @Composable
-@Preview(showBackground = true, showSystemUi = true)
-private fun MainContent(navigateForward : ()-> Unit = {}){
+private fun MainContent(
+    navigateForward : (email:String) -> Unit
+){
     val viewModel:RegisterEmailViewModel = hiltViewModel<RegisterEmailViewModelImpl>()
-            CenterContent(viewModel = viewModel)
-            BottomContent(
-                viewModel = viewModel,
-                navigateForward = navigateForward
-            )
+    CenterContent(viewModel = viewModel)
+    BottomContent(
+        viewModel = viewModel,
+        navigateForward = {
+            navigateForward(viewModel.email.value)
+        }
+    )
 }
 
 @Composable
@@ -110,18 +122,18 @@ private fun EmailTextFieldColumn(
 fun EmailValidationError(
     validationState:State<RegisterEmailViewModel.EmailValidationState>
 ){
-  if(validationState.value is RegisterEmailViewModel.EmailValidationState.EmailValidationError){
-      val errorMessage = when(validationState.value){
-          is RegisterEmailViewModel.EmailValidationState.EmailValidationError.InvalidFormat -> stringResource(
-              R.string.screen_email_invalid_email_format
-          )
-          is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> stringResource(
-              R.string.screen_email_already_taken
-          )
-          else -> stringResource(R.string.screen_email_unknown_error)
-      }
-      TextFieldErrorMessage(errorMessage)
-  }
+    if(validationState.value is RegisterEmailViewModel.EmailValidationState.EmailValidationError){
+        val errorMessage = when(validationState.value){
+            is RegisterEmailViewModel.EmailValidationState.EmailValidationError.InvalidFormat -> stringResource(
+                R.string.screen_email_invalid_email_format
+            )
+            is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> stringResource(
+                R.string.screen_email_already_taken
+            )
+            else -> stringResource(R.string.screen_email_unknown_error)
+        }
+        TextFieldErrorMessage(errorMessage)
+    }
 }
 
 
