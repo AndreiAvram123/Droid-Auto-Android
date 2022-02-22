@@ -66,7 +66,10 @@ private fun CenterContent(){
             }
         )
         PasswordStrengthIndicators(
-            modifier = Modifier.padding(top = Dimens.medium.dp),
+            modifier = Modifier.padding(
+                       horizontal = Dimens.small.dp,
+                       vertical = Dimens.medium.dp
+            ),
             passwordStrengthState = viewModel.passwordStrength.collectAsState()
         )
 
@@ -167,7 +170,7 @@ private fun PasswordStrengthIndicator(
     text:String,
     state:PasswordIndicatorState
 ){
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Row(modifier = Modifier.height(24.dp).fillMaxWidth()) {
        PasswordStrengthCriteriaIcon(state = state)
        Text(
            text = text,
@@ -183,7 +186,7 @@ private fun PasswordStrengthCriteriaIcon(
 ){
     when(state){
         is PasswordIndicatorState.Default-> {
-          //no icon
+
         }
         is PasswordIndicatorState.Valid->{
             Icon(modifier = modifier, imageVector = Icons.Filled.Check , contentDescription = null)

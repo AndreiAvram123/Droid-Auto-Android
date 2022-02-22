@@ -34,7 +34,7 @@ fun MainNavigation() {
 fun NavGraphBuilder.registerGraph(navController:NavController) {
     //register navigation
     navigation(
-        startDestination = Screen.RegistrationScreen.NamesScreen.route,
+        startDestination = Screen.RegistrationScreen.PasswordScreen.route,
         route = "register"
     ) {
 
@@ -42,7 +42,7 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
             FirstNameLastNameScreen(navController)
         }
         composable(
-            route = Screen.RegistrationScreen.RegisterEmail.route,
+            route = Screen.RegistrationScreen.PasswordScreen.route,
             arguments = RegisterEmailNavHelper.getArguments()
         ) { backStack -> RegisterEmailScreen(navController,RegisterEmailNavHelper.parseArguments(backStack))
         }

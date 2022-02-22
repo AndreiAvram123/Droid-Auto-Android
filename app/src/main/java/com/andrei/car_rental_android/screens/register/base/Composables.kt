@@ -18,7 +18,7 @@ fun RegisterScreenSurface(content : @Composable () -> Unit) {
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colors.surface)
-        .padding(horizontal = Dimens.medium.dp)){
+        .padding(horizontal = Dimens.small.dp)){
             content()
         }
 }
