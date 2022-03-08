@@ -2,9 +2,9 @@ package com.andrei.car_rental_android.screens.register.base
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
@@ -24,9 +24,31 @@ fun RegisterScreenSurface(content : @Composable () -> Unit) {
 }
 
 @Composable
+fun RegisterBackButton(
+    modifier: Modifier = Modifier,
+    navigateBack:()->Unit
+){
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Start
+    ) {
+      IconButton(onClick = {
+          navigateBack()
+      }) {
+          Icon(
+              imageVector = Icons.Filled.ArrowBack,
+              contentDescription ="Back button"
+          )
+      }
+    }
+}
+
+@Composable
 internal fun ContinueButton(enabled: State<Boolean>, onClick:()->Unit){
     Row(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 100.dp),
         horizontalArrangement = Arrangement.Center
     ) {
         Button(
