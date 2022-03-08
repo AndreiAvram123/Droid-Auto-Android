@@ -34,7 +34,7 @@ fun MainNavigation() {
 fun NavGraphBuilder.registerGraph(navController:NavController) {
     //register navigation
     navigation(
-        startDestination = Screen.RegistrationScreen.PasswordScreen.route,
+        startDestination = Screen.RegistrationScreen.NamesScreen.route,
         route = "register"
     ) {
 

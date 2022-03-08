@@ -1,8 +1,8 @@
 package com.andrei.car_rental_android.screens.SignIn
 
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
-import com.andrei.car_rental_android.engine.repositories.LoginRepository
 import com.andrei.car_rental_android.engine.configuration.RequestState
+import com.andrei.car_rental_android.engine.repositories.LoginRepository
 import com.andrei.car_rental_android.engine.request.LoginRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +25,7 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
 
     sealed class LoginUIState {
         object Default:LoginUIState()
-        object LoggedIn:LoginUIState()
+        data class LoggedIn(val verified:Boolean):LoginUIState()
         object Loading:LoginUIState()
         object ServerError:LoginUIState()
         object InvalidCredentials:LoginUIState()
@@ -73,16 +73,16 @@ class LoginViewModelImpl @Inject constructor(
                  username = usernameState.value,
                  password = passwordState.value
              )
-             loginRepository.login(loginRequest).collect {
-                 when(it){
+             loginRepository.login(loginRequest).collect {response->
+                 when(response){
                      is RequestState.Success ->{
-                         loginUiState.emit(LoginUIState.LoggedIn)
+                         loginUiState.emit(LoginUIState.LoggedIn(response.data.isEmailVerified))
                      }
                      is RequestState.Loading -> {
                          loginUiState.emit(LoginUIState.Loading)
                      }
                      is RequestState.Error -> {
-                         if(it.code == 401){
+                         if(response.code == 401){
                             loginUiState.emit(LoginUIState.InvalidCredentials)
                          }else{
                              loginUiState.emit(LoginUIState.ServerError)

@@ -52,13 +52,21 @@ private fun TopContent(){
 }
 
 @Composable
-private fun CenterContent(){
-    val viewModel = hiltViewModel<CreatePasswordViewModelImpl>()
+private fun CenterColumn (
+    modifier: Modifier = Modifier,
+    content: @Composable ()-> Unit){
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center
     ){
+        content()
+    }
+}
 
+@Composable
+private fun CenterContent() {
+    val viewModel = hiltViewModel<CreatePasswordViewModelImpl>()
+    CenterColumn {
         PasswordTextField(
             state = viewModel.password.collectAsState(),
             onValueChanged = {
@@ -67,20 +75,20 @@ private fun CenterContent(){
         )
         PasswordStrengthIndicators(
             modifier = Modifier.padding(
-                       horizontal = Dimens.small.dp,
-                       vertical = Dimens.medium.dp
+                horizontal = Dimens.small.dp,
+                vertical = Dimens.medium.dp
             ),
             passwordStrengthState = viewModel.passwordStrength.collectAsState()
         )
 
-       ReenterPasswordTextField(
-           modifier = Modifier.padding(top = Dimens.medium.dp),
-           state = viewModel.reenteredPassword.collectAsState() ,
-           onValueChanged = {
-               viewModel.setReenteredPassword(it)
-           },
-           validationState = viewModel.reenteredPasswordValidation.collectAsState()
-       )
+        ReenterPasswordTextField(
+            modifier = Modifier.padding(top = Dimens.medium.dp),
+            state = viewModel.reenteredPassword.collectAsState(),
+            onValueChanged = {
+                viewModel.setReenteredPassword(it)
+            },
+            validationState = viewModel.reenteredPasswordValidation.collectAsState()
+        )
     }
 }
 
@@ -170,7 +178,9 @@ private fun PasswordStrengthIndicator(
     text:String,
     state:PasswordIndicatorState
 ){
-    Row(modifier = Modifier.height(24.dp).fillMaxWidth()) {
+    Row(modifier = Modifier
+        .height(24.dp)
+        .fillMaxWidth()) {
        PasswordStrengthCriteriaIcon(state = state)
        Text(
            text = text,
