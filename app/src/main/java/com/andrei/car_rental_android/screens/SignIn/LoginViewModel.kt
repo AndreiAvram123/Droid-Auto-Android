@@ -69,27 +69,32 @@ class LoginViewModelImpl @Inject constructor(
 
     override fun login() {
          coroutineScope.launch {
-             val loginRequest = LoginRequest(
-                 username = usernameState.value,
-                 password = passwordState.value
-             )
-             loginRepository.login(loginRequest).collect {response->
-                 when(response){
-                     is RequestState.Success ->{
-                         loginUiState.emit(LoginUIState.LoggedIn(response.data.isEmailVerified))
-                     }
-                     is RequestState.Loading -> {
-                         loginUiState.emit(LoginUIState.Loading)
-                     }
-                     is RequestState.Error -> {
-                         if(response.code == 401){
-                            loginUiState.emit(LoginUIState.InvalidCredentials)
-                         }else{
+             val username = usernameState.value.trim()
+             val password = passwordState.value.trim()
+
+             if (username.isNotBlank() && password.isNotBlank()) {
+                 val loginRequest = LoginRequest(
+                     username = username,
+                     password = password
+                 )
+                 loginRepository.login(loginRequest).collect { response ->
+                     when (response) {
+                         is RequestState.Success -> {
+                             loginUiState.emit(LoginUIState.LoggedIn(response.data.isEmailVerified))
+                         }
+                         is RequestState.Loading -> {
+                             loginUiState.emit(LoginUIState.Loading)
+                         }
+                         is RequestState.Error -> {
+                             if (response.code == 401) {
+                                 loginUiState.emit(LoginUIState.InvalidCredentials)
+                             } else {
+                                 loginUiState.emit(LoginUIState.ServerError)
+                             }
+                         }
+                         is RequestState.ConnectionError -> {
                              loginUiState.emit(LoginUIState.ServerError)
                          }
-                     }
-                     is RequestState.ConnectionError -> {
-                         loginUiState.emit(LoginUIState.ServerError)
                      }
                  }
              }

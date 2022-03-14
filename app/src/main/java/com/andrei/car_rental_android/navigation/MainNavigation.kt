@@ -42,7 +42,7 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
             FirstNameLastNameScreen(navController)
         }
         composable(
-            route = Screen.RegistrationScreen.PasswordScreen.route,
+            route = Screen.RegistrationScreen.RegisterEmail.route,
             arguments = RegisterEmailNavHelper.getArguments()
         ) { backStack -> RegisterEmailScreen(navController,RegisterEmailNavHelper.parseArguments(backStack))
         }

@@ -19,10 +19,11 @@
     <string name="screen_user_name_continue">Continue</string>
 
     <!--Screen email -->
-    <string name="screen_email_email">Email</string>
+    <string name="screen_email_enter_email_hint">Email</string>
     <string name="screen_email_invalid_email_format">Uups..Seems like that\'s not a valid email</string>
     <string name="screen_email_already_taken">Hmmm..Seems like this email is already used</string>
     <string name="screen_email_unknown_error">That\'s on our side.It seems like we have a problem verifying this email </string>
+    <string name="screen_email_provide_email">Please provide us with your email </string>
 
     <!--Screen password-->
     <string name="screen_password_choose_password_title">Let\'s choose a password</string>

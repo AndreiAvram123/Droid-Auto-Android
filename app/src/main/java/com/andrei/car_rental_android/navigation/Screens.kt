@@ -7,7 +7,7 @@ sealed class Screen(val route:String){
     sealed class RegistrationScreen(screenName:String) : Screen(screenName){
         object NamesScreen: RegistrationScreen("NamesScreen")
         object RegisterEmail:RegistrationScreen(RegisterEmailNavHelper.route)
-        object PasswordScreen:RegistrationScreen("PasswordScreen")
+        object PasswordScreen:RegistrationScreen(CreatePasswordNavHelper.route)
     }
 }
 

@@ -60,7 +60,8 @@ fun MainContent(
             )
 
             val isAuthenticating = loginUIState.value is LoginViewModel.LoginUIState.Loading
-             AuthenticationButtons(isAuthenticating = isAuthenticating, login = {
+             AuthenticationButtons(
+                 isAuthenticating = isAuthenticating, performLogin = {
                  loginViewModel.login()
              }, navigateToRegister = {
                  navigator.navigateToRegister()
@@ -164,14 +165,14 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) 
 @Composable
 private fun AuthenticationButtons(
     isAuthenticating:Boolean,
-    login:()->Unit,
+    performLogin:()->Unit,
     navigateToRegister: () -> Unit
 ){
     if(isAuthenticating){
         CircularProgressIndicator()
     }else{
         SignInButton(Modifier.padding(top = Dimens.medium.dp)){
-            login()
+            performLogin()
         }
         RegisterButton(Modifier.padding(top = Dimens.medium.dp)) {
             navigateToRegister()
