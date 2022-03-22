@@ -1,8 +1,7 @@
 package com.andrei.car_rental_android.screens.register.Email
 
 import androidx.navigation.NavController
-import com.andrei.car_rental_android.navigation.CreatePasswordNavHelper
-import com.andrei.car_rental_android.navigation.RegisterEmailNavHelper
+import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 
 interface RegisterEmailNavigator {
     fun navigateBack()

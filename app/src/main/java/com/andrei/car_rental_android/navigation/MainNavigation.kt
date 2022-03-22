@@ -9,8 +9,12 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.andrei.car_rental_android.screens.Home.HomeScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
+import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
 import com.andrei.car_rental_android.screens.register.FirstNameLastNameScreen
+import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountNavHelper
+import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountScreen
+import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordScreen
 
 @Composable
@@ -44,7 +48,7 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
         composable(
             route = Screen.RegistrationScreen.RegisterEmail.route,
             arguments = RegisterEmailNavHelper.getArguments()
-        ) { backStack -> RegisterEmailScreen(navController,RegisterEmailNavHelper.parseArguments(backStack))
+        ) { backStack -> RegisterEmailScreen(navController, RegisterEmailNavHelper.parseArguments(backStack))
         }
         composable(
             route = Screen.RegistrationScreen.PasswordScreen.route,
@@ -52,5 +56,12 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
         ) {
             backStack -> CreatePasswordScreen(navController, CreatePasswordNavHelper.parseArguments(backStack))
         }
+        composable(
+            route = Screen.RegistrationScreen.CreatingAccount.route,
+            arguments = CreatingAccountNavHelper.getArguments()
+        ){
+            backStack -> CreatingAccountScreen(navController, CreatingAccountNavHelper.parseArguments(backStack) )
+        }
+
     }
 }

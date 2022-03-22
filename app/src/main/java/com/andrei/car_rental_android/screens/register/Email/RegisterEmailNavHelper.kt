@@ -1,4 +1,4 @@
-package com.andrei.car_rental_android.navigation
+package com.andrei.car_rental_android.screens.register.Email
 
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry

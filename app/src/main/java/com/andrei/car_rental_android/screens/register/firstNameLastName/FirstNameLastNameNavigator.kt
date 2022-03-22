@@ -1,7 +1,7 @@
 package com.andrei.car_rental_android.screens.register.firstNameLastName
 
 import androidx.navigation.NavController
-import com.andrei.car_rental_android.navigation.RegisterEmailNavHelper
+import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 
 interface FirstNameLastNameNavigator {
     fun navigateToPasswordScreen(firstName:String,lastName:String)

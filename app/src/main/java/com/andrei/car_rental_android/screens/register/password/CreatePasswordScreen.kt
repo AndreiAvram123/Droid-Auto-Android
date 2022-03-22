@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
-import com.andrei.car_rental_android.navigation.CreatePasswordNavHelper
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
@@ -28,13 +27,14 @@ import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 @Composable
 fun CreatePasswordScreen(
     navController: NavController,
-    arguments :CreatePasswordNavHelper.CreatePasswordNavArgs
+    arguments : CreatePasswordNavHelper.CreatePasswordNavArgs
 ){
     val navigator = CreatePasswordNavigatorImpl(
         navController = navController,
-        navArgs = arguments
+        args = arguments
     );
    MainContent(navigator)
+
 }
 
 @Composable

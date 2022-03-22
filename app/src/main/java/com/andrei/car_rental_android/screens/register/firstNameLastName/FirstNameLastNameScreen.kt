@@ -37,6 +37,7 @@ fun FirstNameLastNameScreen(
     RegisterScreenSurface {
         MainContent(navigator = navigator)
     }
+
 }
 
 @Composable
