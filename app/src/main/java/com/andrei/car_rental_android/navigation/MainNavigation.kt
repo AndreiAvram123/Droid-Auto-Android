@@ -60,7 +60,7 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
             route = Screen.RegistrationScreen.CreatingAccount.route,
             arguments = CreatingAccountNavHelper.getArguments()
         ){
-            backStack -> CreatingAccountScreen(navController, CreatingAccountNavHelper.parseArguments(backStack) )
+             CreatingAccountScreen(navController)
         }
 
     }

@@ -14,8 +14,10 @@ import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.ui.Dimens
 
 @Composable
-fun RegisterScreenSurface(content : @Composable () -> Unit) {
-    Box(modifier = Modifier
+fun RegisterScreenSurface(
+    modifier:Modifier = Modifier,
+    content : @Composable () -> Unit) {
+    Box(modifier = modifier
         .fillMaxSize()
         .background(MaterialTheme.colors.surface)
         .padding(horizontal = Dimens.small.dp)){

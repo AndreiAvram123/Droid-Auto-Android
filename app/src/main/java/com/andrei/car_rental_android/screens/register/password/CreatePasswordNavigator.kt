@@ -16,7 +16,7 @@ class CreatePasswordNavigatorImpl(
     override fun navigateToCreatingAccountScreen(password:String) {
        navController.navigate(
            CreatingAccountNavHelper.getDestination(
-               CreatingAccountNavHelper.CreatingAccountNavArgs(
+               CreatingAccountNavHelper.Args(
                    firstName = args.firstName,
                    lastName = args.lastName,
                    email = args.email,

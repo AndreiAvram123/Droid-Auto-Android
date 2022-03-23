@@ -35,4 +35,11 @@
     <string name="screen_password_include_number">Include at least one number</string>
     <string name="screen_password_include_8_characters">Include at least 8 characters</string>
     <string name="screen_password_include_special_character">Include at least one special character</string>
+
+
+    <!--Screen creating account-->
+    <string name="screen_creating_account_error">That\'s on our side.It seems like there was a problem creating your account</string>
+    <string name="screen_creating_account_success">We successfully created your account and sent you a verification email</string>
+    <string name="screen_creating_account_try_again">Try again</string>
+    <string name="screen_creating_account_navigate_to_login">Navigate to login</string>
 </resources>
