@@ -30,14 +30,15 @@ import com.andrei.car_rental_android.ui.Dimens
 fun CreatingAccountScreen(
     navController: NavController
 ){
+    val navigator = CreatingAccountNavigatorImpl(navController)
     RegisterScreenSurface {
-        MainContent()
+        MainContent(navigator)
     }
 }
 
 @Composable
 private fun MainContent(
-
+   navigator:CreatingAccountNavigator
 ){
     val viewModel = hiltViewModel<CreatingAccountViewModelImpl>();
     when(viewModel.creatingAccountState.collectAsState().value){
@@ -49,8 +50,7 @@ private fun MainContent(
         }
         is CreatingAccountState.Created->{
             SuccessContent{
-                //todo
-                //navigate
+               navigator.navigateToSignIn()
             }
         }
         is CreatingAccountState.Error ->{
@@ -83,7 +83,13 @@ private fun SuccessContent(
     navigateToLogin: () -> Unit
 ){
      CenterColumn {
-          Animation(lottieCompositionSpec = LottieCompositionSpec.RawRes(R.raw.email_sent))
+         val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.email_sent))
+         LottieAnimation(
+             modifier = Modifier.fillMaxSize(0.5f),
+             composition =composition ,
+             iterations = 1,
+             speed = 0.8f
+         )
           Text(
               text = stringResource(R.string.screen_creating_account_success),
               textAlign = TextAlign.Center,
