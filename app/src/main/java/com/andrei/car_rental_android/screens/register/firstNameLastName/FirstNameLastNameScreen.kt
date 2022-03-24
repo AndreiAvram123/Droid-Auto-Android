@@ -8,7 +8,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
@@ -20,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
+import com.andrei.car_rental_android.screens.register.base.CenterColumn
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterBackButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
@@ -44,7 +44,7 @@ fun FirstNameLastNameScreen(
 private fun MainContent(
     navigator:FirstNameLastNameNavigator
 ) {
-    val viewModel : UsernameViewModel = hiltViewModel<UsernameViewModelImpl>()
+    val viewModel : FirstNameLastNameViewModel = hiltViewModel<FirstNameLastNameViewModelImpl>()
 
     TopSection(navigateBack = {
         navigator.navigateBack()
@@ -66,7 +66,7 @@ private fun MainContent(
 
 @Composable
 private fun BottomSection(
-    viewModel: UsernameViewModel,
+    viewModel: FirstNameLastNameViewModel,
     navigateForward:()->Unit
 ){
     Column(modifier = Modifier.fillMaxSize(),
@@ -117,12 +117,8 @@ private fun ScreenHeadings(modifier: Modifier = Modifier){
 
 @Composable
 private fun CenterSection(modifier: Modifier = Modifier,
-                         viewModel: UsernameViewModel){
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+                         viewModel: FirstNameLastNameViewModel){
+    CenterColumn{
         FirstNameField(
             state = viewModel.firstName.collectAsState(),
             onValueChanged = {
@@ -149,7 +145,7 @@ fun SurnameField(modifier: Modifier = Modifier,
         modifier = modifier.fillMaxWidth(),
         value = state.value,
         onValueChange = {
-            onValueChanged(it)
+            onValueChanged(it.trim())
         },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions =  KeyboardActions(onNext = {
@@ -172,7 +168,7 @@ fun FirstNameField(modifier:Modifier = Modifier,
         modifier = modifier.fillMaxWidth(),
         value = state.value,
         onValueChange = {
-            onValueChanged(it)
+            onValueChanged(it.trim())
         },
         keyboardOptions = KeyboardOptions(
             capitalization = KeyboardCapitalization.Sentences,

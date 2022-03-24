@@ -39,7 +39,7 @@
 
     <!--Screen creating account-->
     <string name="screen_creating_account_error">That\'s on our side.It seems like there was a problem creating your account</string>
-    <string name="screen_creating_account_success">We successfully created your account and sent you a verification email</string>
+    <string name="screen_creating_account_success">We successfully created your account. We also sent you a verification email</string>
     <string name="screen_creating_account_try_again">Try again</string>
     <string name="screen_creating_account_navigate_to_login">Navigate to login</string>
 </resources>

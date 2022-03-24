@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,19 @@ fun RegisterBackButton(
     }
 }
 
+@Composable
+fun CenterColumn(
+    modifier:Modifier = Modifier,
+    content : @Composable ()->Unit
+){
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ){
+        content()
+    }
+}
 @Composable
 internal fun ContinueButton(enabled: State<Boolean>, onClick:()->Unit){
     Row(

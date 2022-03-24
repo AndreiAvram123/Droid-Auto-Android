@@ -32,7 +32,7 @@ fun CreatePasswordScreen(
     val navigator = CreatePasswordNavigatorImpl(
         navController = navController,
         args = arguments
-    );
+    )
    MainContent(navigator)
 
 }
@@ -78,7 +78,7 @@ private fun CenterContent(
         PasswordTextField(
             state = viewModel.password.collectAsState(),
             onValueChanged = {
-                viewModel.setPassword(it)
+                viewModel.setPassword(it.trim())
             }
         )
         PasswordStrengthIndicators(
@@ -88,14 +88,13 @@ private fun CenterContent(
             ),
             passwordStrengthState = viewModel.passwordStrength.collectAsState()
         )
-
         ReenterPasswordTextField(
             modifier = Modifier.padding(top = Dimens.medium.dp),
             state = viewModel.reenteredPassword.collectAsState(),
             onValueChanged = {
-                viewModel.setReenteredPassword(it)
+                viewModel.setReenteredPassword(it.trim())
             },
-            validationState = viewModel.reenteredPasswordValidation.collectAsState()
+            isError = viewModel.reenteredPasswordValidation.collectAsState().value is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid
         )
     }
 }
@@ -127,6 +126,7 @@ private fun PasswordTextField(
     OutlinedTextField(
         modifier = modifier.fillMaxWidth(),
         value = state.value ,
+        singleLine = true,
         onValueChange = onValueChanged,
         placeholder = {
             Text(text = stringResource(R.string.screen_password_enter_password_here))
@@ -141,12 +141,12 @@ private fun ReenterPasswordTextField(
     modifier: Modifier = Modifier,
     state:State<String>,
     onValueChanged: (newValue: String) -> Unit,
-    validationState:State<CreatePasswordViewModel.ReenteredPasswordValidation>
+    isError:Boolean
 ){
-    val isError = validationState.value is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid
     OutlinedTextField(
         modifier = modifier.fillMaxWidth(),
         value = state.value,
+        singleLine = true,
         onValueChange = onValueChanged,
         placeholder = {
             Text(text =  stringResource(R.string.screen_password_reenter_password))
@@ -162,7 +162,7 @@ private fun ReenterPasswordTextField(
 @Composable
 private fun PasswordStrengthIndicators(
     modifier: Modifier = Modifier,
-    passwordStrengthState:State<List<CreatePasswordViewModel.PasswordStrengthCriteria>?>,
+    passwordStrengthState:State<List<CreatePasswordViewModel.PasswordStrengthCriteria>>,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -174,7 +174,7 @@ private fun PasswordStrengthIndicators(
             PasswordStrengthIndicator(
                 text = stringResource(getHintResourceForCriteria(criteria)),
                 state = when {
-                    passwordStrength == null -> PasswordIndicatorState.Default
+                    passwordStrength.isEmpty() -> PasswordIndicatorState.Default
                     passwordStrength.contains(criteria) -> PasswordIndicatorState.Valid
                     else -> PasswordIndicatorState.Invalid
                 }

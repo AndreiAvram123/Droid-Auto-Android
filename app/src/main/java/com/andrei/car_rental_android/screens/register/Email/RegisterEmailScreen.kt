@@ -86,7 +86,7 @@ private fun CenterContent(viewModel: RegisterEmailViewModel){
             modifier = Modifier.fillMaxWidth(),
             state = viewModel.email.collectAsState()
             , onValueChanged ={
-                viewModel.setEmail(it)
+                viewModel.setEmail(it.trim())
             },
             validationState = viewModel.emailValidationState.collectAsState()
         )

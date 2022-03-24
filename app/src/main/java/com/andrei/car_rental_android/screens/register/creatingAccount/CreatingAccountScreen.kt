@@ -83,7 +83,7 @@ private fun SuccessContent(
     navigateToLogin: () -> Unit
 ){
      CenterColumn {
-          Animation(lottieCompositionSpec = LottieCompositionSpec.RawRes(R.raw.success))
+          Animation(lottieCompositionSpec = LottieCompositionSpec.RawRes(R.raw.email_sent))
           Text(
               text = stringResource(R.string.screen_creating_account_success),
               textAlign = TextAlign.Center,
