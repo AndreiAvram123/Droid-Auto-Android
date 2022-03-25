@@ -5,7 +5,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import javax.inject.Singleton
 
 @Module
@@ -16,6 +18,13 @@ object CoroutineModule {
     @Provides
     @NetworkDispatcher
     fun provideNetworkDispatcher():CoroutineDispatcher = Dispatchers.IO
+
+
+    @RepositoryScope
+    @Provides
+    @Singleton
+    fun provideRepositoryScope(
+    ): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
 }
 

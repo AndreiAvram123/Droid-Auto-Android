@@ -5,7 +5,9 @@ import com.andrei.car_rental_android.engine.configuration.RequestState
 import com.andrei.car_rental_android.engine.request.LoginRequest
 import com.andrei.car_rental_android.engine.response.LoginResponse
 import com.andrei.car_rental_android.engine.services.LoginService
+import com.andrei.car_rental_android.state.LocalRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
 
 interface LoginRepository {
@@ -14,11 +16,18 @@ interface LoginRepository {
 
 class LoginRepositoryImpl @Inject constructor(
     private val loginService: LoginService,
-    private val requestExecutor: RequestExecutor
+    private val requestExecutor: RequestExecutor,
+    private val localRepository: LocalRepository
 ): LoginRepository {
 
-    override fun login(loginRequest: LoginRequest):Flow<RequestState<LoginResponse>> =  requestExecutor.performRequest{
-       loginService.login(loginRequest)
-    }
+    override fun login(loginRequest: LoginRequest):Flow<RequestState<LoginResponse>> = requestExecutor.performRequest{
+            loginService.login(loginRequest)
+        }.transform {request->
+            emit(request)
+           if(request is RequestState.Success){
+               localRepository.setAccessToken(request.data.accessToken)
+               localRepository.setRefreshToken(request.data.refreshToken)
+           }
+      }
 
 }
