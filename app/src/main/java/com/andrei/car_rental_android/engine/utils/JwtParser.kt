@@ -16,7 +16,6 @@ interface JwtParser {
 
 class JwtParserImpl @Inject constructor(
 ) : JwtParser {
-    private val tag = "JwtParsing"
     private val gson = Gson()
     override fun parse(jwt: String): DecodedToken? {
 
