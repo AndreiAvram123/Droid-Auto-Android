@@ -17,8 +17,8 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "lo
 
 interface LocalRepository {
 
-    val refreshToken: Flow<String?>
-    val accessToken: Flow<String?>
+    val refreshTokenFlow: Flow<String?>
+    val accessTokenFlow: Flow<String?>
 
     suspend fun setRefreshToken(refreshToken:String)
     suspend fun setAccessToken(accessToken:String)
@@ -28,36 +28,36 @@ interface LocalRepository {
 }
 class LocalRepositoryImpl @Inject constructor(
     @ApplicationContext private val  context: Context,
-    ): LocalRepository{
+): LocalRepository{
 
 
-   private  val keyRefreshToken: Preferences.Key<String> = stringPreferencesKey("keyRefreshToken")
-   private  val keyAccessToken: Preferences.Key<String> = stringPreferencesKey("keyAccessToken")
+    private  val keyRefreshToken: Preferences.Key<String> = stringPreferencesKey("keyRefreshToken")
+    private  val keyAccessToken: Preferences.Key<String> = stringPreferencesKey("keyAccessToken")
 
-    override val refreshToken: Flow<String?> = context.dataStore.data.map { preferences->
+    override val refreshTokenFlow: Flow<String?> = context.dataStore.data.map { preferences->
         preferences[keyRefreshToken]
     }
-    override val accessToken: Flow<String?> = context.dataStore.data.map { preferences ->
+    override val accessTokenFlow: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[keyAccessToken]
     }
 
     override suspend fun setRefreshToken(refreshToken: String) {
-             context.dataStore.edit { preferences->
-                 preferences[keyRefreshToken] = refreshToken
-             }
+        context.dataStore.edit { preferences->
+            preferences[keyRefreshToken] = refreshToken
+        }
 
     }
 
     override suspend fun setAccessToken(accessToken: String) {
-            context.dataStore.edit { preferences->
-                preferences[keyAccessToken] = accessToken
+        context.dataStore.edit { preferences->
+            preferences[keyAccessToken] = accessToken
         }
     }
 
     override suspend  fun clear() {
-            context.dataStore.edit{ preferences->
-                preferences.clear()
-            }
+        context.dataStore.edit{ preferences->
+            preferences.clear()
+        }
     }
 
 

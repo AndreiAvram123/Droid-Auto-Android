@@ -27,7 +27,6 @@ import com.andrei.car_rental_android.screens.SignIn.navigation.SignInNavigatorIm
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.ButtonText
-import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 
 @Composable
@@ -126,7 +125,7 @@ private fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modif
 fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) {
     val passwordState = viewModel.passwordState.collectAsState()
     val focusManager = LocalFocusManager.current
-    val passwordValidationState = viewModel.passwordValidationState.collectAsState().value
+
     Column {
         TextField(
             maxLines = 1,
@@ -146,18 +145,11 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) 
             leadingIcon = {
                 Icon(imageVector = Icons.Filled.Password, contentDescription = null)
             },
-            trailingIcon = {
-                if (passwordValidationState is LoginViewModel.ValidationStateField.Error) {
-                    Text(text = stringResource(R.string.screen_sign_in_password))
-                }
-            },
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.Transparent
             )
         )
-        if (passwordValidationState is LoginViewModel.ValidationStateField.Error) {
-            TextFieldErrorMessage(passwordState.value)
-        }
+
     }
 }
 
@@ -210,7 +202,7 @@ private fun RegisterButton(
 }
 
 @Composable
-fun InvalidCredentialsDialog(
+fun  InvalidCredentialsDialog(
     loginUIState: State<LoginViewModel.LoginUIState>,
     onDismiss: () -> Unit
 ) {

@@ -19,11 +19,13 @@ import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAc
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordScreen
 import com.andrei.car_rental_android.state.LoginStateViewModelImpl
+import com.andrei.car_rental_android.state.SessionManager
+
 
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
-    handleLoginState(navController = navController)
+    HandleLoginState(navController = navController)
     NavHost(
         navController = navController,
         startDestination = Screen.SignInScreen.route
@@ -71,12 +73,37 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
 }
 
 @Composable
-private fun handleLoginState(
+private fun HandleLoginState(
     navController: NavController
-){
-    val loginStateViewModel = hiltViewModel<LoginStateViewModelImpl>();
-    val loginState = loginStateViewModel.authenticationState.collectAsState().value
-    when(loginState){
+) {
+    val loginStateViewModel = hiltViewModel<LoginStateViewModelImpl>()
+    when (loginStateViewModel.authenticationState.collectAsState().value) {
+        SessionManager.AuthenticationState.Authenticated.AllDetailsVerified -> {
+            navController.navigate(Screen.HomeScreen.route) {
+                popUpTo(Screen.SignInScreen.route) {
+                    inclusive = true
+                }
+            }
+        }
+
+        SessionManager.AuthenticationState.Authenticated.RequireEmailVerification -> {
+
+        }
+        SessionManager.AuthenticationState.Authenticated.RequireIdentityVerification -> {
+
+        }
+        SessionManager.AuthenticationState.Authenticating -> {
+            //no action required
+        }
+        SessionManager.AuthenticationState.NotAuthenticated -> {
+            //usually because refresh token expired
+            navController.navigate(Screen.SignInScreen.route) {
+                launchSingleTop = true
+            }
+        }
+            SessionManager.AuthenticationState.Authenticated.CannotVerifyDetails -> {
+                //should be an error screen
+            }
+        }
 
     }
-}

@@ -16,8 +16,6 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
     abstract val usernameState:StateFlow<String>
     abstract val passwordState:StateFlow<String>
     abstract val loginUiState:StateFlow<LoginUIState>
-    abstract val usernameValidationState:StateFlow<ValidationStateField>
-    abstract val passwordValidationState:StateFlow<ValidationStateField>
     abstract fun resetUIState()
     abstract fun setUsername(username:String)
     abstract fun setPassword(password:String)
@@ -25,10 +23,7 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
 
     sealed class LoginUIState {
         object Default:LoginUIState()
-        data class LoggedIn(
-            val verified:Boolean,
-            val identityVerified: Boolean
-            ):LoginUIState()
+        object LoggedIn:LoginUIState()
         object Loading:LoginUIState()
         object ServerError:LoginUIState()
         object InvalidCredentials:LoginUIState()
@@ -50,8 +45,6 @@ class LoginViewModelImpl @Inject constructor(
     override val usernameState: MutableStateFlow<String> = MutableStateFlow("")
     override val passwordState: MutableStateFlow<String> = MutableStateFlow("")
     override val loginUiState: MutableStateFlow<LoginUIState> = MutableStateFlow(LoginUIState.Default)
-    override val usernameValidationState: MutableStateFlow<ValidationStateField> = MutableStateFlow(ValidationStateField.Unvalidated)
-    override val passwordValidationState: MutableStateFlow<ValidationStateField> = MutableStateFlow(ValidationStateField.Unvalidated)
 
     override fun resetUIState() {
         coroutineScope.launch {
@@ -77,16 +70,13 @@ class LoginViewModelImpl @Inject constructor(
 
              if (username.isNotBlank() && password.isNotBlank()) {
                  val loginRequest = LoginRequest(
-                     username = username,
+                     email = username,
                      password = password
                  )
                  loginRepository.login(loginRequest).collect { response ->
                      when (response) {
                          is RequestState.Success -> {
-                             loginUiState.emit(LoginUIState.LoggedIn(
-                                 response.data.isEmailVerified,
-                                 identityVerified = true)
-                             )
+                             loginUiState.emit(LoginUIState.LoggedIn)
                          }
                          is RequestState.Loading -> {
                              loginUiState.emit(LoginUIState.Loading)

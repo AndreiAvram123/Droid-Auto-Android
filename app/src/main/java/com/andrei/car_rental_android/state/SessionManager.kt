@@ -4,6 +4,7 @@ import com.andrei.car_rental_android.DI.RepositoryScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,7 +17,7 @@ interface SessionManager {
         object Authenticating:AuthenticationState()
         sealed class Authenticated:AuthenticationState(){
             object AllDetailsVerified:Authenticated()
-            object NoDetailsVerified:Authenticated()
+            object CannotVerifyDetails:Authenticated()
             object RequireEmailVerification:Authenticated()
             object RequireIdentityVerification:Authenticated()
         }
@@ -35,7 +36,15 @@ class SessionManagerImpl @Inject constructor(
 
     init {
         coroutineScope.launch {
-            localRepository.refreshToken
+            localRepository.refreshTokenFlow.collect {
+                if(!it.isNullOrBlank()){
+                    //authenticated but need to check credentials
+                    //assume for now that the details are verified
+                    authenticationState.emit(SessionManager.AuthenticationState.Authenticated.AllDetailsVerified)
+                }else{
+                    authenticationState.emit(SessionManager.AuthenticationState.NotAuthenticated)
+                }
+            }
         }
     }
 

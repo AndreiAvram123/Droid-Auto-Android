@@ -47,7 +47,7 @@ class LoginViewModelTest : BaseViewModelTest(){
     fun `loginUiState state flow is LoggedIn when the api call is successful `(){
         testScope.runBlockingTest {
             val loginRequest = LoginRequest(
-                username = "",
+                email = "",
                 password = ""
             )
             returnSuccess {
@@ -67,7 +67,7 @@ class LoginViewModelTest : BaseViewModelTest(){
     fun `loginUiState state flow is Loading while the api call is executing`(){
         testScope.runBlockingTest {
             val loginRequest = LoginRequest(
-                username = "",
+                email = "",
                 password = ""
             )
             returnLoading {
@@ -86,7 +86,7 @@ class LoginViewModelTest : BaseViewModelTest(){
     fun `loginUiState state flow is Invalid Credentials when the api returns 401`() {
         testScope.runBlockingTest {
             val loginRequest = LoginRequest(
-                username = "",
+                email = "",
                 password = ""
             )
             returnFailure(errorCode = 401) {
@@ -105,7 +105,7 @@ class LoginViewModelTest : BaseViewModelTest(){
     fun `loginUiState state flow is ServerError when the api returns connection exception`() {
         testScope.runBlockingTest {
             val loginRequest = LoginRequest(
-                username = "",
+                email = "",
                 password = ""
             )
             returnConnectionException  {

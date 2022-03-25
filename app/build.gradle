@@ -45,6 +45,32 @@ static def getPropertiesFromEnvironmentVariables(Properties properties) {
 }
 def RELEASE_KEYSTORE = getKeystoreProperties('keystore_local.properties')
 
+ def getProperties(String propFileName) {
+    Properties properties = new Properties()
+    File file = project.rootProject.file(propFileName)
+    if(file.exists()) {
+        properties.load(file.newDataInputStream())
+    }
+    return properties
+}
+
+
+ def getLocalProperty(String propFileName, String prop) {
+    Properties properties = getProperties(propFileName)
+    String property = properties.getProperty(prop, "")
+    return property
+}
+
+ def getMapsKey(String environment) {
+    def propertyName = "MAPS_KEY_" + environment
+    def ciValue = System.getenv(propertyName)
+    if(ciValue != null){
+        return ciValue
+    }else{
+        return getLocalProperty('local.properties', propertyName)
+    }
+}
+
 
 android {
     compileSdk 31
@@ -119,7 +145,7 @@ android {
         dev {
             dimension "environment"
             applicationIdSuffix ".dev"
-            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_DEV")]
+            manifestPlaceholders = [MAPS_API_KEY :  getMapsKey("DEV")]
             buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-dev.herokuapp.com/"'
         }
         qa {
@@ -134,6 +160,7 @@ android {
             buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-prod.herokuapp.com/"'
         }
     }
+
 
     easylauncher {
         defaultFlavorNaming true
@@ -159,6 +186,8 @@ android {
         }
     }
 }
+
+
 
 dependencies {
     def lifecycle_version = '2.5.0-alpha02'
