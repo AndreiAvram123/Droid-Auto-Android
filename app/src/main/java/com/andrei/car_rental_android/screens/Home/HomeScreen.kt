@@ -18,7 +18,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
-import com.andrei.car_rental_android.engine.configuration.RequestState
+import com.andrei.car_rental_android.engine.request.RequestState
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions

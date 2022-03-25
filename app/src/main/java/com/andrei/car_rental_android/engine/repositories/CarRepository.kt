@@ -1,7 +1,7 @@
 package com.andrei.car_rental_android.engine.repositories
 
 import com.andrei.car_rental_android.DTOs.Car
-import com.andrei.car_rental_android.engine.configuration.RequestState
+import com.andrei.car_rental_android.engine.request.RequestState
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

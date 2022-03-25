@@ -99,11 +99,11 @@ private fun HandleLoginState(
             //usually because refresh token expired
             navController.navigate(Screen.SignInScreen.route) {
                 launchSingleTop = true
+                popUpTo(0)
             }
         }
             SessionManager.AuthenticationState.Authenticated.CannotVerifyDetails -> {
                 //should be an error screen
             }
         }
-
     }

@@ -1,9 +1,9 @@
 package com.andrei.car_rental_android.screens.SignIn
 
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
-import com.andrei.car_rental_android.engine.configuration.RequestState
 import com.andrei.car_rental_android.engine.repositories.LoginRepository
 import com.andrei.car_rental_android.engine.request.LoginRequest
+import com.andrei.car_rental_android.engine.request.RequestState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -32,6 +32,9 @@ abstract class RepositoryAbstractModule {
     abstract fun bindLocalRepository(localRepository: LocalRepositoryImpl):LocalRepository
 
     @Binds
+    abstract fun bindTokenRepository(tokenRepositoryImpl: TokenRepositoryImpl):TokenRepository
+
+    @Binds
     abstract fun bindSessionManager(sessionManagerImpl: SessionManagerImpl): SessionManager
 
 }

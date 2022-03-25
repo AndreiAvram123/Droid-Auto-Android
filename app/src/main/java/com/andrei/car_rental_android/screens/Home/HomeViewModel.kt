@@ -2,7 +2,7 @@ package com.andrei.car_rental_android.screens.Home
 
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.CarRepository
-import com.andrei.car_rental_android.engine.configuration.RequestState
+import com.andrei.car_rental_android.engine.request.RequestState
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +20,7 @@ class HomeViewModelImpl @Inject constructor(
     private val carRepository: CarRepository
 ):HomeViewModel(coroutineProvider){
 
-    override val nearbyCars: MutableStateFlow<RequestState<List<LatLng>>> = MutableStateFlow(RequestState.Loading)
+    override val nearbyCars: MutableStateFlow<RequestState<List<LatLng>>> = MutableStateFlow(
+        RequestState.Loading)
 
 }

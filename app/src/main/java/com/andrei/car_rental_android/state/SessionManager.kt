@@ -12,6 +12,8 @@ interface SessionManager {
 
      val authenticationState:StateFlow<AuthenticationState>
 
+     fun notifyLoginRequired()
+
     sealed class AuthenticationState{
         object NotAuthenticated:AuthenticationState()
         object Authenticating:AuthenticationState()
@@ -33,6 +35,10 @@ class SessionManagerImpl @Inject constructor(
 ) : SessionManager{
 
     override val authenticationState: MutableStateFlow<SessionManager.AuthenticationState> = MutableStateFlow(SessionManager.AuthenticationState.Authenticating)
+
+    override fun notifyLoginRequired() {
+         authenticationState.tryEmit(SessionManager.AuthenticationState.NotAuthenticated)
+    }
 
     init {
         coroutineScope.launch {

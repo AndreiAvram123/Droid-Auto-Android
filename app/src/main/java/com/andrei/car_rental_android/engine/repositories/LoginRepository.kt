@@ -1,8 +1,8 @@
 package com.andrei.car_rental_android.engine.repositories
 
 import com.andrei.car_rental_android.engine.configuration.RequestExecutor
-import com.andrei.car_rental_android.engine.configuration.RequestState
 import com.andrei.car_rental_android.engine.request.LoginRequest
+import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.engine.response.LoginResponse
 import com.andrei.car_rental_android.engine.services.LoginService
 import com.andrei.car_rental_android.state.LocalRepository
