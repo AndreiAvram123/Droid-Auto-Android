@@ -1,6 +1,8 @@
 package com.andrei.car_rental_android.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
@@ -16,10 +18,12 @@ import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAc
 import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountScreen
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordScreen
+import com.andrei.car_rental_android.state.LoginStateViewModelImpl
 
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
+    handleLoginState(navController = navController)
     NavHost(
         navController = navController,
         startDestination = Screen.SignInScreen.route
@@ -31,8 +35,8 @@ fun MainNavigation() {
             HomeScreen(navController)
         }
         registerGraph(navController)
-
     }
+
 
 }
 fun NavGraphBuilder.registerGraph(navController:NavController) {
@@ -62,6 +66,17 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
         ){
              CreatingAccountScreen(navController)
         }
+
+    }
+}
+
+@Composable
+private fun handleLoginState(
+    navController: NavController
+){
+    val loginStateViewModel = hiltViewModel<LoginStateViewModelImpl>();
+    val loginState = loginStateViewModel.authenticationState.collectAsState().value
+    when(loginState){
 
     }
 }

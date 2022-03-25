@@ -25,7 +25,10 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
 
     sealed class LoginUIState {
         object Default:LoginUIState()
-        data class LoggedIn(val verified:Boolean):LoginUIState()
+        data class LoggedIn(
+            val verified:Boolean,
+            val identityVerified: Boolean
+            ):LoginUIState()
         object Loading:LoginUIState()
         object ServerError:LoginUIState()
         object InvalidCredentials:LoginUIState()
@@ -80,7 +83,10 @@ class LoginViewModelImpl @Inject constructor(
                  loginRepository.login(loginRequest).collect { response ->
                      when (response) {
                          is RequestState.Success -> {
-                             loginUiState.emit(LoginUIState.LoggedIn(response.data.isEmailVerified))
+                             loginUiState.emit(LoginUIState.LoggedIn(
+                                 response.data.isEmailVerified,
+                                 identityVerified = true)
+                             )
                          }
                          is RequestState.Loading -> {
                              loginUiState.emit(LoginUIState.Loading)

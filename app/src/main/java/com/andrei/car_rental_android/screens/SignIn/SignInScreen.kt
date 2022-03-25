@@ -30,7 +30,6 @@ import com.andrei.car_rental_android.ui.composables.ButtonText
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 
-
 @Composable
 fun SignInScreen(navController: NavController) {
     val navigator = SignInNavigatorImpl(navController)
@@ -47,7 +46,6 @@ fun MainContent(
 ) {
     val loginViewModel = hiltViewModel<LoginViewModelImpl>()
     val loginUIState = loginViewModel.loginUiState.collectAsState()
-
     Box(modifier = Modifier.background(Color.White)) {
         BottomColumn {
             EmailTextField(
@@ -60,6 +58,7 @@ fun MainContent(
             )
 
             val isAuthenticating = loginUIState.value is LoginViewModel.LoginUIState.Loading
+
              AuthenticationButtons(
                  isAuthenticating = isAuthenticating, performLogin = {
                  loginViewModel.login()
