@@ -7,8 +7,7 @@ class JwtUtils @Inject constructor(
 ){
     fun isTokenValid(token:String):Boolean  {
         val decodeToken =  jwtParser.parse(token)
-        return decodeToken != null && !decodeToken.isExpired()
-
+        return decodeToken != null && decodeToken.isNotExpired()
     }
 
 }

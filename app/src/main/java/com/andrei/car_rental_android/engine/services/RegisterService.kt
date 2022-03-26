@@ -7,7 +7,7 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 
-interface RegisterService {
+sealed interface RegisterService {
     @GET("/emailValid")
     suspend fun checkIfEmailIsUsed(@Query("email") email:String):ApiResponse<Nothing>
 

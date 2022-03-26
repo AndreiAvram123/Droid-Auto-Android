@@ -31,12 +31,15 @@ class AuthTokenInterceptor @Inject constructor(
     }
 
     private fun getToken(): String? = runBlocking {
-        val currentToken = localRepository.accessTokenFlow.firstOrNull() ?: return@runBlocking null
+        val currentToken = localRepository.accessTokenFlow.firstOrNull()
         //check whether the token is valid even before making the request
         //This could be left out but it is better to save one request
 
+
+
+         //check if token is null or expired
         // Check if token has expired
-         if (jwtUtils.isTokenValid(currentToken)) {
+         if (currentToken != null && jwtUtils.isTokenValid(currentToken)) {
              return@runBlocking  currentToken
         }else{
             val result = tokenRepository.get().getNewAccessToken().firstOrNull { state ->
@@ -44,7 +47,7 @@ class AuthTokenInterceptor @Inject constructor(
             }
 
             val newToken = if (result is RequestState.Success) {
-                result.data.accessToken
+                return@runBlocking result.data.accessToken
             } else {
                 return@runBlocking null
             }

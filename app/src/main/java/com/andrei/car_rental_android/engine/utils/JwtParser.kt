@@ -6,7 +6,8 @@ import java.util.*
 import javax.inject.Inject
 
 data class DecodedToken( @SerializedName("exp")val expiryTimestamp: Long)
-fun DecodedToken.isExpired():Boolean = expiryTimestamp > System.currentTimeMillis()/1000L
+fun DecodedToken.isExpired():Boolean = expiryTimestamp <= System.currentTimeMillis()/1000L
+fun DecodedToken.isNotExpired():Boolean = !isExpired()
 
 
 interface JwtParser {
