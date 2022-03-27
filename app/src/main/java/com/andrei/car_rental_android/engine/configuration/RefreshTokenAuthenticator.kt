@@ -48,7 +48,6 @@ class RefreshTokenAuthenticator @Inject constructor(
                             state !is RequestState.Loading
                         }
                         successfullyRefreshedToken = result is RequestState.Success
-
                     }
                 } else {
                     // If the current access token is different from the one in the request that means

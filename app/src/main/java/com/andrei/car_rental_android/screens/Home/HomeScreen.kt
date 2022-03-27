@@ -46,9 +46,10 @@ fun HomeScreen(navController: NavController) {
 @Preview
 @OptIn(ExperimentalMaterialApi::class)
 fun MainContent() {
+
     val viewModel = hiltViewModel<HomeViewModelImpl>()
 
-    var currentPreviewedCar: Car? by remember {
+    val currentSelectedCarState: MutableState<Car?> =  remember {
         mutableStateOf(null)
     }
 
@@ -58,7 +59,13 @@ fun MainContent() {
         viewModel.setLocationUnknown()
     })
 
-    BottomSheet(car = currentPreviewedCar) {
+    BottomSheet(
+        carState = currentSelectedCarState,
+        reserveCar = {
+           viewModel.reserveCar(it)
+        },
+        reservationState = viewModel.reservationState.collectAsState(),
+    ) {
         Box(modifier = Modifier.fillMaxSize()) {
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
@@ -67,13 +74,13 @@ fun MainContent() {
                 )
             ) {
                 MapContent(
-                    state =viewModel.nearbyCars.collectAsState().value){
-                    currentPreviewedCar = it
+                    state = viewModel.nearbyCars.collectAsState()
+                ){
+                    currentSelectedCarState.value= it
                 }
             }
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
                 LocationState(locationState = viewModel.locationState.collectAsState().value)
             }
         }
@@ -82,13 +89,14 @@ fun MainContent() {
 
 @Composable
 private fun MapContent(
-    state : HomeViewModel.HomeViewModelState,
+    state : State<HomeViewModel.HomeViewModelState>,
     onMarkerClicked: (car: Car) -> Unit
 ){
-    when(state){
+
+    when(val stateValue = state.value){
         is HomeViewModel.HomeViewModelState.Success -> {
             MapMarkers(
-                state.data,
+                stateValue.data,
                 onMarkerClicked = onMarkerClicked
             )
         }
@@ -110,7 +118,6 @@ private fun LocationPermission(
         mutableStateOf(PermissionState.Unchecked)
     }
 
-
     LocationSettings{ permissionGranted->
         if(permissionGranted){
             locationPermission = PermissionState.Granted
@@ -118,7 +125,6 @@ private fun LocationPermission(
             locationPermission = PermissionState.Denied
         }
     }
-
 
     when(locationPermission){
         PermissionState.Denied -> {
@@ -194,9 +200,10 @@ private fun LocationSettings(
 ){
     val locationPermission = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult ={locationEnabled->
+        onResult ={ locationEnabled->
             onPermissionResult(locationEnabled)
-        } )
+        }
+    )
 
     val context = LocalContext.current
 
@@ -231,15 +238,17 @@ private fun MapMarkers(
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
 private fun BottomSheet(
-    car: Car?,
+    carState: State<Car?>,
+    reservationState: State<HomeViewModel.ReservationState>,
+    reserveCar:(car:Car)->Unit,
     content: @Composable ()->Unit
 ){
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
-    LaunchedEffect(car){
-        if(car != null) {
+    LaunchedEffect(carState.value){
+        if(carState.value != null) {
             bottomSheetScaffoldState.bottomSheetState.expand()
         }
     }
@@ -247,15 +256,55 @@ private fun BottomSheet(
         modifier = Modifier.padding(bottom = Dimens.medium.dp),
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
-            BottomSheetContent(car)
-        }, sheetPeekHeight = 10.dp
+            BottomSheetContent(
+                carState = carState,
+                reservationState = reservationState,
+                reserveCar = reserveCar
+            )
+        }, sheetPeekHeight = 15.dp
     ){
         content()
     }
 }
 @Composable
 private fun BottomSheetContent(
-    car:Car?
+    carState:State<Car?>,
+    reservationState: State<HomeViewModel.ReservationState>,
+    reserveCar:(car:Car)->Unit
+) {
+
+    BottomSheetLayout {
+        when (reservationState.value) {
+            is HomeViewModel.ReservationState.Default -> {
+                //no action
+                val car = carState.value
+                if (car != null) {
+                    CarDetails(
+                        car = car,
+                        onReserve = {
+                            reserveCar(it)
+                        })
+                }else{
+                    NoCarSelected()
+                }
+            }
+            is HomeViewModel.ReservationState.InProgress -> {
+
+            }
+            is HomeViewModel.ReservationState.Reserved -> {
+
+            }
+            is HomeViewModel.ReservationState.Error -> {
+
+            }
+
+        }
+    }
+}
+
+@Composable
+private fun BottomSheetLayout(
+    content:@Composable ()->Unit
 ) {
     Box(
         modifier = Modifier
@@ -266,21 +315,11 @@ private fun BottomSheetContent(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center
         ) {
-            if(car != null){
-                CarDetails(car)
-                ReserveButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Dimens.medium.dp)
-                ) {
-
-                }
-            }else{
-                NoCarSelected()
-            }
+            content()
         }
     }
 }
+
 
 @Composable
 private fun NoCarSelected(){
@@ -307,7 +346,8 @@ private fun ReserveButton(
 }
 @Composable
 private fun CarDetails(
-    car:Car
+    car:Car,
+    onReserve:(car:Car)->Unit
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -331,5 +371,12 @@ private fun CarDetails(
             color = Color.Black
         )
     }
+    ReserveButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimens.medium.dp)
+        ) {
+           onReserve(car)
+        }
 }
 

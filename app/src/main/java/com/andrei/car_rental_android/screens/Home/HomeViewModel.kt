@@ -5,6 +5,7 @@ import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.CarRepository
 import com.andrei.car_rental_android.engine.request.RequestState
+import com.andrei.car_rental_android.engine.response.ReservationRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,8 +16,11 @@ import javax.inject.Inject
 abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(coroutineProvider) {
     abstract val nearbyCars:StateFlow<HomeViewModelState>
     abstract val locationState:StateFlow<LocationState>
+    abstract val reservationState:StateFlow<ReservationState>
+
     abstract fun setLocation(location: Location)
     abstract fun setLocationUnknown()
+    abstract fun reserveCar(car:Car)
 
     sealed class HomeViewModelState{
         data class Success(val data:List<Car>):HomeViewModelState()
@@ -24,6 +28,12 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
         object Error:HomeViewModelState()
     }
 
+    sealed class ReservationState{
+        data class Reserved(val car:Car):ReservationState()
+        object Default:ReservationState()
+        object Error:ReservationState()
+        object InProgress:ReservationState()
+    }
     sealed class LocationState{
         data class Determined(val location:Location):LocationState()
         object Unknown : LocationState()
@@ -39,6 +49,9 @@ class HomeViewModelImpl @Inject constructor(
 
     override val nearbyCars: MutableStateFlow<HomeViewModelState> = MutableStateFlow(HomeViewModelState.Loading)
     override val locationState: MutableStateFlow<LocationState> = MutableStateFlow(LocationState.Loading)
+    override val reservationState: MutableStateFlow<ReservationState> = MutableStateFlow(
+        ReservationState.Default
+    )
 
     init {
         coroutineScope.launch {
@@ -72,6 +85,20 @@ class HomeViewModelImpl @Inject constructor(
 
     override fun setLocationUnknown() {
         locationState.tryEmit(LocationState.Unknown)
+    }
+
+    override fun reserveCar(car: Car) {
+         coroutineScope.launch {
+             carRepository.makeReservation(
+                 ReservationRequest(car.id)
+             ).collect{
+                 when(it){
+                     is RequestState.Success -> reservationState.emit(ReservationState.Reserved(car))
+                     is RequestState.Loading -> reservationState.emit(ReservationState.InProgress)
+                     else -> reservationState.emit(ReservationState.Error)
+                 }
+             }
+         }
     }
 
 }
