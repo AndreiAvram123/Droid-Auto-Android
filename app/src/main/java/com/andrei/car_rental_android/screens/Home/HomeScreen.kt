@@ -13,11 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.andrei.car_rental_android.DTOs.Car
+import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.utils.hasPermission
 import com.google.android.gms.location.LocationServices
@@ -63,26 +66,36 @@ fun MainContent() {
                     zoomControlsEnabled = true,
                 )
             ) {
-
-                when (val nearbyCarsState = viewModel.nearbyCars.collectAsState().value) {
-                    is HomeViewModel.HomeViewModelState.Success -> {
-                        MapMarkers(
-                            nearbyCarsState.data,
-                            onMarkerClicked = {
-                                currentPreviewedCar = it
-                            }
-                        )
-                    }
-                    is HomeViewModel.HomeViewModelState.Loading -> {
-                    }
-                    else -> {
-
-                    }
+                MapContent(
+                    state =viewModel.nearbyCars.collectAsState().value){
+                    currentPreviewedCar = it
                 }
             }
-            Column(modifier = Modifier.fillMaxSize().padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
                 LocationState(locationState = viewModel.locationState.collectAsState().value)
             }
+        }
+    }
+}
+
+@Composable
+private fun MapContent(
+    state : HomeViewModel.HomeViewModelState,
+    onMarkerClicked: (car: Car) -> Unit
+){
+    when(state){
+        is HomeViewModel.HomeViewModelState.Success -> {
+            MapMarkers(
+                state.data,
+                onMarkerClicked = onMarkerClicked
+            )
+        }
+        is HomeViewModel.HomeViewModelState.Loading -> {
+        }
+        else -> {
+
         }
     }
 }
@@ -90,8 +103,8 @@ fun MainContent() {
 
 @Composable
 private fun LocationPermission(
-     setKnowLocation:(location:Location)-> Unit,
-     setUnknownLocation:()->Unit
+    setKnowLocation:(location:Location)-> Unit,
+    setUnknownLocation:()->Unit
 ){
     var locationPermission:PermissionState by remember {
         mutableStateOf(PermissionState.Unchecked)
@@ -114,11 +127,11 @@ private fun LocationPermission(
             }
         }
         PermissionState.Granted -> {
-           getLastKnownLocation(LocalContext.current, onNewLocation = {
+            getLastKnownLocation(LocalContext.current, onNewLocation = {
                 setKnowLocation(it)
-           }, onError = {
-               setUnknownLocation()
-           })
+            }, onError = {
+                setUnknownLocation()
+            })
         }
         PermissionState.Unchecked -> {
             //no nothing or maybe show some loading spinner
@@ -139,7 +152,7 @@ private fun LocationState(
         }
         is  HomeViewModel.LocationState.Loading -> {
             Snackbar {
-              Text(text = "We are working hard to get your location")
+                Text(text = "We are working hard to get your location")
             }
         }
         is HomeViewModel.LocationState.Unknown -> {
@@ -169,7 +182,7 @@ private fun getLastKnownLocation(
             onError()
         }
     }.addOnFailureListener {
-         onError()
+        onError()
     }
 
 }
@@ -182,16 +195,16 @@ private fun LocationSettings(
     val locationPermission = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult ={locationEnabled->
-             onPermissionResult(locationEnabled)
-    } )
+            onPermissionResult(locationEnabled)
+        } )
 
-   val context = LocalContext.current
+    val context = LocalContext.current
 
     LaunchedEffect(key1 = null){
         if(context.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)){
             onPermissionResult(true)
         }else{
-           //does not have permission but try to obtain it 
+            //does not have permission but try to obtain it
             locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
@@ -218,8 +231,8 @@ private fun MapMarkers(
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
 private fun BottomSheet(
-     car: Car?,
-     content: @Composable ()->Unit
+    car: Car?,
+    content: @Composable ()->Unit
 ){
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
@@ -231,39 +244,92 @@ private fun BottomSheet(
         }
     }
     BottomSheetScaffold(
+        modifier = Modifier.padding(bottom = Dimens.medium.dp),
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-               Column(
-                   modifier = Modifier.fillMaxSize(),
-                   verticalArrangement = Arrangement.Center
-               ) {
-                   Row(
-                       modifier = Modifier.fillMaxWidth(),
-                       horizontalArrangement = Arrangement.Center
-                   ) {
-                       if(car != null){
-                           Text(
-                               text = car.model.name,
-                               color = Color.Black
-                           )
-                           Text(
-                               text = car.model.manufacturerName,
-                               color = Color.Black
-                           )
-                       }else{
-                           Text(text = "Click on a car on the map to see the details here")
-                       }
-                   }
-               }
-            }
+            BottomSheetContent(car)
         }, sheetPeekHeight = 10.dp
     ){
-       content()
+        content()
     }
-
 }
+@Composable
+private fun BottomSheetContent(
+    car:Car?
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center
+        ) {
+            if(car != null){
+                CarDetails(car)
+                ReserveButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimens.medium.dp)
+                ) {
+
+                }
+            }else{
+                NoCarSelected()
+            }
+        }
+    }
+}
+
+@Composable
+private fun NoCarSelected(){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Text(text = "Click on a car on the map to see the details here")
+    }
+}
+
+
+@Composable
+private fun ReserveButton(
+    modifier:Modifier = Modifier,
+    onClick:()->Unit
+){
+    Button(
+        modifier = modifier,
+        onClick = onClick
+    ) {
+        Text(text = stringResource(R.string.screen_home_reserve))
+    }
+}
+@Composable
+private fun CarDetails(
+    car:Car
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        
+        AsyncImage(
+            modifier = Modifier.size(60.dp),
+            model = car.model.image.url,
+            contentDescription =null
+        )
+        Text(
+            text = car.model.name,
+            color = Color.Black
+        )
+        Spacer(
+           modifier =  Modifier.width(Dimens.medium.dp)
+        )
+        Text(
+            text = car.model.manufacturerName,
+            color = Color.Black
+        )
+    }
+}
+

@@ -7,6 +7,7 @@ import com.andrei.car_rental_android.state.LocalRepository
 import dagger.Lazy
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
+import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
@@ -21,13 +22,21 @@ class AuthTokenInterceptor @Inject constructor(
 
     override fun intercept(chain: Interceptor.Chain): Response {
 
-
         val interceptedBuilder = chain.request().newBuilder()
+
+        if(chain.shouldNotIntercept()){
+           return chain.proceed(chain.request())
+        }
+
         val token = getToken()
 
         interceptedBuilder.header(HEADER_AUTHORIZATION, "$HEADER_AUTHORIZATION_VALUE_PREFIX $token")
 
         return chain.proceed(interceptedBuilder.build())
+    }
+
+    private fun Interceptor.Chain.shouldNotIntercept():Boolean{
+         return request().url.isTokenEndpoint()
     }
 
     private fun getToken(): String? = runBlocking {
@@ -36,25 +45,30 @@ class AuthTokenInterceptor @Inject constructor(
         //This could be left out but it is better to save one request
 
 
-
          //check if token is null or expired
         // Check if token has expired
-         if (currentToken != null && jwtUtils.isTokenValid(currentToken)) {
-             return@runBlocking  currentToken
-        }else{
+         if (currentToken != null) {
+             if(jwtUtils.isTokenValid(currentToken)){
+                 return@runBlocking  currentToken
+             }else{
+                 //clear the old token from storage
+                 localRepository.clearAccessToken()
+             }
+        }
+
             val result = tokenRepository.get().getNewAccessToken().firstOrNull { state ->
                 state !is RequestState.Loading
             }
 
-            val newToken = if (result is RequestState.Success) {
+            if (result is RequestState.Success) {
+                localRepository.setAccessToken(result.data.accessToken)
                 return@runBlocking result.data.accessToken
             } else {
                 return@runBlocking null
             }
-            localRepository.setAccessToken(newToken)
 
-             return@runBlocking newToken
-        }
     }
-
+    private fun HttpUrl.isTokenEndpoint(): Boolean {
+        return this.toString().endsWith("/token")
+    }
 }

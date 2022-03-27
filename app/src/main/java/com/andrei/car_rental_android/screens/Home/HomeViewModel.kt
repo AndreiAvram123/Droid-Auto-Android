@@ -5,7 +5,6 @@ import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.CarRepository
 import com.andrei.car_rental_android.engine.request.RequestState
-import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +15,6 @@ import javax.inject.Inject
 abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(coroutineProvider) {
     abstract val nearbyCars:StateFlow<HomeViewModelState>
     abstract val locationState:StateFlow<LocationState>
-    abstract fun getNearbyCars()
     abstract fun setLocation(location: Location)
     abstract fun setLocationUnknown()
 
@@ -42,17 +40,30 @@ class HomeViewModelImpl @Inject constructor(
     override val nearbyCars: MutableStateFlow<HomeViewModelState> = MutableStateFlow(HomeViewModelState.Loading)
     override val locationState: MutableStateFlow<LocationState> = MutableStateFlow(LocationState.Loading)
 
-
-    override fun getNearbyCars() {
+    init {
         coroutineScope.launch {
-            carRepository.fetchNearby(LatLng(0.0, 0.0)).collect {requestState->
+            locationState.collect{state->
+                if(state is LocationState.Determined){
+                    getNearbyCars(state.location)
+                }
+            }
+        }
+    }
+
+    private suspend fun getNearbyCars(location:Location) {
+            carRepository.fetchNearby(location.latitude,location.longitude).collect {requestState->
                when(requestState){
                    is RequestState.Success->{
                        nearbyCars.emit(HomeViewModelState.Success(requestState.data))
                    }
+                   is RequestState.Loading -> {
+                       nearbyCars.emit(HomeViewModelState.Loading)
+                   }
+                   else-> {
+                       nearbyCars.emit(HomeViewModelState.Error)
+                   }
                }
             }
-        }
     }
 
     override fun setLocation(location: Location) {

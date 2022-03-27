@@ -1,10 +1,10 @@
 package com.andrei.car_rental_android.state
 
 import com.andrei.car_rental_android.DI.RepositoryScope
+import com.andrei.car_rental_android.engine.utils.JwtUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,7 +30,8 @@ interface SessionManager {
 
 class SessionManagerImpl @Inject constructor(
       private val localRepository: LocalRepository,
-      @RepositoryScope private val coroutineScope: CoroutineScope
+      @RepositoryScope private val coroutineScope: CoroutineScope,
+      private val jwtUtils: JwtUtils
 
 ) : SessionManager{
 
@@ -43,7 +44,7 @@ class SessionManagerImpl @Inject constructor(
     init {
         coroutineScope.launch {
             localRepository.refreshTokenFlow.collect {
-                if(!it.isNullOrBlank()){
+                if(!it.isNullOrBlank() && jwtUtils.isTokenValid(it)){
                     //authenticated but need to check credentials
                     //assume for now that the details are verified
                     authenticationState.emit(SessionManager.AuthenticationState.Authenticated.AllDetailsVerified)

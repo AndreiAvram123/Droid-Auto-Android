@@ -1,6 +1,5 @@
 package com.andrei.car_rental_android.engine.configuration
 
-import android.util.Log
 import android.webkit.URLUtil
 import com.andrei.car_rental_android.BuildConfig
 import com.andrei.car_rental_android.engine.repositories.TokenRepository
@@ -32,7 +31,7 @@ class RefreshTokenAuthenticator @Inject constructor(
             return null
         }
 
-        if (!response.request().url().toString().isURlValid()) {
+        if (!response.request.url.toString().isURlValid()) {
 
             return null
         }
@@ -40,21 +39,16 @@ class RefreshTokenAuthenticator @Inject constructor(
         var successfullyRefreshedToken = false
         synchronized(lock) {
             runBlocking {
-                val request = response.networkResponse()?.request()
+                val request = response.networkResponse?.request
                 if (request != null && request.hasAuthorizationHeader()) {
                     val refreshToken = localRepository.refreshTokenFlow.firstOrNull()
-                    if (refreshToken != null && jwtUtils.isTokenValid(refreshToken)) {
+                    if (!refreshToken.isNullOrBlank() && jwtUtils.isTokenValid(refreshToken)) {
                         //attempt to get new access token
                         val result = tokenRepository.get().getNewAccessToken().first { state ->
                             state !is RequestState.Loading
                         }
                         successfullyRefreshedToken = result is RequestState.Success
 
-                        if (!successfullyRefreshedToken) {
-                            Log.e(RefreshTokenAuthenticator::class.simpleName,"Refresh token failed")
-                        }
-                    } else {
-                        sessionManager.get().notifyLoginRequired()
                     }
                 } else {
                     // If the current access token is different from the one in the request that means
@@ -62,11 +56,15 @@ class RefreshTokenAuthenticator @Inject constructor(
                     // refreshing
                     successfullyRefreshedToken = true
                 }
+                if(!successfullyRefreshedToken){
+                    sessionManager.get().notifyLoginRequired()
+                }
             }
         }
 
+
         return if (successfullyRefreshedToken) {
-            response.request()
+            response.request
         } else {
             null
         }
@@ -81,10 +79,10 @@ class RefreshTokenAuthenticator @Inject constructor(
     }
 
     private fun requestChainCount(currentResponse: Response): Int {
-        var response: Response? = currentResponse.priorResponse()
+        var response: Response? = currentResponse.priorResponse
         var result = 1
         while (response != null) {
-            response = response.priorResponse()
+            response = response.priorResponse
             result++
         }
         return result

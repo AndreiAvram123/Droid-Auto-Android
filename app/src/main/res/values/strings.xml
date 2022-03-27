@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">car-rental-android</string>
 
+    <!-- Screen home -->
+    <string name="screen_home_reserve">Reserve</string>
+
     <!--Screen sign in-->
     <string name="screen_sign_in_email">Email</string>
     <string name="screen_sign_in_password">Password</string>

@@ -18,6 +18,7 @@ import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAc
 import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountScreen
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordScreen
+import com.andrei.car_rental_android.state.LoginStateViewModel
 import com.andrei.car_rental_android.state.LoginStateViewModelImpl
 import com.andrei.car_rental_android.state.SessionManager
 
@@ -25,7 +26,8 @@ import com.andrei.car_rental_android.state.SessionManager
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
-    HandleLoginState(navController = navController)
+    val loginStateViewModel = hiltViewModel<LoginStateViewModelImpl>()
+
     NavHost(
         navController = navController,
         startDestination = Screen.SignInScreen.route
@@ -39,7 +41,10 @@ fun MainNavigation() {
         registerGraph(navController)
     }
 
-
+    LoginState(
+        navController = navController,
+        loginStateViewModel = loginStateViewModel
+    )
 }
 fun NavGraphBuilder.registerGraph(navController:NavController) {
     //register navigation
@@ -72,11 +77,12 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
     }
 }
 
+
 @Composable
-private fun HandleLoginState(
-    navController: NavController
+private fun LoginState(
+    navController: NavController,
+    loginStateViewModel: LoginStateViewModel
 ) {
-    val loginStateViewModel = hiltViewModel<LoginStateViewModelImpl>()
     when (loginStateViewModel.authenticationState.collectAsState().value) {
         SessionManager.AuthenticationState.Authenticated.AllDetailsVerified -> {
             navController.navigate(Screen.HomeScreen.route) {
