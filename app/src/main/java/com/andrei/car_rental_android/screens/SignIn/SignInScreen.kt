@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,7 +42,7 @@ fun SignInScreen(navController: NavController) {
 
 @Composable
 fun MainContent(
-       navigator: SignInNavigator
+    navigator: SignInNavigator
 ) {
     val loginViewModel = hiltViewModel<LoginViewModelImpl>()
     val loginUIState = loginViewModel.loginUiState.collectAsState()
@@ -101,7 +102,10 @@ private fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modif
         maxLines = 1,
         modifier = modifier.fillMaxWidth(),
         value = usernameState.value,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next
+        ),
         keyboardActions = KeyboardActions(onNext = {
             focusManager.moveFocus(FocusDirection.Down)
         }),
@@ -130,7 +134,10 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) 
         TextField(
             maxLines = 1,
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.clearFocus(true)
             }),

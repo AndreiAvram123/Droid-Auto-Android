@@ -14,14 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.ui.Dimens
+import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -65,6 +68,11 @@ fun MainContent() {
            viewModel.reserveCar(it)
         },
         reservationState = viewModel.reservationState.collectAsState(),
+        reservationTimeLeft = viewModel.reservationTimeLeftMillis.collectAsState(),
+        cancelReservation = {
+            viewModel.cancelReservation()
+        }
+
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             GoogleMap(
@@ -80,7 +88,9 @@ fun MainContent() {
                 }
             }
             Column(
-                modifier = Modifier.fillMaxSize().padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
                 LocationState(locationState = viewModel.locationState.collectAsState().value)
             }
         }
@@ -230,10 +240,16 @@ private fun MapMarkers(
             onClick = {
                 onMarkerClicked(car)
                 true
-            }
+            },
+
+            icon =  bitmapDescriptorFromVector(
+                context = LocalContext.current,
+                vectorResId = R.drawable.ic_car
+            )
         )
     }
 }
+
 
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
@@ -241,6 +257,8 @@ private fun BottomSheet(
     carState: State<Car?>,
     reservationState: State<HomeViewModel.ReservationState>,
     reserveCar:(car:Car)->Unit,
+    reservationTimeLeft: State<Long>,
+    cancelReservation: () -> Unit,
     content: @Composable ()->Unit
 ){
 
@@ -259,7 +277,10 @@ private fun BottomSheet(
             BottomSheetContent(
                 carState = carState,
                 reservationState = reservationState,
-                reserveCar = reserveCar
+                reserveCar = reserveCar,
+                reservationTimeLeft = reservationTimeLeft,
+                cancelReservation = cancelReservation
+
             )
         }, sheetPeekHeight = 15.dp
     ){
@@ -270,37 +291,128 @@ private fun BottomSheet(
 private fun BottomSheetContent(
     carState:State<Car?>,
     reservationState: State<HomeViewModel.ReservationState>,
-    reserveCar:(car:Car)->Unit
+    reservationTimeLeft:State<Long>,
+    reserveCar:(car:Car)->Unit,
+    cancelReservation: () -> Unit
 ) {
 
     BottomSheetLayout {
-        when (reservationState.value) {
-            is HomeViewModel.ReservationState.Default -> {
-                //no action
-                val car = carState.value
-                if (car != null) {
-                    CarDetails(
-                        car = car,
-                        onReserve = {
-                            reserveCar(it)
-                        })
-                }else{
-                    NoCarSelected()
-                }
-            }
-            is HomeViewModel.ReservationState.InProgress -> {
+        val car = carState.value
+        if (car != null) {
+            CarDetails(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                ),
+                car = car
+            )
+            ReservationState(
+                reservationTimeLeft = reservationTimeLeft,
+                reservationState = reservationState,
+                car = car,
+                reserveCar = reserveCar,
+                cancelReservation = cancelReservation
+            )
+        }else{
+            NoCarSelected(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                )
+            )
+        }
 
-            }
-            is HomeViewModel.ReservationState.Reserved -> {
 
-            }
-            is HomeViewModel.ReservationState.Error -> {
+    }
+}
 
+
+@Composable
+private fun ReservationState(
+    reservationTimeLeft: State<Long>,
+    reservationState: State<HomeViewModel.ReservationState>,
+    car:Car,
+    reserveCar:(car:Car)->Unit,
+    cancelReservation: () -> Unit
+){
+    when (reservationState.value) {
+        is HomeViewModel.ReservationState.Default -> {
+            //no action
+            ReserveButton(
+                modifier = Modifier
+                    .padding(Dimens.medium.dp)
+            ) {
+                reserveCar(car)
             }
+        }
+        is HomeViewModel.ReservationState.InProgress -> {
+            LinearProgressIndicator(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                )
+            )
+        }
+        is HomeViewModel.ReservationState.Reserved -> {
+            ReservationTimeLeft(
+                timeLeft = reservationTimeLeft
+            )
+            CancelReservationButton(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                )
+            ){
+                cancelReservation()
+            }
+
+
+        }
+        is HomeViewModel.ReservationState.Error -> {
 
         }
     }
 }
+
+@Composable
+private fun CancelReservationButton(
+    modifier:Modifier = Modifier,
+    cancelReservation:()->Unit
+
+){
+   Button(
+       modifier = modifier.fillMaxWidth(),
+       onClick = {
+          cancelReservation()
+       }) {
+      Text(
+          text = stringResource(R.string.screen_home_cancel_reservation)
+      )
+   }
+}
+
+@Composable
+private fun ReservationTimeLeft(
+    modifier:Modifier = Modifier,
+    timeLeft:State<Long>
+){
+     Row(
+         modifier = modifier.fillMaxWidth(),
+         horizontalArrangement = Arrangement.Center
+     ) {
+         val timeSeconds = timeLeft.value
+         val formattedSeconds:String = if(timeSeconds % 60 < 10){
+             //add a zero to the beginning
+             "0${timeSeconds % 60}"
+         }else{
+             (timeSeconds % 60).toString()
+         }
+        Text(
+            text = "${timeSeconds /  60}:$formattedSeconds",
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = Dimens.large.sp
+        )
+     }
+}
+
+
 
 @Composable
 private fun BottomSheetLayout(
@@ -320,11 +432,12 @@ private fun BottomSheetLayout(
     }
 }
 
-
 @Composable
-private fun NoCarSelected(){
+private fun NoCarSelected(
+    modifier: Modifier
+){
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
         Text(text = "Click on a car on the map to see the details here")
@@ -338,7 +451,7 @@ private fun ReserveButton(
     onClick:()->Unit
 ){
     Button(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         onClick = onClick
     ) {
         Text(text = stringResource(R.string.screen_home_reserve))
@@ -346,37 +459,37 @@ private fun ReserveButton(
 }
 @Composable
 private fun CarDetails(
-    car:Car,
-    onReserve:(car:Car)->Unit
+    modifier:Modifier = Modifier,
+    car:Car
 ){
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+        modifier = modifier
+            .fillMaxWidth()
+            .size(100.dp),
+        horizontalArrangement = Arrangement.Start
     ) {
-        
+
         AsyncImage(
-            modifier = Modifier.size(60.dp),
+            modifier = Modifier.size(100.dp),
             model = car.model.image.url,
             contentDescription =null
         )
-        Text(
-            text = car.model.name,
-            color = Color.Black
-        )
-        Spacer(
-           modifier =  Modifier.width(Dimens.medium.dp)
-        )
-        Text(
-            text = car.model.manufacturerName,
-            color = Color.Black
-        )
-    }
-    ReserveButton(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Dimens.medium.dp)
+        Column(
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.Center
         ) {
-           onReserve(car)
+            Text(
+                text = car.model.name,
+                color = Color.Black
+            )
+            Spacer(
+                modifier =  Modifier.width(Dimens.medium.dp)
+            )
+            Text(
+                text = car.model.manufacturerName,
+                color = Color.Black
+            )
         }
+    }
 }
 

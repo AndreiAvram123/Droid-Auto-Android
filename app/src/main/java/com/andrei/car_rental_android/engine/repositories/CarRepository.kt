@@ -11,6 +11,7 @@ import javax.inject.Inject
 interface CarRepository{
     fun fetchNearby(latitude:Double,longitude:Double):Flow<RequestState<List<Car>>>
     fun makeReservation(reservationRequest: ReservationRequest):Flow<RequestState<Nothing>>
+    fun cancelCurrentReservation():Flow<RequestState<Nothing>>
 }
 
 class CarRepositoryImpl @Inject constructor(
@@ -24,6 +25,10 @@ class CarRepositoryImpl @Inject constructor(
 
     override fun makeReservation(reservationRequest: ReservationRequest): Flow<RequestState<Nothing>> = requestExecutor.performRequest{
         carService.makeReservation(reservationRequest)
+    }
+
+    override fun cancelCurrentReservation(): Flow<RequestState<Nothing>>  = requestExecutor.performRequest{
+        carService.cancelReservation()
     }
 
 }

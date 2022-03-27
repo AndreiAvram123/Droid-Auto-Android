@@ -1,6 +1,7 @@
 package com.andrei.car_rental_android.screens.Home
 
 import android.location.Location
+import android.os.CountDownTimer
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.CarRepository
@@ -17,10 +18,14 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     abstract val nearbyCars:StateFlow<HomeViewModelState>
     abstract val locationState:StateFlow<LocationState>
     abstract val reservationState:StateFlow<ReservationState>
+    abstract val reservationTimeLeftMillis:StateFlow<Long>
+
+    val reservationTimeSeconds:Long = 15 * 60
 
     abstract fun setLocation(location: Location)
     abstract fun setLocationUnknown()
     abstract fun reserveCar(car:Car)
+    abstract fun cancelReservation()
 
     sealed class HomeViewModelState{
         data class Success(val data:List<Car>):HomeViewModelState()
@@ -52,7 +57,11 @@ class HomeViewModelImpl @Inject constructor(
     override val reservationState: MutableStateFlow<ReservationState> = MutableStateFlow(
         ReservationState.Default
     )
+    override val reservationTimeLeftMillis: MutableStateFlow<Long> = MutableStateFlow(reservationTimeSeconds)
 
+    private var  reservationTimer:CountDownTimer? = null
+    
+    
     init {
         coroutineScope.launch {
             locationState.collect{state->
@@ -61,6 +70,29 @@ class HomeViewModelImpl @Inject constructor(
                 }
             }
         }
+    }
+    
+    private fun startReservationTimer(){
+        reservationTimer = object : CountDownTimer(
+            reservationTimeSeconds * 1000,
+            1000
+        ) {
+            override fun onTick(millisUntilFinished: Long) {
+                reservationTimeLeftMillis.tryEmit(millisUntilFinished/1000L)
+            }
+
+            override fun onFinish() {
+               cancelTimer()
+            }
+
+        }
+        reservationTimer?.start()
+    }
+
+    private fun cancelTimer(){
+        reservationTimeLeftMillis.tryEmit(reservationTimeSeconds)
+        reservationTimer?.cancel()
+        reservationTimer = null
     }
 
     private suspend fun getNearbyCars(location:Location) {
@@ -93,12 +125,35 @@ class HomeViewModelImpl @Inject constructor(
                  ReservationRequest(car.id)
              ).collect{
                  when(it){
-                     is RequestState.Success -> reservationState.emit(ReservationState.Reserved(car))
+                     is RequestState.Success -> {
+                         reservationState.emit(ReservationState.Reserved(car))
+                         startReservationTimer()
+                     }
                      is RequestState.Loading -> reservationState.emit(ReservationState.InProgress)
                      else -> reservationState.emit(ReservationState.Error)
                  }
              }
          }
+    }
+
+    override fun cancelReservation() {
+        coroutineScope.launch {
+            carRepository.cancelCurrentReservation().collect{
+                when(it){
+                    is RequestState.Success -> {
+                        cancelTimer()
+                        reservationState.emit(ReservationState.Default)
+                    }
+                    is RequestState.Loading -> {
+
+                    }
+                    else -> {
+
+                    }
+                }
+            }
+
+        }
     }
 
 }
