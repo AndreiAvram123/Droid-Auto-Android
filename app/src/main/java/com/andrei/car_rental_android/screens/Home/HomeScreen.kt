@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.location.LocationRequest
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -27,10 +28,13 @@ import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
 
 sealed class PermissionState{
     object Unchecked:PermissionState()
@@ -55,7 +59,6 @@ fun MainContent() {
     val currentSelectedCarState: MutableState<Car?> =  remember {
         mutableStateOf(null)
     }
-
     LocationPermission(setKnowLocation = {
         viewModel.setLocation(it)
     }, setUnknownLocation = {
@@ -72,27 +75,54 @@ fun MainContent() {
         cancelReservation = {
             viewModel.cancelReservation()
         }
-
     ) {
+        Log.d("andrei","Recomposition triggered")
         Box(modifier = Modifier.fillMaxSize()) {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                uiSettings = MapUiSettings(
-                    zoomControlsEnabled = true,
-                )
-            ) {
-                MapContent(
-                    state = viewModel.nearbyCars.collectAsState()
-                ){
-                    currentSelectedCarState.value= it
-                }
-            }
+            Map(
+                onCarSelected = {
+                    currentSelectedCarState.value = it
+                },
+                state = viewModel.nearbyCars.collectAsState(),
+                locationState = viewModel.locationState.collectAsState()
+            )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
                 LocationState(locationState = viewModel.locationState.collectAsState().value)
             }
+        }
+    }
+}
+
+@Composable
+private fun Map(
+    locationState: State<HomeViewModel.LocationState>,
+    state: State<HomeViewModel.HomeViewModelState>,
+    onCarSelected:(car:Car)->Unit
+){
+    val cameraPositionState = rememberCameraPositionState()
+    val locationStateValue = locationState.value
+    if(locationStateValue is HomeViewModel.LocationState.Determined){
+        val location = locationStateValue.location
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(
+            LatLng(
+              location.latitude,
+              location.longitude
+            ),10f
+        )
+    }
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        uiSettings = MapUiSettings(
+            zoomControlsEnabled = true,
+        )
+    ) {
+        MapContent(
+            state = state
+        ){
+             onCarSelected(it)
         }
     }
 }
