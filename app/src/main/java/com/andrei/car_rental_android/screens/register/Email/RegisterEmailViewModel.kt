@@ -2,7 +2,7 @@ package com.andrei.car_rental_android.screens.register.Email
 
 import android.util.Patterns
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
-import com.andrei.car_rental_android.engine.configuration.RequestState
+import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.engine.repositories.RegisterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*

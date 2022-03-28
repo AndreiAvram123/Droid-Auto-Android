@@ -1,4 +1,4 @@
-package com.andrei.car_rental_android.navigation
+package com.andrei.car_rental_android.screens.register.Email
 
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
@@ -14,9 +14,10 @@ class RegisterEmailNavHelper {
 
     companion object {
 
-        val route :String = "registerEmail?${RegisterEmailNavArgs::firstName.name}={firstName},${RegisterEmailNavArgs::lastName.name}={lastName}"
+        private const val baseRoute :String = "registerEmail"
+        val route :String = "$baseRoute?${RegisterEmailNavArgs::firstName.name}={firstName},${RegisterEmailNavArgs::lastName.name}={lastName}"
 
-        fun getDestination(registerEmailNavArgs: RegisterEmailNavArgs):String = "${Screen.RegistrationScreen.RegisterEmail.route}"+
+        fun getDestination(registerEmailNavArgs: RegisterEmailNavArgs):String = "$baseRoute"+
                     "?${RegisterEmailNavArgs::firstName.name}=${registerEmailNavArgs.firstName}," +
                     "${RegisterEmailNavArgs::lastName.name}=${registerEmailNavArgs.lastName}"
 

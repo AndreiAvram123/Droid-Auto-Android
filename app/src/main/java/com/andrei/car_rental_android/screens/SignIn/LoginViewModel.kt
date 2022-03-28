@@ -2,8 +2,8 @@ package com.andrei.car_rental_android.screens.SignIn
 
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.LoginRepository
-import com.andrei.car_rental_android.engine.configuration.RequestState
 import com.andrei.car_rental_android.engine.request.LoginRequest
+import com.andrei.car_rental_android.engine.request.RequestState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +16,6 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
     abstract val usernameState:StateFlow<String>
     abstract val passwordState:StateFlow<String>
     abstract val loginUiState:StateFlow<LoginUIState>
-    abstract val usernameValidationState:StateFlow<ValidationStateField>
-    abstract val passwordValidationState:StateFlow<ValidationStateField>
     abstract fun resetUIState()
     abstract fun setUsername(username:String)
     abstract fun setPassword(password:String)
@@ -47,8 +45,6 @@ class LoginViewModelImpl @Inject constructor(
     override val usernameState: MutableStateFlow<String> = MutableStateFlow("")
     override val passwordState: MutableStateFlow<String> = MutableStateFlow("")
     override val loginUiState: MutableStateFlow<LoginUIState> = MutableStateFlow(LoginUIState.Default)
-    override val usernameValidationState: MutableStateFlow<ValidationStateField> = MutableStateFlow(ValidationStateField.Unvalidated)
-    override val passwordValidationState: MutableStateFlow<ValidationStateField> = MutableStateFlow(ValidationStateField.Unvalidated)
 
     override fun resetUIState() {
         coroutineScope.launch {
@@ -69,27 +65,32 @@ class LoginViewModelImpl @Inject constructor(
 
     override fun login() {
          coroutineScope.launch {
-             val loginRequest = LoginRequest(
-                 username = usernameState.value,
-                 password = passwordState.value
-             )
-             loginRepository.login(loginRequest).collect {
-                 when(it){
-                     is RequestState.Success ->{
-                         loginUiState.emit(LoginUIState.LoggedIn)
-                     }
-                     is RequestState.Loading -> {
-                         loginUiState.emit(LoginUIState.Loading)
-                     }
-                     is RequestState.Error -> {
-                         if(it.code == 401){
-                            loginUiState.emit(LoginUIState.InvalidCredentials)
-                         }else{
+             val username = usernameState.value.trim()
+             val password = passwordState.value.trim()
+
+             if (username.isNotBlank() && password.isNotBlank()) {
+                 val loginRequest = LoginRequest(
+                     email = username,
+                     password = password
+                 )
+                 loginRepository.login(loginRequest).collect { response ->
+                     when (response) {
+                         is RequestState.Success -> {
+                             loginUiState.emit(LoginUIState.LoggedIn)
+                         }
+                         is RequestState.Loading -> {
+                             loginUiState.emit(LoginUIState.Loading)
+                         }
+                         is RequestState.Error -> {
+                             if (response.code == 401) {
+                                 loginUiState.emit(LoginUIState.InvalidCredentials)
+                             } else {
+                                 loginUiState.emit(LoginUIState.ServerError)
+                             }
+                         }
+                         is RequestState.ConnectionError -> {
                              loginUiState.emit(LoginUIState.ServerError)
                          }
-                     }
-                     is RequestState.ConnectionError -> {
-                         loginUiState.emit(LoginUIState.ServerError)
                      }
                  }
              }

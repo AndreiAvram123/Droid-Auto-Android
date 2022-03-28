@@ -1,6 +1,6 @@
 package com.andrei.car_rental_android
 
-import com.andrei.car_rental_android.engine.configuration.RequestState
+import com.andrei.car_rental_android.engine.request.RequestState
 import io.mockk.MockKMatcherScope
 import io.mockk.coEvery
 import io.mockk.mockk

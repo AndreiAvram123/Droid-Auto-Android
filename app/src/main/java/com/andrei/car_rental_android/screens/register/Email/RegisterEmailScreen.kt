@@ -1,10 +1,8 @@
 package com.andrei.car_rental_android.screens.register.Email
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -15,9 +13,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
-import com.andrei.car_rental_android.navigation.CreatePasswordNavHelper
-import com.andrei.car_rental_android.navigation.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
+import com.andrei.car_rental_android.screens.register.base.RegisterBackButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
@@ -27,32 +24,55 @@ fun RegisterEmailScreen(
     navController: NavController,
     registerEmailNavArgs: RegisterEmailNavHelper.RegisterEmailNavArgs
 ) {
+    val navigator = RegisterEmailNavigatorImpl(
+        navController = navController,
+        navArgs = registerEmailNavArgs
+    )
     RegisterScreenSurface {
-        MainContent(navigateForward = {email->
-            navController.navigate(CreatePasswordNavHelper.getDestination(
-                CreatePasswordNavHelper.CreatePasswordNavArgs(
-                    firstName = registerEmailNavArgs.firstName,
-                    lastName = registerEmailNavArgs.lastName,
-                    email = email
-                )
-            ))
-        })
+        MainContent(navigator = navigator)
     }
 }
 
 
 @Composable
 private fun MainContent(
-    navigateForward : (email:String) -> Unit
+    navigator:RegisterEmailNavigator
 ){
     val viewModel:RegisterEmailViewModel = hiltViewModel<RegisterEmailViewModelImpl>()
+    TopContent {
+        navigator.navigateBack()
+    }
     CenterContent(viewModel = viewModel)
     BottomContent(
         viewModel = viewModel,
         navigateForward = {
-            navigateForward(viewModel.email.value)
+            navigator.navigateToPasswordScreen(viewModel.email.value)
         }
     )
+}
+
+@Composable
+private fun TopContent(
+    navigateBack:()->Unit
+){
+    Column(modifier = Modifier.fillMaxSize()) {
+        RegisterBackButton {
+            navigateBack()
+        }
+        Headings()
+    }
+
+}
+@Composable
+private fun Headings(
+    modifier: Modifier = Modifier
+){
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Text(text = stringResource(R.string.screen_email_provide_email))
+    }
 }
 
 @Composable
@@ -66,7 +86,7 @@ private fun CenterContent(viewModel: RegisterEmailViewModel){
             modifier = Modifier.fillMaxWidth(),
             state = viewModel.email.collectAsState()
             , onValueChanged ={
-                viewModel.setEmail(it)
+                viewModel.setEmail(it.trim())
             },
             validationState = viewModel.emailValidationState.collectAsState()
         )
@@ -111,7 +131,7 @@ private fun EmailTextFieldColumn(
             },
             isError = invalid,
             placeholder = {
-                TextFieldLabel(text = stringResource(R.string.screen_email_email))
+                TextFieldLabel(text = stringResource(R.string.screen_email_enter_email_hint))
             }
         )
         EmailValidationError(validationState)

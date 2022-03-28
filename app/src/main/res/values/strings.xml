@@ -1,10 +1,15 @@
 <resources>
     <string name="app_name">car-rental-android</string>
 
+    <!-- Screen home -->
+    <string name="screen_home_reserve">Reserve</string>
+    <string name="screen_home_cancel_reservation">Cancel reservation</string>
+
     <!--Screen sign in-->
     <string name="screen_sign_in_email">Email</string>
     <string name="screen_sign_in_password">Password</string>
     <string name="screen_sign_in_login">Login</string>
+    <string name="screen_sign_in_register">Register</string>
     <string name="screen_sign_in_invalid_credentials_dialog_title">Please try again…</string>
     <string name="screen_sign_in_invalid_credentials_dialog_content">The email and password you entered do not match our records.Please double check and try again.</string>
     <string name="screen_sign_in_invalid_credentials_dialog_positive_bt">OK</string>
@@ -18,10 +23,11 @@
     <string name="screen_user_name_continue">Continue</string>
 
     <!--Screen email -->
-    <string name="screen_email_email">Email</string>
+    <string name="screen_email_enter_email_hint">Email</string>
     <string name="screen_email_invalid_email_format">Uups..Seems like that\'s not a valid email</string>
     <string name="screen_email_already_taken">Hmmm..Seems like this email is already used</string>
     <string name="screen_email_unknown_error">That\'s on our side.It seems like we have a problem verifying this email </string>
+    <string name="screen_email_provide_email">Please provide us with your email </string>
 
     <!--Screen password-->
     <string name="screen_password_choose_password_title">Let\'s choose a password</string>
@@ -33,4 +39,11 @@
     <string name="screen_password_include_number">Include at least one number</string>
     <string name="screen_password_include_8_characters">Include at least 8 characters</string>
     <string name="screen_password_include_special_character">Include at least one special character</string>
+
+
+    <!--Screen creating account-->
+    <string name="screen_creating_account_error">That\'s on our side.It seems like there was a problem creating your account</string>
+    <string name="screen_creating_account_success">We successfully created your account. We also sent you a verification email</string>
+    <string name="screen_creating_account_try_again">Try again</string>
+    <string name="screen_creating_account_navigate_to_login">Navigate to login</string>
 </resources>

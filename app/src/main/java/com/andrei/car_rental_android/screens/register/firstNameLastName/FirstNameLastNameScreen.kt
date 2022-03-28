@@ -8,7 +8,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
@@ -20,9 +19,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
-import com.andrei.car_rental_android.navigation.RegisterEmailNavHelper
+import com.andrei.car_rental_android.screens.register.base.CenterColumn
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
+import com.andrei.car_rental_android.screens.register.base.RegisterBackButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
+import com.andrei.car_rental_android.screens.register.firstNameLastName.FirstNameLastNameNavigator
+import com.andrei.car_rental_android.screens.register.firstNameLastName.FirstNameLastNameNavigatorImpl
 import com.andrei.car_rental_android.ui.Dimens
 
 
@@ -31,45 +33,64 @@ import com.andrei.car_rental_android.ui.Dimens
 fun FirstNameLastNameScreen(
     navController: NavController,
 ) {
-    MainContent(
-       navigateForward = {firstName, lastName ->
-         navController.navigate(RegisterEmailNavHelper.getDestination(
-             RegisterEmailNavHelper.RegisterEmailNavArgs(
-                 firstName = firstName,
-                 lastName = lastName
-             )
-         ))
-       }
-    )
+    val navigator = FirstNameLastNameNavigatorImpl(navController)
+    RegisterScreenSurface {
+        MainContent(navigator = navigator)
+    }
+
 }
 
 @Composable
 private fun MainContent(
-    navigateForward:(firstName:String,
-                     lastName:String)->Unit,
+    navigator:FirstNameLastNameNavigator
 ) {
-   RegisterScreenSurface {
-       val viewModel : UsernameViewModel = hiltViewModel<UsernameViewModelImpl>()
+    val viewModel : FirstNameLastNameViewModel = hiltViewModel<FirstNameLastNameViewModelImpl>()
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            ScreenHeadings()
-            Fields(
-                viewModel = viewModel
-            )
-        }
-        Column(modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Bottom
-        ) {
-                ContinueButton(
-                    enabled = viewModel.nextButtonEnabled.collectAsState(),
-                    onClick = {
-                       navigateForward(
-                           viewModel.firstName.value,
-                           viewModel.lastName.value
-                       )
-                    }
+    TopSection(navigateBack = {
+        navigator.navigateBack()
+    })
+        CenterSection(
+            viewModel = viewModel
+        )
+        BottomSection(
+            viewModel = viewModel,
+            navigateForward = {
+                navigator.navigateToPasswordScreen(
+                    viewModel.firstName.value,
+                    viewModel.lastName.value
                 )
+            }
+        )
+    }
+
+
+@Composable
+private fun BottomSection(
+    viewModel: FirstNameLastNameViewModel,
+    navigateForward:()->Unit
+){
+    Column(modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        ContinueButton(
+            enabled = viewModel.nextButtonEnabled.collectAsState(),
+            onClick = {
+                 navigateForward()
+            }
+        )
+    }
+}
+
+@Composable
+private fun TopSection(
+     navigateBack:()->Unit
+){
+    Column(modifier = Modifier.fillMaxSize()) {
+        RegisterBackButton {
+          navigateBack()
         }
+        ScreenHeadings()
+
     }
 }
 
@@ -95,13 +116,9 @@ private fun ScreenHeadings(modifier: Modifier = Modifier){
 }
 
 @Composable
-private fun Fields(modifier: Modifier = Modifier,
-                  viewModel: UsernameViewModel){
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+private fun CenterSection(modifier: Modifier = Modifier,
+                         viewModel: FirstNameLastNameViewModel){
+    CenterColumn{
         FirstNameField(
             state = viewModel.firstName.collectAsState(),
             onValueChanged = {
@@ -128,7 +145,7 @@ fun SurnameField(modifier: Modifier = Modifier,
         modifier = modifier.fillMaxWidth(),
         value = state.value,
         onValueChange = {
-            onValueChanged(it)
+            onValueChanged(it.trim())
         },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions =  KeyboardActions(onNext = {
@@ -151,7 +168,7 @@ fun FirstNameField(modifier:Modifier = Modifier,
         modifier = modifier.fillMaxWidth(),
         value = state.value,
         onValueChange = {
-            onValueChanged(it)
+            onValueChanged(it.trim())
         },
         keyboardOptions = KeyboardOptions(
             capitalization = KeyboardCapitalization.Sentences,
