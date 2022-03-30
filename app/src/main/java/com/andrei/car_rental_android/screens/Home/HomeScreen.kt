@@ -2,10 +2,10 @@ package com.andrei.car_rental_android.screens.Home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.location.Location
 import android.location.LocationRequest
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -24,6 +24,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.R
+import com.andrei.car_rental_android.helpers.LocationSettingsHelperImpl
+import com.andrei.car_rental_android.state.PermissionState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
@@ -36,11 +38,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 
-sealed class PermissionState{
-    object Unchecked:PermissionState()
-    object Denied:PermissionState()
-    object Granted:PermissionState()
-}
+
 @Composable
 fun HomeScreen(navController: NavController) {
     Box(
@@ -54,16 +52,25 @@ fun HomeScreen(navController: NavController) {
 @OptIn(ExperimentalMaterialApi::class)
 fun MainContent() {
 
+
     val viewModel = hiltViewModel<HomeViewModelImpl>()
 
     val currentSelectedCarState: MutableState<Car?> =  remember {
         mutableStateOf(null)
     }
-    LocationPermission(setKnowLocation = {
-        viewModel.setLocation(it)
-    }, setUnknownLocation = {
-        viewModel.setLocationUnknown()
-    })
+    val context = LocalContext.current
+    LocationRequirements(
+        viewModel.currentLocationRequirement.collectAsState(),
+    ){ newRequirement->
+        if(newRequirement is HomeViewModel.LocationRequirement.None){
+             getLastKnownLocation(context, onNewLocation = {
+              viewModel.setLocation(it)
+             }, onError = {
+                 viewModel.setLocationUnknown()
+             })
+        }
+    }
+
 
     BottomSheet(
         carState = currentSelectedCarState,
@@ -76,7 +83,7 @@ fun MainContent() {
             viewModel.cancelReservation()
         }
     ) {
-        Log.d("andrei","Recomposition triggered")
+
         Box(modifier = Modifier.fillMaxSize()) {
             Map(
                 onCarSelected = {
@@ -93,6 +100,62 @@ fun MainContent() {
             }
         }
     }
+}
+
+@Composable
+private fun LocationActive(){
+    val showEnableLocationSnackbar =  remember{
+        mutableStateOf(false)
+    }
+    EnableLocationSnackbar(showEnableLocationSnackbar = showEnableLocationSnackbar)
+
+    val locationSettingsLauncher =  rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()){
+        if(it.resultCode == Activity.RESULT_CANCELED){
+            showEnableLocationSnackbar.value  = true;
+        }
+    }
+    val locationSettingsHelper = LocationSettingsHelperImpl(
+        context = LocalContext.current,
+        locationSettingsLauncher = locationSettingsLauncher
+    )
+    locationSettingsHelper.requestHighPrioritySettings()
+}
+
+@Composable
+private fun LocationRequirements(
+    currentRequirement:State<HomeViewModel.LocationRequirement>,
+    onNewRequirement:(locationRequirement:HomeViewModel.LocationRequirement) -> Unit
+){
+    when(currentRequirement.value){
+        HomeViewModel.LocationRequirement.None -> {
+            onNewRequirement(HomeViewModel.LocationRequirement.None)
+        }
+        HomeViewModel.LocationRequirement.PermissionNeeded -> {
+            LocationPermission(onPermissionGranted = {
+                onNewRequirement(HomeViewModel.LocationRequirement.LocationActive)
+            },onPermissionDenied = {
+
+            })
+
+
+        }
+        HomeViewModel.LocationRequirement.LocationActive -> {
+            LocationActive()
+        }
+
+    }
+}
+
+
+@Composable
+private fun EnableLocationSnackbar(
+    showEnableLocationSnackbar: State<Boolean>
+){
+    if(showEnableLocationSnackbar.value){
+    Snackbar {
+        Text(text = "Please enable location");
+    } }
 }
 
 @Composable
@@ -148,13 +211,13 @@ private fun MapContent(
     }
 }
 
-
 @Composable
 private fun LocationPermission(
-    setKnowLocation:(location:Location)-> Unit,
-    setUnknownLocation:()->Unit
+     onPermissionGranted: ()->Unit,
+     onPermissionDenied: ()->Unit
+
 ){
-    var locationPermission:PermissionState by remember {
+    var locationPermission: PermissionState by remember {
         mutableStateOf(PermissionState.Unchecked)
     }
 
@@ -168,22 +231,18 @@ private fun LocationPermission(
 
     when(locationPermission){
         PermissionState.Denied -> {
-            Snackbar {
-                Text(text = "Give permission for location")
-            }
+             onPermissionDenied()
         }
         PermissionState.Granted -> {
-            getLastKnownLocation(LocalContext.current, onNewLocation = {
-                setKnowLocation(it)
-            }, onError = {
-                setUnknownLocation()
-            })
+           onPermissionGranted()
         }
         PermissionState.Unchecked -> {
             //no nothing or maybe show some loading spinner
         }
     }
 }
+
+
 
 
 @Composable
@@ -216,6 +275,8 @@ private fun getLastKnownLocation(
     onNewLocation:(Location) -> Unit,
     onError:()->Unit
 ){
+
+
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val cancellationTokenSource = CancellationTokenSource()
     fusedLocationClient.getCurrentLocation(
@@ -238,6 +299,8 @@ private fun getLastKnownLocation(
 private fun LocationSettings(
     onPermissionResult:(granted:Boolean)->Unit
 ){
+
+    //maybe move to a helper
     val locationPermission = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult ={ locationEnabled->

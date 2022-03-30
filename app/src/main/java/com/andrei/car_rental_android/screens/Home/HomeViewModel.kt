@@ -17,6 +17,7 @@ import javax.inject.Inject
 abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(coroutineProvider) {
     abstract val nearbyCars:StateFlow<HomeViewModelState>
     abstract val locationState:StateFlow<LocationState>
+    abstract val currentLocationRequirement:StateFlow<LocationRequirement>
     abstract val reservationState:StateFlow<ReservationState>
     abstract val reservationTimeLeftMillis:StateFlow<Long>
 
@@ -44,6 +45,11 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
         object Unknown : LocationState()
         object Loading:LocationState()
     }
+    sealed class LocationRequirement{
+        object None :LocationRequirement()
+        object PermissionNeeded:LocationRequirement()
+        object LocationActive:LocationRequirement()
+    }
 }
 
 @HiltViewModel
@@ -54,6 +60,8 @@ class HomeViewModelImpl @Inject constructor(
 
     override val nearbyCars: MutableStateFlow<HomeViewModelState> = MutableStateFlow(HomeViewModelState.Loading)
     override val locationState: MutableStateFlow<LocationState> = MutableStateFlow(LocationState.Loading)
+    override val currentLocationRequirement: MutableStateFlow<LocationRequirement> = MutableStateFlow(LocationRequirement.PermissionNeeded)
+
     override val reservationState: MutableStateFlow<ReservationState> = MutableStateFlow(
         ReservationState.Default
     )
