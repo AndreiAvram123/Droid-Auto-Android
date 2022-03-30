@@ -17,14 +17,17 @@ import javax.inject.Inject
 abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(coroutineProvider) {
     abstract val nearbyCars:StateFlow<HomeViewModelState>
     abstract val locationState:StateFlow<LocationState>
-    abstract val currentLocationRequirement:StateFlow<LocationRequirement>
+    abstract val locationRequirements:StateFlow<Set<LocationRequirement>>
+
+
     abstract val reservationState:StateFlow<ReservationState>
     abstract val reservationTimeLeftMillis:StateFlow<Long>
 
+    abstract fun setLocationRequirementResolved(locationRequirement: LocationRequirement)
+
     val reservationTimeSeconds:Long = 15 * 60
 
-    abstract fun setLocation(location: Location)
-    abstract fun setLocationUnknown()
+    abstract fun setLocationState(locationState:LocationState)
     abstract fun reserveCar(car:Car)
     abstract fun cancelReservation()
 
@@ -41,12 +44,12 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
         object InProgress:ReservationState()
     }
     sealed class LocationState{
+        object NotRequested:LocationState()
         data class Determined(val location:Location):LocationState()
         object Unknown : LocationState()
         object Loading:LocationState()
     }
     sealed class LocationRequirement{
-        object None :LocationRequirement()
         object PermissionNeeded:LocationRequirement()
         object LocationActive:LocationRequirement()
     }
@@ -59,13 +62,25 @@ class HomeViewModelImpl @Inject constructor(
 ):HomeViewModel(coroutineProvider){
 
     override val nearbyCars: MutableStateFlow<HomeViewModelState> = MutableStateFlow(HomeViewModelState.Loading)
-    override val locationState: MutableStateFlow<LocationState> = MutableStateFlow(LocationState.Loading)
-    override val currentLocationRequirement: MutableStateFlow<LocationRequirement> = MutableStateFlow(LocationRequirement.PermissionNeeded)
+    override val locationState: MutableStateFlow<LocationState> = MutableStateFlow(LocationState.NotRequested)
+    override val locationRequirements: MutableStateFlow<Set<LocationRequirement>> = MutableStateFlow(
+        setOf(
+            LocationRequirement.PermissionNeeded,
+            LocationRequirement.LocationActive
+        )
+    )
 
     override val reservationState: MutableStateFlow<ReservationState> = MutableStateFlow(
         ReservationState.Default
     )
     override val reservationTimeLeftMillis: MutableStateFlow<Long> = MutableStateFlow(reservationTimeSeconds)
+
+    override fun setLocationRequirementResolved(locationRequirement: LocationRequirement) {
+         val newSet = locationRequirements.value.toMutableSet().apply {
+             remove(locationRequirement)
+         }
+        locationRequirements.tryEmit(newSet)
+    }
 
     private var  reservationTimer:CountDownTimer? = null
     
@@ -119,12 +134,9 @@ class HomeViewModelImpl @Inject constructor(
             }
     }
 
-    override fun setLocation(location: Location) {
-        locationState.tryEmit(LocationState.Determined(location))
-    }
 
-    override fun setLocationUnknown() {
-        locationState.tryEmit(LocationState.Unknown)
+    override fun setLocationState(newState: LocationState) {
+        locationState.tryEmit(newState)
     }
 
     override fun reserveCar(car: Car) {

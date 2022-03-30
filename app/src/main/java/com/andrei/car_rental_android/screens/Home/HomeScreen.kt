@@ -25,7 +25,6 @@ import coil.compose.AsyncImage
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.helpers.LocationSettingsHelperImpl
-import com.andrei.car_rental_android.state.PermissionState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
@@ -41,11 +40,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun HomeScreen(navController: NavController) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
         MainContent()
-    }
 }
 @Composable
 @Preview
@@ -60,16 +55,20 @@ fun MainContent() {
     }
     val context = LocalContext.current
     LocationRequirements(
-        viewModel.currentLocationRequirement.collectAsState(),
-    ){ newRequirement->
-        if(newRequirement is HomeViewModel.LocationRequirement.None){
-             getLastKnownLocation(context, onNewLocation = {
-              viewModel.setLocation(it)
-             }, onError = {
-                 viewModel.setLocationUnknown()
-             })
-        }
-    }
+        viewModel.locationRequirements.collectAsState(),
+    onRequirementMet = { requirementResolved->
+        viewModel.setLocationRequirementResolved(requirementResolved)
+
+    }, onRequirementFailed = {
+        //todo
+    }, onAllRequirementsResolved = {
+            viewModel.setLocationState(HomeViewModel.LocationState.Loading)
+            getLastKnownLocation(context, onNewLocation = {
+                viewModel.setLocationState(HomeViewModel.LocationState.Determined(it))
+            }, onError = {
+                viewModel.setLocationState(HomeViewModel.LocationState.Unknown)
+            })
+    })
 
 
     BottomSheet(
@@ -103,7 +102,9 @@ fun MainContent() {
 }
 
 @Composable
-private fun LocationActive(){
+private fun RequestActiveLocation(
+    onLocationEnabled : () -> Unit,
+){
     val showEnableLocationSnackbar =  remember{
         mutableStateOf(false)
     }
@@ -111,37 +112,54 @@ private fun LocationActive(){
 
     val locationSettingsLauncher =  rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()){
-        if(it.resultCode == Activity.RESULT_CANCELED){
-            showEnableLocationSnackbar.value  = true;
+        when (it.resultCode) {
+            Activity.RESULT_OK -> {
+                onLocationEnabled()
+                showEnableLocationSnackbar.value = false
+            }
+            Activity.RESULT_CANCELED -> showEnableLocationSnackbar.value = true
         }
+
     }
     val locationSettingsHelper = LocationSettingsHelperImpl(
         context = LocalContext.current,
         locationSettingsLauncher = locationSettingsLauncher
     )
-    locationSettingsHelper.requestHighPrioritySettings()
+    locationSettingsHelper.checkLocationSettings{
+        onLocationEnabled()
+    }
 }
 
 @Composable
 private fun LocationRequirements(
-    currentRequirement:State<HomeViewModel.LocationRequirement>,
-    onNewRequirement:(locationRequirement:HomeViewModel.LocationRequirement) -> Unit
+    locationRequirements:State<Set<HomeViewModel.LocationRequirement>>,
+    onRequirementMet:(locationRequirement:HomeViewModel.LocationRequirement) -> Unit,
+    onRequirementFailed:(locationRequirement:HomeViewModel.LocationRequirement)->Unit,
+    onAllRequirementsResolved:()->Unit
 ){
-    when(currentRequirement.value){
-        HomeViewModel.LocationRequirement.None -> {
-            onNewRequirement(HomeViewModel.LocationRequirement.None)
-        }
+    val requirement = locationRequirements.value.firstOrNull()
+
+
+    if(requirement == null){
+        onAllRequirementsResolved()
+        return;
+    }
+    when(requirement){
         HomeViewModel.LocationRequirement.PermissionNeeded -> {
             LocationPermission(onPermissionGranted = {
-                onNewRequirement(HomeViewModel.LocationRequirement.LocationActive)
+                onRequirementMet(HomeViewModel.LocationRequirement.PermissionNeeded)
             },onPermissionDenied = {
-
+                onRequirementFailed(HomeViewModel.LocationRequirement.PermissionNeeded)
             })
 
 
         }
         HomeViewModel.LocationRequirement.LocationActive -> {
-            LocationActive()
+            RequestActiveLocation(
+                onLocationEnabled = {
+                    onRequirementMet(HomeViewModel.LocationRequirement.LocationActive)
+                }
+            )
         }
 
     }
@@ -217,29 +235,15 @@ private fun LocationPermission(
      onPermissionDenied: ()->Unit
 
 ){
-    var locationPermission: PermissionState by remember {
-        mutableStateOf(PermissionState.Unchecked)
-    }
 
     LocationSettings{ permissionGranted->
         if(permissionGranted){
-            locationPermission = PermissionState.Granted
+            onPermissionGranted()
         }else{
-            locationPermission = PermissionState.Denied
+            onPermissionDenied()
         }
     }
 
-    when(locationPermission){
-        PermissionState.Denied -> {
-             onPermissionDenied()
-        }
-        PermissionState.Granted -> {
-           onPermissionGranted()
-        }
-        PermissionState.Unchecked -> {
-            //no nothing or maybe show some loading spinner
-        }
-    }
 }
 
 
@@ -251,9 +255,7 @@ private fun LocationState(
 ){
     when(locationState){
         is HomeViewModel.LocationState.Determined -> {
-            Snackbar {
-                Text(text = "We got you")
-            }
+            //no action required here
         }
         is  HomeViewModel.LocationState.Loading -> {
             Snackbar {
@@ -264,6 +266,9 @@ private fun LocationState(
             Snackbar {
                 Text(text = "We could not determine your location ")
             }
+        }
+        HomeViewModel.LocationState.NotRequested -> {
+
         }
     }
 }

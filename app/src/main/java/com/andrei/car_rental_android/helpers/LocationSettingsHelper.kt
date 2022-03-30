@@ -13,7 +13,7 @@ import com.google.android.gms.location.LocationSettingsRequest
 
 interface LocationSettingsHelper{
     val highPrecisionRequest:LocationRequest
-    fun requestHighPrioritySettings()
+    fun checkLocationSettings(onLocationActive: () -> Unit)
 }
 
 class LocationSettingsHelperImpl(
@@ -36,9 +36,9 @@ class LocationSettingsHelperImpl(
 
 
 
-    override fun requestHighPrioritySettings(){
+    override fun checkLocationSettings(onLocationEnabled:()->Unit){
         client.checkLocationSettings(builder).addOnSuccessListener {
-
+           onLocationEnabled()
         }.addOnFailureListener { exception ->
             if (exception is ResolvableApiException){
                 // Location settings are not satisfied, but this can be fixed
