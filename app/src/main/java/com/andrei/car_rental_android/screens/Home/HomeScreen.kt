@@ -1,11 +1,9 @@
 package com.andrei.car_rental_android.screens.Home
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.location.Location
-import android.location.LocationRequest
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -24,14 +22,13 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.R
-import com.andrei.car_rental_android.helpers.LocationSettingsHelperImpl
+import com.andrei.car_rental_android.helpers.LocationHelper
+import com.andrei.car_rental_android.helpers.LocationHelperImpl
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
@@ -47,14 +44,22 @@ fun HomeScreen(navController: NavController) {
 @OptIn(ExperimentalMaterialApi::class)
 fun MainContent() {
 
+    val locationHelper = LocationHelperImpl(LocalContext.current)
 
     val viewModel = hiltViewModel<HomeViewModelImpl>()
+
+    DisposableEffect(key1 = LocalContext.current){
+
+        onDispose {
+            locationHelper.stopLocationUpdates()
+        }
+    }
 
     val currentSelectedCarState: MutableState<Car?> =  remember {
         mutableStateOf(null)
     }
-    val context = LocalContext.current
     LocationRequirements(
+        locationHelper,
         viewModel.locationRequirements.collectAsState(),
     onRequirementMet = { requirementResolved->
         viewModel.setLocationRequirementResolved(requirementResolved)
@@ -63,11 +68,14 @@ fun MainContent() {
         //todo
     }, onAllRequirementsResolved = {
             viewModel.setLocationState(HomeViewModel.LocationState.Loading)
-            getLastKnownLocation(context, onNewLocation = {
-                viewModel.setLocationState(HomeViewModel.LocationState.Determined(it))
+            locationHelper.getLastKnownLocation(onLocationResolved ={
+                 viewModel.setLocationState(HomeViewModel.LocationState.Resolved(it))
+                 locationHelper.requestLocationUpdates(
+                     locationRequest = locationHelper.balancedPrecisionHighIntervalRequest
+                 )
             }, onError = {
                 viewModel.setLocationState(HomeViewModel.LocationState.Unknown)
-            })
+            } )
     })
 
 
@@ -85,11 +93,11 @@ fun MainContent() {
 
         Box(modifier = Modifier.fillMaxSize()) {
             Map(
+                currentLocation = locationHelper.lastKnownLocation.collectAsState(),
                 onCarSelected = {
                     currentSelectedCarState.value = it
                 },
                 state = viewModel.nearbyCars.collectAsState(),
-                locationState = viewModel.locationState.collectAsState()
             )
             Column(
                 modifier = Modifier
@@ -103,6 +111,7 @@ fun MainContent() {
 
 @Composable
 private fun RequestActiveLocation(
+    locationHelper: LocationHelper,
     onLocationEnabled : () -> Unit,
 ){
     val showEnableLocationSnackbar =  remember{
@@ -121,17 +130,14 @@ private fun RequestActiveLocation(
         }
 
     }
-    val locationSettingsHelper = LocationSettingsHelperImpl(
-        context = LocalContext.current,
-        locationSettingsLauncher = locationSettingsLauncher
-    )
-    locationSettingsHelper.checkLocationSettings{
+    locationHelper.checkLocationSettings(locationSettingsLauncher){
         onLocationEnabled()
     }
 }
 
 @Composable
 private fun LocationRequirements(
+    locationHelper: LocationHelper,
     locationRequirements:State<Set<HomeViewModel.LocationRequirement>>,
     onRequirementMet:(locationRequirement:HomeViewModel.LocationRequirement) -> Unit,
     onRequirementFailed:(locationRequirement:HomeViewModel.LocationRequirement)->Unit,
@@ -156,6 +162,7 @@ private fun LocationRequirements(
         }
         HomeViewModel.LocationRequirement.LocationActive -> {
             RequestActiveLocation(
+                locationHelper,
                 onLocationEnabled = {
                     onRequirementMet(HomeViewModel.LocationRequirement.LocationActive)
                 }
@@ -178,18 +185,19 @@ private fun EnableLocationSnackbar(
 
 @Composable
 private fun Map(
-    locationState: State<HomeViewModel.LocationState>,
+    currentLocation:State<Location?>,
     state: State<HomeViewModel.HomeViewModelState>,
     onCarSelected:(car:Car)->Unit
 ){
     val cameraPositionState = rememberCameraPositionState()
-    val locationStateValue = locationState.value
-    if(locationStateValue is HomeViewModel.LocationState.Determined){
-        val location = locationStateValue.location
+
+    val currentLocationValue = currentLocation.value
+    if(currentLocationValue != null){
+        Log.d("New location" , "New location $currentLocation")
         cameraPositionState.position = CameraPosition.fromLatLngZoom(
             LatLng(
-              location.latitude,
-              location.longitude
+                currentLocationValue.latitude,
+                currentLocationValue.longitude
             ),10f
         )
     }
@@ -254,7 +262,7 @@ private fun LocationState(
     locationState: HomeViewModel.LocationState
 ){
     when(locationState){
-        is HomeViewModel.LocationState.Determined -> {
+        is HomeViewModel.LocationState.Resolved -> {
             //no action required here
         }
         is  HomeViewModel.LocationState.Loading -> {
@@ -273,31 +281,6 @@ private fun LocationState(
     }
 }
 
-
-@SuppressLint("MissingPermission")
-private fun getLastKnownLocation(
-    context:Context,
-    onNewLocation:(Location) -> Unit,
-    onError:()->Unit
-){
-
-
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val cancellationTokenSource = CancellationTokenSource()
-    fusedLocationClient.getCurrentLocation(
-        LocationRequest.QUALITY_HIGH_ACCURACY,
-        cancellationTokenSource.token
-    ).addOnSuccessListener { location: Location? ->
-        if(location != null){
-            onNewLocation(location)
-        }else{
-            onError()
-        }
-    }.addOnFailureListener {
-        onError()
-    }
-
-}
 
 
 @Composable

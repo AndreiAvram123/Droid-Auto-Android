@@ -45,7 +45,7 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     }
     sealed class LocationState{
         object NotRequested:LocationState()
-        data class Determined(val location:Location):LocationState()
+        data class Resolved(val location:Location):LocationState()
         object Unknown : LocationState()
         object Loading:LocationState()
     }
@@ -88,7 +88,7 @@ class HomeViewModelImpl @Inject constructor(
     init {
         coroutineScope.launch {
             locationState.collect{state->
-                if(state is LocationState.Determined){
+                if(state is LocationState.Resolved){
                     getNearbyCars(state.location)
                 }
             }
