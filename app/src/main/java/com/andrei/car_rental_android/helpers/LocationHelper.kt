@@ -25,7 +25,7 @@ interface LocationHelper{
 }
 
 class LocationHelperImpl(
-    private val context:Context,
+    context:Context,
 ) : LocationHelper {
 
     override val highPrecisionLowIntervalRequest: LocationRequest  = LocationRequest.create().apply {
