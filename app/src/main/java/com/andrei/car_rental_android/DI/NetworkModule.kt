@@ -1,9 +1,6 @@
 package com.andrei.car_rental_android.DI
 
-import com.andrei.car_rental_android.engine.services.CarService
-import com.andrei.car_rental_android.engine.services.LoginService
-import com.andrei.car_rental_android.engine.services.RegisterService
-import com.andrei.car_rental_android.engine.services.TokenService
+import com.andrei.car_rental_android.engine.services.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,6 +26,12 @@ object NetworkModule {
     @Provides
     fun provideTokenService(retrofit: Retrofit):TokenService{
         return retrofit.create(TokenService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun providePaymentService(retrofit: Retrofit):PaymentService{
+        return retrofit.create(PaymentService::class.java)
     }
 
     @Singleton

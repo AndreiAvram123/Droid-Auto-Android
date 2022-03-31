@@ -24,7 +24,8 @@ import com.andrei.car_rental_android.state.SessionManager
 
 
 @Composable
-fun MainNavigation() {
+fun MainNavigation(
+) {
     val navController = rememberNavController()
     val loginStateViewModel = hiltViewModel<LoginStateViewModelImpl>()
 

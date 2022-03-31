@@ -14,16 +14,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.andrei.car_rental_android.DTOs.Car
+import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.helpers.LocationHelper
 import com.andrei.car_rental_android.helpers.LocationHelperImpl
+import com.andrei.car_rental_android.screens.Home.HomeViewModel.CarReservationState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
@@ -33,23 +34,49 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.PaymentSheetContract
+import com.stripe.android.paymentsheet.PaymentSheetResult
 import kotlinx.coroutines.flow.filterNotNull
 
 
 @Composable
-fun HomeScreen(navController: NavController) {
-    MainContent()
+fun HomeScreen(
+    navController: NavController,
+) {
+    MainContent(
+        navController
+    )
 }
 @Composable
-@Preview
 @OptIn(ExperimentalMaterialApi::class)
-fun MainContent() {
-
-    val locationHelper = LocationHelperImpl(LocalContext.current)
-
+private fun MainContent(
+    navController: NavController
+) {
+  val context = LocalContext.current
+    val locationHelper = LocationHelperImpl(context)
     val viewModel = hiltViewModel<HomeViewModelImpl>()
 
-    DisposableEffect(key1 = LocalContext.current){
+
+    val paymentSheetLauncher = rememberLauncherForActivityResult(
+        contract = PaymentSheetContract(),
+        onResult = { paymentResult ->
+            when (paymentResult) {
+                is PaymentSheetResult.Canceled -> {
+
+                }
+                is PaymentSheetResult.Failed -> {
+
+                }
+                is PaymentSheetResult.Completed -> {
+
+                }
+            }
+        }
+    )
+
+    DisposableEffect(key1 = context){
         onDispose {
             locationHelper.stopLocationUpdates()
         }
@@ -62,11 +89,9 @@ fun MainContent() {
 
     }
 
-
     val currentSelectedCarState: MutableState<Car?> =  remember {
         mutableStateOf(null)
     }
-
 
     LocationRequirements(
         locationHelper,
@@ -89,16 +114,26 @@ fun MainContent() {
 
     BottomSheet(
         carState = currentSelectedCarState,
-        reserveCar = {
-            viewModel.reserveCar(it)
-        },
-        reservationState = viewModel.reservationState.collectAsState(),
+        carReservationState = viewModel.carReservationState.collectAsState(),
         reservationTimeLeft = viewModel.reservationTimeLeftMillis.collectAsState(),
-        cancelReservation = {
-            viewModel.cancelReservation()
-        },
-        payUnlockFee ={
-
+        reservationStateListener = object : ReservationStateListener {
+            override fun reserveCar(car: Car) = viewModel.reserveCar(car)
+            override fun cancelReservation()  = viewModel.cancelReservation()
+            override fun payUnlockFee() = viewModel.startUnlockPaymentProcess()
+            override fun onUnlockPaymentIntentReady(paymentResponse: PaymentResponse) {
+                PaymentConfiguration.init(context,paymentResponse.publishableKey)
+                val googlePayConfiguration = PaymentSheet.GooglePayConfiguration(
+                    environment = PaymentSheet.GooglePayConfiguration.Environment.Test,
+                    countryCode = "UK"
+                )
+                val configuration = PaymentSheet.Configuration.Builder("car-rental")
+                    .googlePay(googlePayConfiguration)
+                    .build()
+                paymentSheetLauncher.launch(PaymentSheetContract.Args.createPaymentIntentArgs(
+                    clientSecret = paymentResponse.clientSecret,
+                    config = configuration
+                ))
+            }
         }
     ) {
 
@@ -119,6 +154,11 @@ fun MainContent() {
         }
     }
 }
+
+
+
+
+
 
 @Composable
 private fun RequestActiveLocation(
@@ -346,11 +386,9 @@ private fun MapMarkers(
 @OptIn(ExperimentalMaterialApi::class)
 private fun BottomSheet(
     carState: State<Car?>,
-    reservationState: State<HomeViewModel.ReservationState>,
-    reserveCar:(car:Car)->Unit,
+    carReservationState: State<CarReservationState>,
     reservationTimeLeft: State<Long>,
-    cancelReservation: () -> Unit,
-    payUnlockFee: () -> Unit,
+    reservationStateListener: ReservationStateListener,
     content: @Composable ()->Unit
 ){
 
@@ -369,11 +407,10 @@ private fun BottomSheet(
             BottomSheetLayout {
                 BottomSheetContent(
                     carState = carState,
-                    reservationState = reservationState,
-                    reserveCar = reserveCar,
+                    carReservationState = carReservationState,
                     reservationTimeLeft = reservationTimeLeft,
-                    cancelReservation = cancelReservation,
-                    payUnlockFee = payUnlockFee
+                    reservationStateListener = reservationStateListener
+
                 )
             }
         }, sheetPeekHeight = 15.dp
@@ -388,11 +425,9 @@ private fun BottomSheet(
 @Composable
 private fun BottomSheetContent(
     carState:State<Car?>,
-    reservationState: State<HomeViewModel.ReservationState>,
+    carReservationState: State<CarReservationState>,
     reservationTimeLeft:State<Long>,
-    reserveCar:(car:Car)->Unit,
-    cancelReservation: () -> Unit,
-    payUnlockFee: () -> Unit
+    reservationStateListener: ReservationStateListener
 
 ) {
 
@@ -407,11 +442,9 @@ private fun BottomSheetContent(
 
         ReservationState(
             reservationTimeLeft = reservationTimeLeft,
-            reservationState = reservationState,
-            car = car,
-            reserveCar = reserveCar,
-            cancelReservation = cancelReservation,
-            payUnlockFee = payUnlockFee
+            carReservationState = carReservationState,
+            currentPreviewedCar = car,
+            reservationStateListener = reservationStateListener
         )
 
 
@@ -426,47 +459,47 @@ private fun BottomSheetContent(
 }
 
 
+
 @Composable
 private fun ReservationState(
-    reservationTimeLeft: State<Long>,
-    reservationState: State<HomeViewModel.ReservationState>,
-    car:Car,
-    reserveCar:(car:Car)->Unit,
-    cancelReservation: () -> Unit,
-    payUnlockFee: () -> Unit
+    reservationTimeLeft : State<Long>,
+    carReservationState:State<CarReservationState>,
+    currentPreviewedCar: Car,
+    reservationStateListener: ReservationStateListener
 ){
-    when (reservationState.value) {
-        is HomeViewModel.ReservationState.Default -> {
+
+    when (val stateValue = carReservationState.value) {
+        is CarReservationState.Default -> {
             //no action
             ReserveButton(
                 modifier = Modifier
                     .padding(Dimens.medium.dp)
             ) {
-                reserveCar(car)
+               reservationStateListener.reserveCar(currentPreviewedCar)
             }
         }
-        is HomeViewModel.ReservationState.InProgress -> {
+        is CarReservationState.InProgress -> {
             LinearProgressIndicator(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
                 )
             )
         }
-        is HomeViewModel.ReservationState.Reserved -> {
+        is CarReservationState.Reserved -> {
             ReservationTimeLeft(
                 timeLeft = reservationTimeLeft
             )
             CancelReservationButton(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
-                ), cancelReservation = cancelReservation)
+                ), cancelReservation = { reservationStateListener.cancelReservation() })
 
 
         }
-        is HomeViewModel.ReservationState.Error -> {
+        is CarReservationState.Error -> {
 
         }
-        is HomeViewModel.ReservationState.ReadyForUnlockPayment-> {
+        is CarReservationState.PaymentState.ReadyForUnlockPayment-> {
             UnlockFeeHint(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp,
@@ -476,7 +509,17 @@ private fun ReservationState(
             PaymentButton(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
-                ), payUnlockFee = payUnlockFee)
+                ), payUnlockFee = { reservationStateListener.payUnlockFee() })
+        }
+        is CarReservationState.PaymentState.LoadingPaymentData -> {
+            LinearProgressIndicator(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                )
+            )
+        }
+        is CarReservationState.PaymentState.PaymentDataReady ->{
+            reservationStateListener.onUnlockPaymentIntentReady(stateValue.paymentResponse)
         }
     }
 }
@@ -627,4 +670,3 @@ private fun CarDetails(
         }
     }
 }
-

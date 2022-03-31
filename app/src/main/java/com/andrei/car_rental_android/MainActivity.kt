@@ -5,10 +5,8 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import com.andrei.car_rental_android.navigation.MainNavigation
 import com.andrei.car_rental_android.ui.theme.CarrentalandroidTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -36,8 +34,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-@Composable
-@Preview
-fun DefaultPreview(){
-    MainNavigation()
-}
+
