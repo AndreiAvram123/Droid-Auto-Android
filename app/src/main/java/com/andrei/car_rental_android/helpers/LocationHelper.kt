@@ -100,6 +100,7 @@ class LocationHelperImpl(
 
     @SuppressLint("MissingPermission")
     override fun requestLocationUpdates(locationRequest: LocationRequest) {
+          stopLocationUpdates()
           locationClient.requestLocationUpdates(locationRequest,locationCallback, Looper.getMainLooper())
     }
 

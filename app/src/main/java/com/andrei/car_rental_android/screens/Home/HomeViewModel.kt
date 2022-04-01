@@ -24,6 +24,7 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     abstract val nearbyCars:StateFlow<HomeViewModelState>
     abstract val locationState:StateFlow<LocationState>
     abstract val locationRequirements:StateFlow<Set<LocationRequirement>>
+    abstract val rideState:StateFlow<RideState>
 
 
     abstract val carReservationState:StateFlow<CarReservationState>
@@ -37,7 +38,7 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     abstract fun setLocationState(locationState:LocationState)
     abstract fun reserveCar(car:Car)
     abstract fun cancelReservation()
-
+    protected abstract fun unlockCar()
 
     sealed class HomeViewModelState{
         data class Success(val data:List<Car>):HomeViewModelState()
@@ -58,8 +59,12 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
                 val paymentResponse: PaymentResponse
             ):PaymentState()
             object PaymentFailed:PaymentState()
-            object PaymentDone:PaymentState()
         }
+    }
+    sealed class RideState{
+        object NotStarted:RideState()
+        object UnlockingCar:RideState()
+        object RideStarted:RideState()
     }
     sealed class LocationState{
         object NotRequested:LocationState()
@@ -88,6 +93,7 @@ class HomeViewModelImpl @Inject constructor(
             LocationRequirement.LocationActive
         )
     )
+    override val rideState: MutableStateFlow<RideState> = MutableStateFlow(RideState.NotStarted)
 
     override val carReservationState: MutableStateFlow<CarReservationState> = MutableStateFlow(
         CarReservationState.Default
@@ -104,7 +110,8 @@ class HomeViewModelImpl @Inject constructor(
     override fun onFeePaymentResult(paymentResult: PaymentSheetResult) {
          when(paymentResult){
              is PaymentSheetResult.Completed -> {
-                 carReservationState.tryEmit(CarReservationState.PaymentState.PaymentFailed)
+                 //when is done the reservation is finished and we can switch to ride
+                 carReservationState.tryEmit(CarReservationState.Default)
              }
              is PaymentSheetResult.Canceled -> {
                  //in this case carReservationState must be data ready
@@ -115,6 +122,25 @@ class HomeViewModelImpl @Inject constructor(
              }
          }
     }
+
+    override fun unlockCar() {
+        coroutineScope.launch {
+            carRepository.unlockCar().collect{
+                when(it){
+                    is RequestState.Success -> {
+                         rideState.emit(RideState.RideStarted)
+                    }
+                    is RequestState.Loading-> {
+                        rideState.emit(RideState.UnlockingCar)
+                    }
+                    else -> {
+
+                    }
+                }
+            }
+        }
+    }
+
 
     override fun startUnlockPaymentProcess() {
          coroutineScope.launch {

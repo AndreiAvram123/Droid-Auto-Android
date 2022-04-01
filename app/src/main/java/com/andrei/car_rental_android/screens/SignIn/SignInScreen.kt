@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
+import com.andrei.car_rental_android.composables.AlertDialogArgs
+import com.andrei.car_rental_android.composables.CarRentalDialog
 import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.screens.SignIn.navigation.SignInNavigator
 import com.andrei.car_rental_android.screens.SignIn.navigation.SignInNavigatorImpl
@@ -44,6 +46,8 @@ fun SignInScreen(navController: NavController) {
 fun MainContent(
     navigator: SignInNavigator
 ) {
+
+
     val loginViewModel = hiltViewModel<LoginViewModelImpl>()
     val loginUIState = loginViewModel.loginUiState.collectAsState()
     Box(modifier = Modifier.background(Color.White)) {
@@ -57,10 +61,14 @@ fun MainContent(
                 modifier = Modifier.padding(bottom = Dimens.large.dp)
             )
 
-            val isAuthenticating = loginUIState.value is LoginViewModel.LoginUIState.Loading
+            val isAuthenticating = remember {
+                derivedStateOf {
+                    loginUIState.value is LoginViewModel.LoginUIState.Loading
+                }
+            }
 
              AuthenticationButtons(
-                 isAuthenticating = isAuthenticating, performLogin = {
+                 isAuthenticatingState = isAuthenticating, performLogin = {
                  loginViewModel.login()
              }, navigateToRegister = {
                  navigator.navigateToRegister()
@@ -68,9 +76,22 @@ fun MainContent(
 
         }
 
-        InvalidCredentialsDialog(loginUIState = loginUIState) {
-            loginViewModel.resetUIState()
+        val dialogOpened = remember {
+            derivedStateOf {
+                loginUIState.value is LoginViewModel.LoginUIState.InvalidCredentials
+            }
         }
+        CarRentalDialog(
+            dialogOpened = dialogOpened,
+            alertDialogArgs = AlertDialogArgs(
+                title = stringResource(R.string.screen_sign_in_invalid_credentials_dialog_title),
+                text = stringResource(R.string.screen_sign_in_invalid_credentials_dialog_content),
+                confirmButtonText = stringResource(R.string.screen_sign_in_invalid_credentials_dialog_positive_bt),
+                onDismiss = {
+                    loginViewModel.resetUIState()
+                }
+            )
+        )
 
     }
 }
@@ -162,11 +183,11 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) 
 
 @Composable
 private fun AuthenticationButtons(
-    isAuthenticating:Boolean,
+    isAuthenticatingState:State<Boolean>,
     performLogin:()->Unit,
     navigateToRegister: () -> Unit
 ){
-    if(isAuthenticating){
+    if(isAuthenticatingState.value){
         CircularProgressIndicator()
     }else{
         SignInButton(Modifier.padding(top = Dimens.medium.dp)){
@@ -208,50 +229,5 @@ private fun RegisterButton(
     }
 }
 
-@Composable
-fun  InvalidCredentialsDialog(
-    loginUIState: State<LoginViewModel.LoginUIState>,
-    onDismiss: () -> Unit
-) {
-    var dialogOpened by remember {
-        mutableStateOf(false)
-    }
-    dialogOpened = loginUIState.value is LoginViewModel.LoginUIState.InvalidCredentials
-
-    if (dialogOpened) {
-        AlertDialog(
-            backgroundColor = MaterialTheme.colors.surface,
-            onDismissRequest = {
-                dialogOpened = false
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.screen_sign_in_invalid_credentials_dialog_title),
-                    color = MaterialTheme.colors.onSurface
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(id = R.string.screen_sign_in_invalid_credentials_dialog_content),
-                    color = MaterialTheme.colors.onSurface
-                )
-            },
-            confirmButton = {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Button(onClick = {
-                        onDismiss()
-                    }) {
-                        Text(
-                            text = stringResource(id = R.string.screen_sign_in_invalid_credentials_dialog_positive_bt)
-                        )
-                    }
-                }
-            }
-        )
-    }
-}
 
 
