@@ -6,6 +6,7 @@
     <string name="screen_home_cancel_reservation">Cancel reservation</string>
     <string name ="screen_home_unlock_fee">A £2 fee will be needed before staring your ride </string>
     <string name ="screen_home_pay">Pay</string>
+    <string name ="screen_home_unlocking_car">Unlocking car</string>
 
 
     <!--Screen sign in-->

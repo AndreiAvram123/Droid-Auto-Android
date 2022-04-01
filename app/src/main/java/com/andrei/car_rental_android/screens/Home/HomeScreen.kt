@@ -97,8 +97,6 @@ private fun MainContent(
                 viewModel.setLocationState(HomeViewModel.LocationState.Unknown)
             } )
         })
-
-
     BottomSheet(
         carState = currentSelectedCarState,
         carReservationState = viewModel.carReservationState.collectAsState(),
@@ -132,6 +130,9 @@ private fun MainContent(
                     .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
                 LocationState(locationState = viewModel.locationState.collectAsState().value)
             }
+            RideState(
+                rideState = viewModel.rideState.collectAsState()
+            )
         }
     }
 }
@@ -442,6 +443,21 @@ private fun BottomSheetContent(
 
 
 @Composable
+private fun RideState(
+    rideState: State<HomeViewModel.RideState>
+){
+    when(rideState.value){
+
+        HomeViewModel.RideState.UnlockingCar -> {
+
+        }
+        else -> {
+            //no action
+        }
+    }
+}
+
+@Composable
 private fun ReservationState(
     reservationTimeLeft : State<Long>,
     carReservationState:State<CarReservationState>,
@@ -510,6 +526,9 @@ private fun ReservationState(
             }
 
             reservationStateListener.onPaymentDataReady(stateValue.paymentResponse)
+        }
+        else -> {
+            //no action
         }
     }
 }

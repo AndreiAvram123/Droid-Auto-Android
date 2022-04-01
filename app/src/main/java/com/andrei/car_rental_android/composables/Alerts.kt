@@ -1,15 +1,20 @@
 package com.andrei.car_rental_android.composables
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.andrei.car_rental_android.R
+import com.andrei.car_rental_android.ui.Dimens
 
 
 data class AlertDialogArgs(
@@ -19,6 +24,38 @@ data class AlertDialogArgs(
     val onDismiss: () -> Unit
 )
 
+@Preview
+@Composable
+fun LoadingAlert(
+    text: String? = null
+){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorResource(R.color.semi_transparent)),
+        contentAlignment = Alignment.Center,
+    ) {
+       Column(
+            modifier = Modifier.size(150.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+           CircularProgressIndicator(
+               modifier = Modifier.size(70.dp)
+           )
+           if (text != null) {
+               Text(
+                   modifier = Modifier.padding(top = Dimens.medium.dp),
+                   text = text,
+                   color = Color.Black,
+                   fontSize = Dimens.large.sp,
+                   fontWeight = FontWeight.SemiBold
+               )
+           }
+       }
+    }
+}
+
 
 @Composable
 fun CarRentalDialog(
@@ -26,8 +63,6 @@ fun CarRentalDialog(
     alertDialogArgs: AlertDialogArgs
 
 ) {
-
-
     if (dialogOpened.value) {
         AlertDialog(
             backgroundColor = MaterialTheme.colors.surface,
