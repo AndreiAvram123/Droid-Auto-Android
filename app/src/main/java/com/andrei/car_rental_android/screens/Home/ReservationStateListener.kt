@@ -7,6 +7,6 @@ interface ReservationStateListener {
     fun reserveCar(car:Car)
     fun cancelReservation()
     fun payUnlockFee()
-    fun onUnlockPaymentIntentReady(paymentResponse: PaymentResponse)
+    fun onPaymentDataReady(paymentResponse: PaymentResponse)
 
 }

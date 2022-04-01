@@ -10,6 +10,7 @@ import com.andrei.car_rental_android.engine.repositories.CarRepository
 import com.andrei.car_rental_android.engine.repositories.PaymentRepository
 import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.engine.response.ReservationRequest
+import com.stripe.android.paymentsheet.PaymentSheetResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
@@ -28,13 +29,15 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     abstract val carReservationState:StateFlow<CarReservationState>
     abstract val reservationTimeLeftMillis:StateFlow<Long>
 
-    abstract fun setLocationRequirementResolved(locationRequirement: LocationRequirement)
+    abstract fun notifyRequirementResolved(locationRequirement: LocationRequirement)
 
 
+    abstract fun  onFeePaymentResult(paymentResult:PaymentSheetResult)
     abstract fun startUnlockPaymentProcess()
     abstract fun setLocationState(locationState:LocationState)
     abstract fun reserveCar(car:Car)
     abstract fun cancelReservation()
+
 
     sealed class HomeViewModelState{
         data class Success(val data:List<Car>):HomeViewModelState()
@@ -49,11 +52,13 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
         object InProgress:CarReservationState()
 
         sealed class PaymentState:CarReservationState(){
-            object ReadyForUnlockPayment:CarReservationState()
-            object LoadingPaymentData:CarReservationState()
+            object ReadyForUnlockPayment:PaymentState()
+            object LoadingPaymentData:PaymentState()
             data class PaymentDataReady(
                 val paymentResponse: PaymentResponse
-            ):CarReservationState()
+            ):PaymentState()
+            object PaymentFailed:PaymentState()
+            object PaymentDone:PaymentState()
         }
     }
     sealed class LocationState{
@@ -89,11 +94,26 @@ class HomeViewModelImpl @Inject constructor(
     )
     override val reservationTimeLeftMillis: MutableStateFlow<Long> = MutableStateFlow(reservationTimeSeconds)
 
-    override fun setLocationRequirementResolved(locationRequirement: LocationRequirement) {
+    override fun notifyRequirementResolved(locationRequirement: LocationRequirement) {
         val newSet = locationRequirements.value.toMutableSet().apply {
             remove(locationRequirement)
         }
         locationRequirements.tryEmit(newSet)
+    }
+
+    override fun onFeePaymentResult(paymentResult: PaymentSheetResult) {
+         when(paymentResult){
+             is PaymentSheetResult.Completed -> {
+                 carReservationState.tryEmit(CarReservationState.PaymentState.PaymentFailed)
+             }
+             is PaymentSheetResult.Canceled -> {
+                 //in this case carReservationState must be data ready
+                 carReservationState.tryEmit(carReservationState.value)
+             }
+             is PaymentSheetResult.Failed -> {
+                 carReservationState.tryEmit(CarReservationState.PaymentState.PaymentFailed)
+             }
+         }
     }
 
     override fun startUnlockPaymentProcess() {
@@ -224,5 +244,6 @@ class HomeViewModelImpl @Inject constructor(
 
         }
     }
+
 
 }

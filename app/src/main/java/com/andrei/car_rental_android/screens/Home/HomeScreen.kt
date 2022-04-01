@@ -24,6 +24,7 @@ import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.helpers.LocationHelper
 import com.andrei.car_rental_android.helpers.LocationHelperImpl
+import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
 import com.andrei.car_rental_android.screens.Home.HomeViewModel.CarReservationState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
@@ -35,9 +36,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.stripe.android.PaymentConfiguration
-import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.PaymentSheetContract
-import com.stripe.android.paymentsheet.PaymentSheetResult
 import kotlinx.coroutines.flow.filterNotNull
 
 
@@ -61,19 +60,7 @@ private fun MainContent(
 
     val paymentSheetLauncher = rememberLauncherForActivityResult(
         contract = PaymentSheetContract(),
-        onResult = { paymentResult ->
-            when (paymentResult) {
-                is PaymentSheetResult.Canceled -> {
-
-                }
-                is PaymentSheetResult.Failed -> {
-
-                }
-                is PaymentSheetResult.Completed -> {
-
-                }
-            }
-        }
+        onResult = viewModel::onFeePaymentResult
     )
 
     DisposableEffect(key1 = context){
@@ -97,7 +84,7 @@ private fun MainContent(
         locationHelper,
         viewModel.locationRequirements.collectAsState(),
         onRequirementMet = { requirementResolved->
-            viewModel.setLocationRequirementResolved(requirementResolved)
+            viewModel.notifyRequirementResolved(requirementResolved)
         }, onRequirementFailed = {
             //todo
         }, onAllRequirementsResolved = {
@@ -120,15 +107,9 @@ private fun MainContent(
             override fun reserveCar(car: Car) = viewModel.reserveCar(car)
             override fun cancelReservation()  = viewModel.cancelReservation()
             override fun payUnlockFee() = viewModel.startUnlockPaymentProcess()
-            override fun onUnlockPaymentIntentReady(paymentResponse: PaymentResponse) {
+            override fun onPaymentDataReady(paymentResponse: PaymentResponse) {
                 PaymentConfiguration.init(context,paymentResponse.publishableKey)
-                val googlePayConfiguration = PaymentSheet.GooglePayConfiguration(
-                    environment = PaymentSheet.GooglePayConfiguration.Environment.Test,
-                    countryCode = "UK"
-                )
-                val configuration = PaymentSheet.Configuration.Builder("car-rental")
-                    .googlePay(googlePayConfiguration)
-                    .build()
+                val configuration = PaymentConfigurationHelper.buildConfiguration()
                 paymentSheetLauncher.launch(PaymentSheetContract.Args.createPaymentIntentArgs(
                     clientSecret = paymentResponse.clientSecret,
                     config = configuration
@@ -501,15 +482,14 @@ private fun ReservationState(
         }
         is CarReservationState.PaymentState.ReadyForUnlockPayment-> {
             UnlockFeeHint(
-                modifier = Modifier.padding(
-                    horizontal = Dimens.medium.dp,
-                    vertical = Dimens.medium.dp
-                )
+                modifier = Modifier.padding(Dimens.medium.dp)
             )
             PaymentButton(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
-                ), payUnlockFee = { reservationStateListener.payUnlockFee() })
+                )){
+                  reservationStateListener.payUnlockFee()
+            }
         }
         is CarReservationState.PaymentState.LoadingPaymentData -> {
             LinearProgressIndicator(
@@ -519,7 +499,17 @@ private fun ReservationState(
             )
         }
         is CarReservationState.PaymentState.PaymentDataReady ->{
-            reservationStateListener.onUnlockPaymentIntentReady(stateValue.paymentResponse)
+            UnlockFeeHint(
+                modifier = Modifier.padding(Dimens.medium.dp)
+            )
+            PaymentButton(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                )){
+                reservationStateListener.onPaymentDataReady(stateValue.paymentResponse)
+            }
+
+            reservationStateListener.onPaymentDataReady(stateValue.paymentResponse)
         }
     }
 }
@@ -539,11 +529,11 @@ private fun UnlockFeeHint(
 @Composable
 private fun PaymentButton(
     modifier:Modifier = Modifier,
-    payUnlockFee:()->Unit
+    pay:()->Unit
 ){
     Button(
         modifier = modifier.fillMaxWidth(),
-        onClick = payUnlockFee
+        onClick = pay
     ) {
         Text(text = stringResource(R.string.screen_home_pay))
     }
