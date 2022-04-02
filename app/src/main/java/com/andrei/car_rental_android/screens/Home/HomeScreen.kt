@@ -22,6 +22,7 @@ import coil.compose.AsyncImage
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.R
+import com.andrei.car_rental_android.composables.LoadingAlert
 import com.andrei.car_rental_android.helpers.LocationHelper
 import com.andrei.car_rental_android.helpers.LocationHelperImpl
 import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
@@ -31,10 +32,7 @@ import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.*
 import com.stripe.android.PaymentConfiguration
 import com.stripe.android.paymentsheet.PaymentSheetContract
 import kotlinx.coroutines.flow.filterNotNull
@@ -130,8 +128,12 @@ private fun MainContent(
                     .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
                 LocationState(locationState = viewModel.locationState.collectAsState().value)
             }
-            RideState(
-                rideState = viewModel.rideState.collectAsState()
+
+            Ride(
+                rideState = viewModel.rideState.collectAsState(),
+                navigateToRideView = {
+
+                }
             )
         }
     }
@@ -236,6 +238,9 @@ private fun Map(
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
+        properties = MapProperties(
+            isMyLocationEnabled = true
+        ),
         uiSettings = MapUiSettings(
             zoomControlsEnabled = true,
         )
@@ -414,6 +419,7 @@ private fun BottomSheetContent(
 ) {
 
     val car = carState.value
+
     if (car != null) {
         CarDetails(
             modifier = Modifier.padding(
@@ -429,7 +435,6 @@ private fun BottomSheetContent(
             reservationStateListener = reservationStateListener
         )
 
-
     }else{
         NoCarSelected(
             modifier = Modifier.padding(
@@ -438,18 +443,25 @@ private fun BottomSheetContent(
         )
     }
 
+
+
 }
 
 
 
 @Composable
-private fun RideState(
-    rideState: State<HomeViewModel.RideState>
+private fun Ride(
+    rideState: State<HomeViewModel.RideState>,
+    navigateToRideView:()->Unit
 ){
     when(rideState.value){
-
         HomeViewModel.RideState.UnlockingCar -> {
-
+           LoadingAlert(
+               text = stringResource(R.string.screen_home_unlocking_car)
+           )
+        }
+        HomeViewModel.RideState.RideStarted -> {
+            navigateToRideView()
         }
         else -> {
             //no action

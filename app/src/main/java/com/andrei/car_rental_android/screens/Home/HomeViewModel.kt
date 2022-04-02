@@ -7,6 +7,7 @@ import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.DTOs.toLocation
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.CarRepository
+import com.andrei.car_rental_android.engine.repositories.DirectionsRepository
 import com.andrei.car_rental_android.engine.repositories.PaymentRepository
 import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.engine.response.ReservationRequest
@@ -82,7 +83,8 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
 class HomeViewModelImpl @Inject constructor(
     coroutineProvider: CoroutineScope?,
     private val carRepository: CarRepository,
-    private val paymentRepository: PaymentRepository
+    private val paymentRepository: PaymentRepository,
+    private val directionsRepository: DirectionsRepository
 ):HomeViewModel(coroutineProvider){
 
     override val nearbyCars: MutableStateFlow<HomeViewModelState> = MutableStateFlow(HomeViewModelState.Loading)

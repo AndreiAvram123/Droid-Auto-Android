@@ -49,4 +49,8 @@ abstract class RepositoryAbstractModule {
     @Singleton
     abstract fun bindPaymentRepository(paymentRepositoryImpl: PaymentRepositoryImpl):PaymentRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindDirectionsRepository(directionsRepository: DirectionsRepositoryImpl):DirectionsRepository
+
 }
