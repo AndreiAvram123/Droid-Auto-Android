@@ -45,4 +45,8 @@ abstract class RepositoryAbstractModule {
     @Singleton
     abstract fun bindSessionManager(sessionManagerImpl: SessionManagerImpl): SessionManager
 
+    @Binds
+    @Singleton
+    abstract fun bindPaymentRepository(paymentRepositoryImpl: PaymentRepositoryImpl):PaymentRepository
+
 }

@@ -17,4 +17,7 @@ sealed interface CarService{
 
     @DELETE("/reservation")
     suspend fun cancelReservation():ApiResponse<Nothing>
+
+    @POST("/reservation/unlock")
+    suspend fun unlockCar():ApiResponse<Nothing>
 }

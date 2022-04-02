@@ -1,11 +1,8 @@
 package com.andrei.car_rental_android.screens.Home
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
+import android.app.Activity
 import android.location.Location
-import android.location.LocationRequest
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -16,74 +13,116 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.andrei.car_rental_android.DTOs.Car
+import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.R
+import com.andrei.car_rental_android.helpers.LocationHelper
+import com.andrei.car_rental_android.helpers.LocationHelperImpl
+import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
+import com.andrei.car_rental_android.screens.Home.HomeViewModel.CarReservationState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.paymentsheet.PaymentSheetContract
+import kotlinx.coroutines.flow.filterNotNull
 
-sealed class PermissionState{
-    object Unchecked:PermissionState()
-    object Denied:PermissionState()
-    object Granted:PermissionState()
+
+@Composable
+fun HomeScreen(
+    navController: NavController,
+) {
+    MainContent(
+        navController
+    )
 }
 @Composable
-fun HomeScreen(navController: NavController) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        MainContent()
-    }
-}
-@Composable
-@Preview
 @OptIn(ExperimentalMaterialApi::class)
-fun MainContent() {
-
+private fun MainContent(
+    navController: NavController
+) {
+  val context = LocalContext.current
+    val locationHelper = LocationHelperImpl(context)
     val viewModel = hiltViewModel<HomeViewModelImpl>()
+
+
+    val paymentSheetLauncher = rememberLauncherForActivityResult(
+        contract = PaymentSheetContract(),
+        onResult = viewModel::onFeePaymentResult
+    )
+
+    DisposableEffect(key1 = context){
+        onDispose {
+            locationHelper.stopLocationUpdates()
+        }
+    }
+
+    LaunchedEffect(key1 = viewModel){
+        locationHelper.lastKnownLocation.filterNotNull().collect{
+            viewModel.setLocationState(HomeViewModel.LocationState.Resolved(it))
+        }
+
+    }
 
     val currentSelectedCarState: MutableState<Car?> =  remember {
         mutableStateOf(null)
     }
-    LocationPermission(setKnowLocation = {
-        viewModel.setLocation(it)
-    }, setUnknownLocation = {
-        viewModel.setLocationUnknown()
-    })
 
+    LocationRequirements(
+        locationHelper,
+        viewModel.locationRequirements.collectAsState(),
+        onRequirementMet = { requirementResolved->
+            viewModel.notifyRequirementResolved(requirementResolved)
+        }, onRequirementFailed = {
+            //todo
+        }, onAllRequirementsResolved = {
+            viewModel.setLocationState(HomeViewModel.LocationState.Loading)
+            locationHelper.getLastKnownLocation(onLocationResolved ={
+                locationHelper.requestLocationUpdates(
+                    locationRequest = locationHelper.balancedPrecisionHighIntervalRequest
+                )
+            }, onError = {
+                viewModel.setLocationState(HomeViewModel.LocationState.Unknown)
+            } )
+        })
     BottomSheet(
         carState = currentSelectedCarState,
-        reserveCar = {
-           viewModel.reserveCar(it)
-        },
-        reservationState = viewModel.reservationState.collectAsState(),
+        carReservationState = viewModel.carReservationState.collectAsState(),
         reservationTimeLeft = viewModel.reservationTimeLeftMillis.collectAsState(),
-        cancelReservation = {
-            viewModel.cancelReservation()
+        reservationStateListener = object : ReservationStateListener {
+            override fun reserveCar(car: Car) = viewModel.reserveCar(car)
+            override fun cancelReservation()  = viewModel.cancelReservation()
+            override fun payUnlockFee() = viewModel.startUnlockPaymentProcess()
+            override fun onPaymentDataReady(paymentResponse: PaymentResponse) {
+                PaymentConfiguration.init(context,paymentResponse.publishableKey)
+                val configuration = PaymentConfigurationHelper.buildConfiguration()
+                paymentSheetLauncher.launch(PaymentSheetContract.Args.createPaymentIntentArgs(
+                    clientSecret = paymentResponse.clientSecret,
+                    config = configuration
+                ))
+            }
         }
     ) {
-        Log.d("andrei","Recomposition triggered")
+
         Box(modifier = Modifier.fillMaxSize()) {
             Map(
+                currentLocation = locationHelper.lastKnownLocation.collectAsState(),
                 onCarSelected = {
                     currentSelectedCarState.value = it
                 },
                 state = viewModel.nearbyCars.collectAsState(),
-                locationState = viewModel.locationState.collectAsState()
             )
             Column(
                 modifier = Modifier
@@ -91,25 +130,107 @@ fun MainContent() {
                     .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
                 LocationState(locationState = viewModel.locationState.collectAsState().value)
             }
+            RideState(
+                rideState = viewModel.rideState.collectAsState()
+            )
         }
     }
 }
 
+
+
+
+
+
+@Composable
+private fun RequestActiveLocation(
+    locationHelper: LocationHelper,
+    onLocationEnabled : () -> Unit,
+){
+    val showEnableLocationSnackbar =  remember{
+        mutableStateOf(false)
+    }
+    EnableLocationSnackbar(showEnableLocationSnackbar = showEnableLocationSnackbar)
+
+    val locationSettingsLauncher =  rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()){
+        when (it.resultCode) {
+            Activity.RESULT_OK -> {
+                onLocationEnabled()
+                showEnableLocationSnackbar.value = false
+            }
+            Activity.RESULT_CANCELED -> showEnableLocationSnackbar.value = true
+        }
+
+    }
+    locationHelper.checkLocationSettings(locationSettingsLauncher){
+        onLocationEnabled()
+    }
+}
+
+@Composable
+private fun LocationRequirements(
+    locationHelper: LocationHelper,
+    locationRequirements:State<Set<HomeViewModel.LocationRequirement>>,
+    onRequirementMet:(locationRequirement:HomeViewModel.LocationRequirement) -> Unit,
+    onRequirementFailed:(locationRequirement:HomeViewModel.LocationRequirement)->Unit,
+    onAllRequirementsResolved:()->Unit
+){
+    val requirement = locationRequirements.value.firstOrNull()
+
+
+    if(requirement == null){
+        onAllRequirementsResolved()
+        return;
+    }
+    when(requirement){
+        HomeViewModel.LocationRequirement.PermissionNeeded -> {
+            LocationPermission(onPermissionGranted = {
+                onRequirementMet(HomeViewModel.LocationRequirement.PermissionNeeded)
+            },onPermissionDenied = {
+                onRequirementFailed(HomeViewModel.LocationRequirement.PermissionNeeded)
+            })
+
+
+        }
+        HomeViewModel.LocationRequirement.LocationActive -> {
+            RequestActiveLocation(
+                locationHelper,
+                onLocationEnabled = {
+                    onRequirementMet(HomeViewModel.LocationRequirement.LocationActive)
+                }
+            )
+        }
+
+    }
+}
+
+
+@Composable
+private fun EnableLocationSnackbar(
+    showEnableLocationSnackbar: State<Boolean>
+){
+    if(showEnableLocationSnackbar.value){
+        Snackbar {
+            Text(text = "Please enable location");
+        } }
+}
+
 @Composable
 private fun Map(
-    locationState: State<HomeViewModel.LocationState>,
+    currentLocation:State<Location?>,
     state: State<HomeViewModel.HomeViewModelState>,
-    onCarSelected:(car:Car)->Unit
+    onCarSelected:(car:Car)->Unit,
 ){
     val cameraPositionState = rememberCameraPositionState()
-    val locationStateValue = locationState.value
-    if(locationStateValue is HomeViewModel.LocationState.Determined){
-        val location = locationStateValue.location
+
+    val currentLocationValue = currentLocation.value
+    if(currentLocationValue != null){
         cameraPositionState.position = CameraPosition.fromLatLngZoom(
             LatLng(
-              location.latitude,
-              location.longitude
-            ),10f
+                currentLocationValue.latitude,
+                currentLocationValue.longitude
+            ),15f
         )
     }
     GoogleMap(
@@ -122,7 +243,7 @@ private fun Map(
         MapContent(
             state = state
         ){
-             onCarSelected(it)
+            onCarSelected(it)
         }
     }
 }
@@ -148,42 +269,24 @@ private fun MapContent(
     }
 }
 
-
 @Composable
 private fun LocationPermission(
-    setKnowLocation:(location:Location)-> Unit,
-    setUnknownLocation:()->Unit
+    onPermissionGranted: ()->Unit,
+    onPermissionDenied: ()->Unit
+
 ){
-    var locationPermission:PermissionState by remember {
-        mutableStateOf(PermissionState.Unchecked)
-    }
 
     LocationSettings{ permissionGranted->
         if(permissionGranted){
-            locationPermission = PermissionState.Granted
+            onPermissionGranted()
         }else{
-            locationPermission = PermissionState.Denied
+            onPermissionDenied()
         }
     }
 
-    when(locationPermission){
-        PermissionState.Denied -> {
-            Snackbar {
-                Text(text = "Give permission for location")
-            }
-        }
-        PermissionState.Granted -> {
-            getLastKnownLocation(LocalContext.current, onNewLocation = {
-                setKnowLocation(it)
-            }, onError = {
-                setUnknownLocation()
-            })
-        }
-        PermissionState.Unchecked -> {
-            //no nothing or maybe show some loading spinner
-        }
-    }
 }
+
+
 
 
 @Composable
@@ -191,10 +294,8 @@ private fun LocationState(
     locationState: HomeViewModel.LocationState
 ){
     when(locationState){
-        is HomeViewModel.LocationState.Determined -> {
-            Snackbar {
-                Text(text = "We got you")
-            }
+        is HomeViewModel.LocationState.Resolved -> {
+            //no action required here
         }
         is  HomeViewModel.LocationState.Loading -> {
             Snackbar {
@@ -206,38 +307,20 @@ private fun LocationState(
                 Text(text = "We could not determine your location ")
             }
         }
-    }
-}
+        HomeViewModel.LocationState.NotRequested -> {
 
-
-@SuppressLint("MissingPermission")
-private fun getLastKnownLocation(
-    context:Context,
-    onNewLocation:(Location) -> Unit,
-    onError:()->Unit
-){
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val cancellationTokenSource = CancellationTokenSource()
-    fusedLocationClient.getCurrentLocation(
-        LocationRequest.QUALITY_HIGH_ACCURACY,
-        cancellationTokenSource.token
-    ).addOnSuccessListener { location: Location? ->
-        if(location != null){
-            onNewLocation(location)
-        }else{
-            onError()
         }
-    }.addOnFailureListener {
-        onError()
     }
-
 }
+
 
 
 @Composable
 private fun LocationSettings(
     onPermissionResult:(granted:Boolean)->Unit
 ){
+
+    //maybe move to a helper
     val locationPermission = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult ={ locationEnabled->
@@ -285,10 +368,9 @@ private fun MapMarkers(
 @OptIn(ExperimentalMaterialApi::class)
 private fun BottomSheet(
     carState: State<Car?>,
-    reservationState: State<HomeViewModel.ReservationState>,
-    reserveCar:(car:Car)->Unit,
+    carReservationState: State<CarReservationState>,
     reservationTimeLeft: State<Long>,
-    cancelReservation: () -> Unit,
+    reservationStateListener: ReservationStateListener,
     content: @Composable ()->Unit
 ){
 
@@ -304,101 +386,178 @@ private fun BottomSheet(
         modifier = Modifier.padding(bottom = Dimens.medium.dp),
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
-            BottomSheetContent(
-                carState = carState,
-                reservationState = reservationState,
-                reserveCar = reserveCar,
-                reservationTimeLeft = reservationTimeLeft,
-                cancelReservation = cancelReservation
+            BottomSheetLayout {
+                BottomSheetContent(
+                    carState = carState,
+                    carReservationState = carReservationState,
+                    reservationTimeLeft = reservationTimeLeft,
+                    reservationStateListener = reservationStateListener
 
-            )
+                )
+            }
         }, sheetPeekHeight = 15.dp
     ){
         content()
     }
 }
+
+
+
+
 @Composable
 private fun BottomSheetContent(
     carState:State<Car?>,
-    reservationState: State<HomeViewModel.ReservationState>,
+    carReservationState: State<CarReservationState>,
     reservationTimeLeft:State<Long>,
-    reserveCar:(car:Car)->Unit,
-    cancelReservation: () -> Unit
+    reservationStateListener: ReservationStateListener
+
 ) {
 
-    BottomSheetLayout {
-        val car = carState.value
-        if (car != null) {
-            CarDetails(
-                modifier = Modifier.padding(
-                    horizontal = Dimens.medium.dp
-                ),
-                car = car
-            )
-            ReservationState(
-                reservationTimeLeft = reservationTimeLeft,
-                reservationState = reservationState,
-                car = car,
-                reserveCar = reserveCar,
-                cancelReservation = cancelReservation
-            )
-        }else{
-            NoCarSelected(
-                modifier = Modifier.padding(
-                    horizontal = Dimens.medium.dp
-                )
-            )
-        }
+    val car = carState.value
+    if (car != null) {
+        CarDetails(
+            modifier = Modifier.padding(
+                horizontal = Dimens.medium.dp
+            ),
+            car = car
+        )
+
+        ReservationState(
+            reservationTimeLeft = reservationTimeLeft,
+            carReservationState = carReservationState,
+            currentPreviewedCar = car,
+            reservationStateListener = reservationStateListener
+        )
 
 
+    }else{
+        NoCarSelected(
+            modifier = Modifier.padding(
+                horizontal = Dimens.medium.dp
+            )
+        )
     }
+
 }
 
 
+
+@Composable
+private fun RideState(
+    rideState: State<HomeViewModel.RideState>
+){
+    when(rideState.value){
+
+        HomeViewModel.RideState.UnlockingCar -> {
+
+        }
+        else -> {
+            //no action
+        }
+    }
+}
+
 @Composable
 private fun ReservationState(
-    reservationTimeLeft: State<Long>,
-    reservationState: State<HomeViewModel.ReservationState>,
-    car:Car,
-    reserveCar:(car:Car)->Unit,
-    cancelReservation: () -> Unit
+    reservationTimeLeft : State<Long>,
+    carReservationState:State<CarReservationState>,
+    currentPreviewedCar: Car,
+    reservationStateListener: ReservationStateListener
 ){
-    when (reservationState.value) {
-        is HomeViewModel.ReservationState.Default -> {
+
+    when (val stateValue = carReservationState.value) {
+        is CarReservationState.Default -> {
             //no action
             ReserveButton(
                 modifier = Modifier
                     .padding(Dimens.medium.dp)
             ) {
-                reserveCar(car)
+               reservationStateListener.reserveCar(currentPreviewedCar)
             }
         }
-        is HomeViewModel.ReservationState.InProgress -> {
+        is CarReservationState.InProgress -> {
             LinearProgressIndicator(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
                 )
             )
         }
-        is HomeViewModel.ReservationState.Reserved -> {
+        is CarReservationState.Reserved -> {
             ReservationTimeLeft(
                 timeLeft = reservationTimeLeft
             )
             CancelReservationButton(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
-                )
-            ){
-                cancelReservation()
-            }
+                ), cancelReservation = { reservationStateListener.cancelReservation() })
 
 
         }
-        is HomeViewModel.ReservationState.Error -> {
+        is CarReservationState.Error -> {
 
+        }
+        is CarReservationState.PaymentState.ReadyForUnlockPayment-> {
+            UnlockFeeHint(
+                modifier = Modifier.padding(Dimens.medium.dp)
+            )
+            PaymentButton(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                )){
+                  reservationStateListener.payUnlockFee()
+            }
+        }
+        is CarReservationState.PaymentState.LoadingPaymentData -> {
+            LinearProgressIndicator(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                )
+            )
+        }
+        is CarReservationState.PaymentState.PaymentDataReady ->{
+            UnlockFeeHint(
+                modifier = Modifier.padding(Dimens.medium.dp)
+            )
+            PaymentButton(
+                modifier = Modifier.padding(
+                    horizontal = Dimens.medium.dp
+                )){
+                reservationStateListener.onPaymentDataReady(stateValue.paymentResponse)
+            }
+
+            reservationStateListener.onPaymentDataReady(stateValue.paymentResponse)
+        }
+        else -> {
+            //no action
         }
     }
 }
+
+
+@Composable
+private fun UnlockFeeHint(
+    modifier:Modifier = Modifier
+){
+        Text(
+            modifier = modifier.fillMaxWidth(),
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+            text = stringResource(R.string.screen_home_unlock_fee)
+        )
+}
+@Composable
+private fun PaymentButton(
+    modifier:Modifier = Modifier,
+    pay:()->Unit
+){
+    Button(
+        modifier = modifier.fillMaxWidth(),
+        onClick = pay
+    ) {
+        Text(text = stringResource(R.string.screen_home_pay))
+    }
+}
+
 
 @Composable
 private fun CancelReservationButton(
@@ -406,15 +565,15 @@ private fun CancelReservationButton(
     cancelReservation:()->Unit
 
 ){
-   Button(
-       modifier = modifier.fillMaxWidth(),
-       onClick = {
-          cancelReservation()
-       }) {
-      Text(
-          text = stringResource(R.string.screen_home_cancel_reservation)
-      )
-   }
+    Button(
+        modifier = modifier.fillMaxWidth(),
+        onClick = {
+            cancelReservation()
+        }) {
+        Text(
+            text = stringResource(R.string.screen_home_cancel_reservation)
+        )
+    }
 }
 
 @Composable
@@ -422,24 +581,24 @@ private fun ReservationTimeLeft(
     modifier:Modifier = Modifier,
     timeLeft:State<Long>
 ){
-     Row(
-         modifier = modifier.fillMaxWidth(),
-         horizontalArrangement = Arrangement.Center
-     ) {
-         val timeSeconds = timeLeft.value
-         val formattedSeconds:String = if(timeSeconds % 60 < 10){
-             //add a zero to the beginning
-             "0${timeSeconds % 60}"
-         }else{
-             (timeSeconds % 60).toString()
-         }
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        val timeSeconds = timeLeft.value
+        val formattedSeconds:String = if(timeSeconds % 60 < 10){
+            //add a zero to the beginning
+            "0${timeSeconds % 60}"
+        }else{
+            (timeSeconds % 60).toString()
+        }
         Text(
             text = "${timeSeconds /  60}:$formattedSeconds",
             color = Color.Black,
             fontWeight = FontWeight.Bold,
             fontSize = Dimens.large.sp
         )
-     }
+    }
 }
 
 
@@ -453,12 +612,10 @@ private fun BottomSheetLayout(
             .fillMaxWidth()
             .height(200.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             content()
         }
+
     }
 }
 
@@ -467,7 +624,7 @@ private fun NoCarSelected(
     modifier: Modifier
 ){
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxSize(),
         horizontalArrangement = Arrangement.Center
     ) {
         Text(text = "Click on a car on the map to see the details here")
@@ -522,4 +679,3 @@ private fun CarDetails(
         }
     }
 }
-

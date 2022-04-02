@@ -7,6 +7,7 @@ import com.andrei.car_rental_android.screens.register.password.CreatePasswordNav
 sealed class Screen(val route:String){
     object HomeScreen: Screen("HomeScreen")
     object SignInScreen: Screen("SignInScreen")
+    object IdentityVerificationScreen:Screen("IdentifyVerification")
 
     sealed class RegistrationScreen(screenName:String) : Screen(screenName){
         object NamesScreen: RegistrationScreen("NamesScreen")

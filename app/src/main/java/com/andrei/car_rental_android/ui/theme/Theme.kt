@@ -32,7 +32,6 @@ private val LightColorPalette = lightColors(
     onSurface = Color.Black,
     */
 )
-
 @Composable
 fun CarrentalandroidTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
