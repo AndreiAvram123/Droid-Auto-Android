@@ -84,7 +84,6 @@ private fun MainContent(
         onRequirementMet = { requirementResolved->
             viewModel.notifyRequirementResolved(requirementResolved)
         }, onRequirementFailed = {
-            //todo
         }, onAllRequirementsResolved = {
             viewModel.setLocationState(HomeViewModel.LocationState.Loading)
             locationHelper.getLastKnownLocation(onLocationResolved ={
@@ -116,7 +115,7 @@ private fun MainContent(
 
         Box(modifier = Modifier.fillMaxSize()) {
             Map(
-                currentLocation = locationHelper.lastKnownLocation.collectAsState(),
+                cameraLocation = viewModel.cameraPosition.collectAsState(),
                 onCarSelected = {
                     currentSelectedCarState.value = it
                 },
@@ -220,21 +219,17 @@ private fun EnableLocationSnackbar(
 
 @Composable
 private fun Map(
-    currentLocation:State<Location?>,
+    cameraLocation:State<Location?>,
     state: State<HomeViewModel.HomeViewModelState>,
     onCarSelected:(car:Car)->Unit,
 ){
     val cameraPositionState = rememberCameraPositionState()
 
-    val currentLocationValue = currentLocation.value
-    if(currentLocationValue != null){
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(
-            LatLng(
-                currentLocationValue.latitude,
-                currentLocationValue.longitude
-            ),15f
-        )
-    }
+    MapCameraPosition(
+       cameraPositionState = cameraPositionState,
+       location = cameraLocation
+
+    )
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
@@ -252,6 +247,24 @@ private fun Map(
         }
     }
 }
+@Composable
+private fun MapCameraPosition(
+    cameraPositionState:CameraPositionState,
+    location: State<Location?>,
+){
+
+
+    val cameraPosition = location.value
+    if(cameraPosition != null) {
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(
+            LatLng(
+                cameraPosition.latitude,
+                cameraPosition.longitude
+            ), 15f
+        )
+    }
+}
+
 
 @Composable
 private fun MapContent(
