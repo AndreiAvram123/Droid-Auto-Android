@@ -3,7 +3,6 @@ package com.andrei.car_rental_android.screens.Home
 import android.Manifest
 import android.app.Activity
 import android.location.Location
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -43,7 +42,6 @@ import kotlinx.coroutines.flow.filterNotNull
 fun HomeScreen(
     navController: NavController,
 ) {
-    Log.d("Recomposition","Home screem")
     MainContent(
         navController
     )

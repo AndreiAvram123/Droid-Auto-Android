@@ -24,7 +24,7 @@ sealed class Screen(val route:String){
 
 sealed class BottomNavigationScreen(
      route: String,
-    @StringRes val resourceID:Int,
+     @StringRes val resourceID:Int,
      val imageVector: ImageVector
 ):Screen(route){
     object HomeScreen: BottomNavigationScreen("Home", R.string.home, Icons.Filled.Home)
