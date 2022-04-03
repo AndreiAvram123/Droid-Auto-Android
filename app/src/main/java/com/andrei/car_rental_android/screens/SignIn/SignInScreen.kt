@@ -131,7 +131,7 @@ private fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modif
             focusManager.moveFocus(FocusDirection.Down)
         }),
         onValueChange = {
-            viewModel.setUsername(it)
+            viewModel.setUsername(it.trim())
         },
         label = {
             TextFieldLabel(text = stringResource(R.string.screen_sign_in_email))
@@ -165,7 +165,7 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) 
             modifier = modifier.fillMaxWidth(),
             value = passwordState.value,
             onValueChange = {
-                viewModel.setPassword(it)
+                viewModel.setPassword(it.trim())
             },
             label = {
                 TextFieldLabel(text = stringResource(R.string.screen_sign_in_password))

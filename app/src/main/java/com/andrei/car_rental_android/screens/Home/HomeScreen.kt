@@ -55,7 +55,6 @@ private fun MainContent(
     val locationHelper = LocationHelperImpl(context)
     val viewModel = hiltViewModel<HomeViewModelImpl>()
 
-
     val paymentSheetLauncher = rememberLauncherForActivityResult(
         contract = PaymentSheetContract(),
         onResult = viewModel::onFeePaymentResult

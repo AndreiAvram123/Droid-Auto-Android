@@ -105,7 +105,7 @@ class LocationHelperImpl(
     }
 
     override fun stopLocationUpdates() {
-       locationClient.removeLocationUpdates(locationCallback)
+   //    locationClient.removeLocationUpdates(locationCallback)
     }
 
 

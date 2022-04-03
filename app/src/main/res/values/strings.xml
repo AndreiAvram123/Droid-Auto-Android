@@ -50,4 +50,8 @@
     <string name="screen_creating_account_success">We successfully created your account. We also sent you a verification email</string>
     <string name="screen_creating_account_try_again">Try again</string>
     <string name="screen_creating_account_navigate_to_login">Navigate to login</string>
+
+
+    <string name="home">Home</string>
+    <string name="settings">Settings</string>
 </resources>
