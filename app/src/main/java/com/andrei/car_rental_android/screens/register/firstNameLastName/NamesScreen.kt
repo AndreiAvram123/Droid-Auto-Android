@@ -14,14 +14,16 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
+import com.andrei.car_rental_android.screens.register.base.BackButton
 import com.andrei.car_rental_android.screens.register.base.CenterColumn
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
-import com.andrei.car_rental_android.screens.register.base.RegisterBackButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.screens.register.firstNameLastName.FirstNameLastNameNavigator
 import com.andrei.car_rental_android.screens.register.firstNameLastName.FirstNameLastNameNavigatorImpl
@@ -30,7 +32,7 @@ import com.andrei.car_rental_android.ui.Dimens
 
 
 @Composable
-fun FirstNameLastNameScreen(
+fun NamesScreen(
     navController: NavController,
 ) {
     val navigator = FirstNameLastNameNavigatorImpl(navController)
@@ -72,21 +74,41 @@ private fun BottomSection(
     Column(modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Bottom
     ) {
-        ContinueButton(
-            enabled = viewModel.nextButtonEnabled.collectAsState(),
-            onClick = {
-                 navigateForward()
-            }
-        )
+        val nextButtonEnabled = viewModel.nextButtonEnabled.collectAsState().value
+        if(nextButtonEnabled) {
+           BeautifulName(
+               modifier = Modifier.padding(vertical = Dimens.medium.dp)
+           )
+        }
+            ContinueButton(
+                enabled = nextButtonEnabled,
+                onClick = {
+                    navigateForward()
+                }
+            )
+
     }
 }
+
+@Composable
+private fun BeautifulName(
+    modifier:Modifier = Modifier
+){
+    Text(
+        modifier = modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center,
+        fontSize = Dimens.medium.sp,
+        text = stringResource(R.string.screen_names_beautiful_name)
+    )
+}
+
 
 @Composable
 private fun TopSection(
      navigateBack:()->Unit
 ){
     Column(modifier = Modifier.fillMaxSize()) {
-        RegisterBackButton {
+        BackButton {
           navigateBack()
         }
         ScreenHeadings()
@@ -97,27 +119,29 @@ private fun TopSection(
 
 @Composable
 private fun ScreenHeadings(modifier: Modifier = Modifier){
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                top = Dimens.large.dp
-            ),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(text = stringResource(id = R.string.screen_user_name_heading_1))
-    }
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(text = stringResource(id = R.string.screen_user_name_heading_2))
+    Column(
+        modifier = modifier.padding(
+            top = Dimens.large.dp
+    )) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = Dimens.large.sp,
+            text = stringResource(id = R.string.screen_names_heading1)
+        )
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = Dimens.large.sp,
+            text = stringResource(id = R.string.screen_names_heading_2)
+        )
     }
 }
 
 @Composable
-private fun CenterSection(modifier: Modifier = Modifier,
-                         viewModel: FirstNameLastNameViewModel){
+private fun CenterSection(
+    viewModel: FirstNameLastNameViewModel
+){
     CenterColumn{
         FirstNameField(
             state = viewModel.firstName.collectAsState(),
@@ -152,7 +176,7 @@ fun SurnameField(modifier: Modifier = Modifier,
             focusManager.clearFocus(true)
         } ),
         label = {
-            TextFieldLabel(text = stringResource(R.string.screen_user_name_surname))
+            TextFieldLabel(text = stringResource(R.string.screen_names_surname))
         },
     )
 }
@@ -178,7 +202,7 @@ fun FirstNameField(modifier:Modifier = Modifier,
             focusManager.moveFocus(FocusDirection.Down)
         } ),
         label = {
-            TextFieldLabel(text = stringResource(R.string.screen_user_name_first_name))
+            TextFieldLabel(text = stringResource(R.string.screen_names_first_name))
         },
     )
 

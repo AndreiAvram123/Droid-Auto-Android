@@ -7,9 +7,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -94,7 +92,7 @@ private fun CenterContent(
             onValueChanged = {
                 viewModel.setReenteredPassword(it.trim())
             },
-            isError = viewModel.reenteredPasswordValidation.collectAsState().value is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid
+            validation = viewModel.reenteredPasswordValidation.collectAsState()
         )
     }
 }
@@ -108,7 +106,7 @@ private fun BottomContent(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Bottom
     ) {
-        ContinueButton(enabled = nextButtonEnabled){
+        ContinueButton(enabled = nextButtonEnabled.value){
             navigateForward()
         }
     }
@@ -141,8 +139,12 @@ private fun ReenterPasswordTextField(
     modifier: Modifier = Modifier,
     state:State<String>,
     onValueChanged: (newValue: String) -> Unit,
-    isError:Boolean
+    validation : State<CreatePasswordViewModel.ReenteredPasswordValidation>
 ){
+    val isError by remember{
+        derivedStateOf { validation.value is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid }
+    }
+
     OutlinedTextField(
         modifier = modifier.fillMaxWidth(),
         value = state.value,

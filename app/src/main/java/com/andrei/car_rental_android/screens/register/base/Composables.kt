@@ -2,17 +2,21 @@ package com.andrei.car_rental_android.screens.register.base
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.ui.Dimens
+import com.andrei.car_rental_android.ui.composables.ButtonText
 
 @Composable
 fun RegisterScreenSurface(
@@ -21,13 +25,13 @@ fun RegisterScreenSurface(
     Box(modifier = modifier
         .fillMaxSize()
         .background(MaterialTheme.colors.surface)
-        .padding(horizontal = Dimens.small.dp)){
+        .padding(horizontal = Dimens.medium.dp)){
             content()
         }
 }
 
 @Composable
-fun RegisterBackButton(
+fun BackButton(
     modifier: Modifier = Modifier,
     navigateBack:()->Unit
 ){
@@ -39,7 +43,8 @@ fun RegisterBackButton(
           navigateBack()
       }) {
           Icon(
-              imageVector = Icons.Filled.ArrowBack,
+              modifier =Modifier.size(40.dp),
+              imageVector = Icons.Filled.ChevronLeft,
               contentDescription ="Back button"
           )
       }
@@ -60,22 +65,25 @@ fun CenterColumn(
     }
 }
 @Composable
-internal fun ContinueButton(enabled: State<Boolean>, onClick:()->Unit){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 100.dp),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Button(
+internal fun ContinueButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean, onClick:()->Unit,
+){
+       Button(
+            modifier = modifier.fillMaxWidth().padding(
+                bottom = Dimens.huge.dp
+            ),
+            shape = RoundedCornerShape(Dimens.small.dp),
             onClick = {
                 onClick()
             },
-            enabled = enabled.value
+            enabled = enabled
         ) {
-            Text(text = stringResource(R.string.screen_user_name_continue))
+            ButtonText(
+                modifier = Modifier.padding(vertical = Dimens.tiny.dp),
+                text = stringResource(R.string.screen_names_continue)
+            )
         }
     }
-}
 
 

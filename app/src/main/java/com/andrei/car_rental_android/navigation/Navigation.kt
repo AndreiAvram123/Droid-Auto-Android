@@ -17,7 +17,7 @@ import com.andrei.car_rental_android.screens.Settings.SettingsScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
-import com.andrei.car_rental_android.screens.register.FirstNameLastNameScreen
+import com.andrei.car_rental_android.screens.register.NamesScreen
 import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountNavHelper
 import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountScreen
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
@@ -99,7 +99,7 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
     ) {
 
         composable(route = Screen.RegistrationScreen.NamesScreen.route) {
-            FirstNameLastNameScreen(navController)
+            NamesScreen(navController)
         }
         composable(
             route = Screen.RegistrationScreen.RegisterEmail.route,
