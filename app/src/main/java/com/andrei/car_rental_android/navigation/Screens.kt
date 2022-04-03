@@ -11,7 +11,6 @@ import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAc
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 
 sealed class Screen(val route:String){
-    object HomeScreen: Screen("Home")
     object SignInScreen: Screen("SignIn")
     object IdentityVerificationScreen:Screen("IdentifyVerification")
 

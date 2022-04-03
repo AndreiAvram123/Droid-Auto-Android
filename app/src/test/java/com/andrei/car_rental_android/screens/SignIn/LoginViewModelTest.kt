@@ -7,6 +7,7 @@ import com.andrei.car_rental_android.engine.request.LoginRequest
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -35,12 +36,12 @@ class LoginViewModelTest : BaseViewModelTest(){
         sut.resetUIState()
     }
     @Test
-    fun `loginUiState state flow has the default value of Default when the viewModel is created`(){
-        testScope.runBlockingTest {
-           sut.loginUiState.test {
-               assert(awaitItem() is LoginViewModel.LoginUIState.Default)
-               expectNoEvents()
-           }
+    fun `loginUiState state flow has the default value of Default when the viewModel is created`() {
+        runTest {
+            sut.loginUiState.test {
+                assert(awaitItem() is LoginViewModel.LoginUIState.Default)
+                expectNoEvents()
+            }
         }
     }
     @Test

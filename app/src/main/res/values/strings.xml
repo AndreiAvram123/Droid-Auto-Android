@@ -51,6 +51,9 @@
     <string name="screen_creating_account_try_again">Try again</string>
     <string name="screen_creating_account_navigate_to_login">Navigate to login</string>
 
+    <!--Sign out -->
+    <string name="screen_settings_sign_out">Sign out</string>
+
 
     <string name="home">Home</string>
     <string name="settings">Settings</string>

@@ -24,6 +24,7 @@ interface LocalRepository {
     suspend fun setAccessToken(accessToken:String)
 
     suspend fun clearAccessToken()
+    suspend fun clearRefreshToken()
 
     suspend fun clear()
 
@@ -60,6 +61,12 @@ class LocalRepositoryImpl @Inject constructor(
         context.dataStore.edit { preferences->
             preferences.remove(keyAccessToken)
         }
+    }
+
+    override suspend fun clearRefreshToken() {
+         context.dataStore.edit { preferences->
+             preferences.remove(keyRefreshToken)
+         }
     }
 
     override suspend  fun clear() {

@@ -13,6 +13,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.andrei.car_rental_android.screens.Home.HomeScreen
+import com.andrei.car_rental_android.screens.Settings.SettingsScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
@@ -63,14 +64,16 @@ private fun MainGraph(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Screen.HomeScreen.route
+        startDestination = BottomNavigationScreen.HomeScreen.route
     ) {
 
-        composable(route = Screen.HomeScreen.route) {
+        composable(route = BottomNavigationScreen.Settings.route){
+            SettingsScreen()
+        }
+        composable(route = BottomNavigationScreen.HomeScreen.route) {
             HomeScreen(navController)
         }
     }
-
 }
 
 @Composable
@@ -146,10 +149,7 @@ private fun AppBottomNavigation(
                                 popUpTo(navHostController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
-                                // Avoid multiple copies of the same destination when
-                                // reselecting the same item
                                 launchSingleTop = true
-                                // Restore state when reselecting a previously selected item
                                 restoreState = true
                             }
                         }
