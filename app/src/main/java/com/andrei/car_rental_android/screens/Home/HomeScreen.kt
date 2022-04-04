@@ -25,6 +25,7 @@ import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.LoadingAlert
+import com.andrei.car_rental_android.engine.response.DirectionStep
 import com.andrei.car_rental_android.helpers.LocationHelper
 import com.andrei.car_rental_android.helpers.LocationHelperImpl
 import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
@@ -33,6 +34,7 @@ import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.stripe.android.PaymentConfiguration
@@ -121,6 +123,7 @@ private fun MainContent(
                     currentSelectedCarState.value = it
                 },
                 state = viewModel.nearbyCars.collectAsState(),
+                directionsState = viewModel.directionsState.collectAsState()
             )
             Column(
                 modifier = Modifier
@@ -222,6 +225,7 @@ private fun EnableLocationSnackbar(
 private fun Map(
     cameraLocation:State<Location?>,
     state: State<HomeViewModel.HomeViewModelState>,
+    directionsState: State<HomeViewModel.DirectionsState>,
     onCarSelected:(car:Car)->Unit,
 ){
     val cameraPositionState = rememberCameraPositionState()
@@ -242,7 +246,8 @@ private fun Map(
         )
     ) {
         MapContent(
-            state = state
+            state = state,
+            directionsState = directionsState
         ){
             onCarSelected(it)
         }
@@ -270,17 +275,18 @@ private fun MapCameraPosition(
 @Composable
 private fun MapContent(
     state : State<HomeViewModel.HomeViewModelState>,
-    directionsState:State<Home>
+    directionsState:State<HomeViewModel.DirectionsState>,
     onMarkerClicked: (car: Car) -> Unit
 ){
-
-
 
     when(val stateValue = state.value){
         is HomeViewModel.HomeViewModelState.Success -> {
             MapMarkers(
                 stateValue.data,
                 onMarkerClicked = onMarkerClicked
+            )
+            Directions(
+                directionsState = directionsState
             )
         }
         is HomeViewModel.HomeViewModelState.Loading -> {
@@ -290,6 +296,35 @@ private fun MapContent(
         }
     }
 }
+
+@Composable
+private fun Directions(
+    directionsState:State<HomeViewModel.DirectionsState>,
+){
+    when(val stateValue = directionsState.value){
+        is HomeViewModel.DirectionsState.Success ->{
+            stateValue.directions.forEach {
+                 DirectionOnMap(directionStep = it)
+            }
+        }
+        else-> {
+
+        }
+    }
+}
+
+@Composable
+private fun DirectionOnMap(directionStep: DirectionStep){
+    Polyline(
+        points = listOf(
+            directionStep.startLocation,
+            directionStep.endLocation
+        ),
+        color = Color.Blue,
+        jointType = JointType.ROUND
+    )
+}
+
 
 @Composable
 private fun LocationPermission(
@@ -698,7 +733,9 @@ private fun CarDetails(
         )
 
         CarModelAndMake(
-            modifier = Modifier.fillMaxHeight().padding(start = Dimens.medium.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(start = Dimens.medium.dp),
             model = car.model.name,
             make = car.model.manufacturerName
         )
