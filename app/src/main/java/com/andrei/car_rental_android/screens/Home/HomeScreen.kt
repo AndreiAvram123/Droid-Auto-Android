@@ -42,19 +42,18 @@ import kotlinx.coroutines.flow.filterNotNull
 fun HomeScreen(
     navController: NavController,
 ) {
-    val viewModel:HomeViewModel = hiltViewModel<HomeViewModelImpl>()
     MainContent(
         navController = navController,
-        viewModel = viewModel
     )
 }
 @Composable
 private fun MainContent(
     navController: NavController,
-    viewModel: HomeViewModel
 ) {
-  val context = LocalContext.current
+    val context = LocalContext.current
     val locationHelper = LocationHelperImpl(context)
+
+    val viewModel:HomeViewModel = hiltViewModel<HomeViewModelImpl>()
 
     val paymentSheetLauncher = rememberLauncherForActivityResult(
         contract = PaymentSheetContract(),

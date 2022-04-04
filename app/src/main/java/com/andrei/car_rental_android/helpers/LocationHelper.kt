@@ -57,7 +57,7 @@ class LocationHelperImpl(
 
     @SuppressLint("MissingPermission")
      fun getLastKnownLocation(
-        onLocationResolved:(location:Location)->Unit,
+        onLocationResolved:()->Unit,
         onError: ()-> Unit
     ){
 
@@ -68,7 +68,7 @@ class LocationHelperImpl(
         ).addOnSuccessListener { location: Location? ->
             if(location != null){
                 lastKnownLocation.tryEmit(location)
-                onLocationResolved(location)
+                onLocationResolved()
             }else{
                 onError()
 
