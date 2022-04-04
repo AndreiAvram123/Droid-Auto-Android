@@ -6,15 +6,16 @@ import android.location.Location
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -226,8 +227,8 @@ private fun Map(
     val cameraPositionState = rememberCameraPositionState()
 
     MapCameraPosition(
-       cameraPositionState = cameraPositionState,
-       location = cameraLocation
+        cameraPositionState = cameraPositionState,
+        location = cameraLocation
 
     )
     GoogleMap(
@@ -470,9 +471,9 @@ private fun Ride(
 ){
     when(rideState.value){
         HomeViewModel.RideState.UnlockingCar -> {
-           LoadingAlert(
-               text = stringResource(R.string.screen_home_unlocking_car)
-           )
+            LoadingAlert(
+                text = stringResource(R.string.screen_home_unlocking_car)
+            )
         }
         HomeViewModel.RideState.RideStarted -> {
             navigateToRideView()
@@ -498,7 +499,7 @@ private fun ReservationState(
                 modifier = Modifier
                     .padding(Dimens.medium.dp)
             ) {
-               reservationStateListener.reserveCar(currentPreviewedCar)
+                reservationStateListener.reserveCar(currentPreviewedCar)
             }
         }
         is CarReservationState.InProgress -> {
@@ -533,7 +534,7 @@ private fun ReservationState(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
                 )){
-                  reservationStateListener.payUnlockFee()
+                reservationStateListener.payUnlockFee()
             }
         }
         is CarReservationState.PaymentState.LoadingPaymentData -> {
@@ -567,12 +568,12 @@ private fun ReservationState(
 private fun UnlockFeeHint(
     modifier:Modifier = Modifier
 ){
-        Text(
-            modifier = modifier.fillMaxWidth(),
-            color = Color.Black,
-            textAlign = TextAlign.Center,
-            text = stringResource(R.string.screen_home_unlock_fee)
-        )
+    Text(
+        modifier = modifier.fillMaxWidth(),
+        color = Color.Black,
+        textAlign = TextAlign.Center,
+        text = stringResource(R.string.screen_home_unlock_fee)
+    )
 }
 @Composable
 private fun PaymentButton(
@@ -639,7 +640,7 @@ private fun BottomSheetLayout(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(220.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             content()
@@ -674,11 +675,6 @@ private fun ReserveButton(
     }
 }
 
-@Preview
-@Composable
-private fun PreviewCarDetails(){
-
-}
 
 @Composable
 private fun CarDetails(
@@ -692,47 +688,73 @@ private fun CarDetails(
         horizontalArrangement = Arrangement.Start
     ) {
 
-        AsyncImage(
-            modifier = Modifier.fillMaxHeight(),
-            model = car.model.image.url,
-            contentDescription =null
+        CarImage(
+            modifier = Modifier.padding(vertical = Dimens.small.dp),
+            url = car.model.image.url
         )
-        Column(
-            modifier = Modifier.fillMaxHeight(),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = car.model.name,
-                color = Color.Black
-            )
-            Spacer(
-                modifier =  Modifier.width(Dimens.medium.dp)
-            )
-            Text(
-                text = car.model.manufacturerName,
-                color = Color.Black
-            )
-        }
+
+        CarModelAndMake(
+            modifier = Modifier.fillMaxHeight().padding(start = Dimens.medium.dp),
+            model = car.model.name,
+            make = car.model.manufacturerName
+        )
     }
     PricePerMinute(
-        modifier = Modifier.fillMaxWidth().padding(top = Dimens.small.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = Dimens.small.dp),
         price = car.pricePerMinute
     )
 }
 
+@Composable
+private fun CarModelAndMake(
+    modifier:Modifier = Modifier,
+    model:String,
+    make:String
+){
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = make,
+            color = Color.Black
+        )
+        Text(
+            text = model,
+            color = Color.Black
+        )
+    }
+}
+
+
+@Composable
+private fun CarImage(
+    modifier:Modifier,
+    url:String
+){
+    AsyncImage(
+        modifier = modifier
+            .fillMaxHeight()
+            .clip(RoundedCornerShape(Dimens.medium.dp)),
+        model = url,
+        contentDescription =null
+    )
+}
 
 @Composable
 private fun PricePerMinute(
     modifier :Modifier = Modifier,
     price:Double
 ){
-   Text(
-       modifier = modifier,
-       textAlign = TextAlign.Center,
-       fontWeight = FontWeight.SemiBold,
-       fontSize = Dimens.medium.sp,
-       color = Color.Black,
-       text = stringResource(R.string.screen_home_price_per_minute, price/100)
-   )
+    Text(
+        modifier = modifier,
+        textAlign = TextAlign.Center,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = Dimens.large.sp,
+        color = Color.Black,
+        text = stringResource(R.string.screen_home_price_per_minute, price/100)
+    )
 }
 
