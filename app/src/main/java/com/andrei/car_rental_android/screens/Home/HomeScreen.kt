@@ -89,7 +89,7 @@ private fun MainContent(
             viewModel.setLocationState(HomeViewModel.LocationState.Loading)
             locationHelper.getLastKnownLocation(onLocationResolved ={
                 locationHelper.requestLocationUpdates(
-                    locationRequest = locationHelper.balancedPrecisionHighIntervalRequest
+                    locationRequest = locationHelper.highPrecisionHighIntervalRequest
                 )
             }, onError = {
                 viewModel.setLocationState(HomeViewModel.LocationState.Unknown)
@@ -270,8 +270,11 @@ private fun MapCameraPosition(
 @Composable
 private fun MapContent(
     state : State<HomeViewModel.HomeViewModelState>,
+    directionsState:State<Home>
     onMarkerClicked: (car: Car) -> Unit
 ){
+
+
 
     when(val stateValue = state.value){
         is HomeViewModel.HomeViewModelState.Success -> {
@@ -432,7 +435,6 @@ private fun BottomSheetContent(
     reservationStateListener: ReservationStateListener
 
 ) {
-
     val car = carState.value
 
     if (car != null) {
@@ -494,7 +496,12 @@ private fun ReservationState(
 
     when (val stateValue = carReservationState.value) {
         is CarReservationState.Default -> {
-            //no action
+            PricePerMinute(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Dimens.small.dp),
+                price = currentPreviewedCar.pricePerMinute
+            )
             ReserveButton(
                 modifier = Modifier
                     .padding(Dimens.medium.dp)
@@ -521,9 +528,6 @@ private fun ReservationState(
                     horizontal = Dimens.medium.dp
                 ), cancelReservation = { reservationStateListener.cancelReservation() })
 
-
-        }
-        is CarReservationState.Error -> {
 
         }
         is CarReservationState.PaymentState.ReadyForUnlockPayment-> {
@@ -699,12 +703,6 @@ private fun CarDetails(
             make = car.model.manufacturerName
         )
     }
-    PricePerMinute(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = Dimens.small.dp),
-        price = car.pricePerMinute
-    )
 }
 
 @Composable

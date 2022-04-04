@@ -2,6 +2,7 @@ package com.andrei.car_rental_android.screens.Home
 
 import android.location.Location
 import android.os.CountDownTimer
+import android.util.Log
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.DTOs.toLocation
@@ -10,6 +11,7 @@ import com.andrei.car_rental_android.engine.repositories.CarRepository
 import com.andrei.car_rental_android.engine.repositories.DirectionsRepository
 import com.andrei.car_rental_android.engine.repositories.PaymentRepository
 import com.andrei.car_rental_android.engine.request.RequestState
+import com.andrei.car_rental_android.engine.response.DirectionStep
 import com.andrei.car_rental_android.engine.response.ReservationRequest
 import com.stripe.android.paymentsheet.PaymentSheetResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +27,7 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     abstract val nearbyCars:StateFlow<HomeViewModelState>
     abstract val locationState:StateFlow<LocationState>
     abstract val locationRequirements:StateFlow<Set<LocationRequirement>>
+    abstract val directionsState:StateFlow<DirectionsState>
     abstract val rideState:StateFlow<RideState>
     abstract val cameraPosition:StateFlow<Location?>
 
@@ -78,6 +81,13 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
         object PermissionNeeded:LocationRequirement()
         object LocationActive:LocationRequirement()
     }
+
+    sealed class DirectionsState{
+        data class Success(val directions:List<DirectionStep>):DirectionsState()
+        object Loading : DirectionsState()
+        object Error:DirectionsState()
+        object Default:DirectionsState()
+    }
 }
 
 @HiltViewModel
@@ -96,6 +106,7 @@ class HomeViewModelImpl @Inject constructor(
             LocationRequirement.LocationActive
         )
     )
+    override val directionsState: MutableStateFlow<DirectionsState> = MutableStateFlow(DirectionsState.Default)
     override val rideState: MutableStateFlow<RideState> = MutableStateFlow(RideState.NotStarted)
     override val cameraPosition: MutableStateFlow<Location?> = MutableStateFlow(null)
 
@@ -180,18 +191,20 @@ class HomeViewModelImpl @Inject constructor(
 
         coroutineScope.launch {
 
-            val locationPair = carReservationState.combine(locationState){ carReservationValue,locationValue->
+             carReservationState.combine(locationState){ carReservationValue,locationValue->
                 if(carReservationValue is CarReservationState.Reserved && locationValue is LocationState.Resolved){
                     return@combine Pair(locationValue.location,carReservationValue.car.location.toLocation())
                 }else{
                     return@combine null
                 }
-            }.filterNotNull().first()
+            }.filterNotNull().collect{locationPair->
+                 Log.d("Home view model", "Getting directions")
+                getDirections(
+                    startLocation = locationPair.first,
+                    endLocation = locationPair.second
+                )
+            }
 
-            getDirections(
-                startLocation = locationPair.first,
-                endLocation = locationPair.second
-            )
         }
 
         coroutineScope.launch {
@@ -218,7 +231,15 @@ class HomeViewModelImpl @Inject constructor(
              endLocation = endLocation
          ).collect{ request->
              when(request){
-
+                 is RequestState.Success ->{
+                     directionsState.emit(DirectionsState.Success(request.data.steps))
+                 }
+                 is RequestState.Loading -> {
+                     directionsState.emit(DirectionsState.Loading)
+                 }
+                 else ->{
+                     directionsState.emit(DirectionsState.Error)
+                 }
              }
          }
     }
