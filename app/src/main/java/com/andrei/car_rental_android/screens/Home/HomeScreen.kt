@@ -29,7 +29,9 @@ import com.andrei.car_rental_android.engine.response.DirectionStep
 import com.andrei.car_rental_android.helpers.LocationHelper
 import com.andrei.car_rental_android.helpers.LocationHelperImpl
 import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
-import com.andrei.car_rental_android.screens.Home.HomeViewModel.CarReservationState
+import com.andrei.car_rental_android.screens.Home.states.CarReservationState
+import com.andrei.car_rental_android.screens.Home.states.DirectionsState
+import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
@@ -224,8 +226,8 @@ private fun EnableLocationSnackbar(
 @Composable
 private fun Map(
     cameraLocation:State<Location?>,
-    state: State<HomeViewModel.HomeViewModelState>,
-    directionsState: State<HomeViewModel.DirectionsState>,
+    state: State<HomeViewModelState>,
+    directionsState: State<DirectionsState>,
     onCarSelected:(car:Car)->Unit,
 ){
     val cameraPositionState = rememberCameraPositionState()
@@ -274,13 +276,13 @@ private fun MapCameraPosition(
 
 @Composable
 private fun MapContent(
-    state : State<HomeViewModel.HomeViewModelState>,
-    directionsState:State<HomeViewModel.DirectionsState>,
+    state : State<HomeViewModelState>,
+    directionsState:State<DirectionsState>,
     onMarkerClicked: (car: Car) -> Unit
 ){
 
     when(val stateValue = state.value){
-        is HomeViewModel.HomeViewModelState.Success -> {
+        is HomeViewModelState.Success -> {
             MapMarkers(
                 stateValue.data,
                 onMarkerClicked = onMarkerClicked
@@ -289,7 +291,7 @@ private fun MapContent(
                 directionsState = directionsState
             )
         }
-        is HomeViewModel.HomeViewModelState.Loading -> {
+        is HomeViewModelState.Loading -> {
         }
         else -> {
 
@@ -299,16 +301,13 @@ private fun MapContent(
 
 @Composable
 private fun Directions(
-    directionsState:State<HomeViewModel.DirectionsState>,
+    directionsState:State<DirectionsState>,
 ){
     when(val stateValue = directionsState.value){
-        is HomeViewModel.DirectionsState.Success ->{
+        is DirectionsState.Success ->{
             stateValue.directions.forEach {
                  DirectionOnMap(directionStep = it)
             }
-        }
-        else-> {
-
         }
     }
 }

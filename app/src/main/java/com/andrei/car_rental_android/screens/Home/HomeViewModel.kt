@@ -2,100 +2,80 @@ package com.andrei.car_rental_android.screens.Home
 
 import android.location.Location
 import android.os.CountDownTimer
-import android.util.Log
 import com.andrei.car_rental_android.DTOs.Car
-import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.DTOs.toLocation
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.CarRepository
 import com.andrei.car_rental_android.engine.repositories.DirectionsRepository
 import com.andrei.car_rental_android.engine.repositories.PaymentRepository
 import com.andrei.car_rental_android.engine.request.RequestState
-import com.andrei.car_rental_android.engine.response.DirectionStep
-import com.andrei.car_rental_android.engine.response.ReservationRequest
+import com.andrei.car_rental_android.screens.Home.states.CarReservationState
+import com.andrei.car_rental_android.screens.Home.states.DirectionsState
+import com.andrei.car_rental_android.screens.Home.states.DirectionsState.Companion.toState
+import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
+import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState.Companion.toHomeViewModelState
+import com.andrei.car_rental_android.screens.Home.useCases.CancelReservationUseCase
+import com.andrei.car_rental_android.screens.Home.useCases.MakeReservationUseCase
 import com.stripe.android.paymentsheet.PaymentSheetResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(coroutineProvider) {
-    protected val reservationTimeSeconds:Long = 15 * 60
-    protected val unlockDistance:Long = 20
+    protected val reservationTimeSeconds: Long = 15 * 60
+    protected val unlockDistance: Long = 20
 
-    abstract val nearbyCars:StateFlow<HomeViewModelState>
-    abstract val locationState:StateFlow<LocationState>
-    abstract val locationRequirements:StateFlow<Set<LocationRequirement>>
-    abstract val directionsState:StateFlow<DirectionsState>
-    abstract val rideState:StateFlow<RideState>
-    abstract val cameraPosition:StateFlow<Location?>
+    abstract val nearbyCars: StateFlow<HomeViewModelState>
+    abstract val locationState: StateFlow<LocationState>
+    abstract val locationRequirements: StateFlow<Set<LocationRequirement>>
+    abstract val directionsState: StateFlow<DirectionsState>
+    abstract val rideState: StateFlow<RideState>
+    abstract val cameraPosition: StateFlow<Location?>
 
-
-    abstract val carReservationState:StateFlow<CarReservationState>
-    abstract val reservationTimeLeftMillis:StateFlow<Long>
+    abstract val carReservationState: StateFlow<CarReservationState>
+    abstract val reservationTimeLeftMillis: StateFlow<Long>
 
     abstract fun notifyRequirementResolved(locationRequirement: LocationRequirement)
 
 
-    abstract fun  onFeePaymentResult(paymentResult:PaymentSheetResult)
+    abstract fun onFeePaymentResult(paymentResult: PaymentSheetResult)
     abstract fun startUnlockPaymentProcess()
-    abstract fun setLocationState(locationState:LocationState)
-    abstract fun reserveCar(car:Car)
+    abstract fun setLocationState(locationState: LocationState)
+    abstract fun reserveCar(car: Car)
     abstract fun cancelReservation()
     protected abstract fun unlockCar()
 
-    sealed class HomeViewModelState{
-        data class Success(val data:List<Car>):HomeViewModelState()
-        object Loading:HomeViewModelState()
-        object Error:HomeViewModelState()
+
+    sealed class RideState {
+        object NotStarted : RideState()
+        object UnlockingCar : RideState()
+        object RideStarted : RideState()
     }
 
-    sealed class CarReservationState{
-        data class Reserved(val car:Car):CarReservationState()
-        object Default:CarReservationState()
-        object Error:CarReservationState()
-        object InProgress:CarReservationState()
-
-        sealed class PaymentState:CarReservationState(){
-            object ReadyForUnlockPayment:PaymentState()
-            object LoadingPaymentData:PaymentState()
-            data class PaymentDataReady(
-                val paymentResponse: PaymentResponse
-            ):PaymentState()
-            object PaymentFailed:PaymentState()
-        }
-    }
-    sealed class RideState{
-        object NotStarted:RideState()
-        object UnlockingCar:RideState()
-        object RideStarted:RideState()
-    }
-    sealed class LocationState{
-        object NotRequested:LocationState()
-        data class Resolved(val location:Location):LocationState()
+    sealed class LocationState {
+        object NotRequested : LocationState()
+        data class Resolved(val location: Location) : LocationState()
         object Unknown : LocationState()
-        object Loading:LocationState()
-    }
-    sealed class LocationRequirement{
-        object PermissionNeeded:LocationRequirement()
-        object LocationActive:LocationRequirement()
+        object Loading : LocationState()
     }
 
-    sealed class DirectionsState{
-        data class Success(val directions:List<DirectionStep>):DirectionsState()
-        object Loading : DirectionsState()
-        object Error:DirectionsState()
-        object Default:DirectionsState()
+    sealed class LocationRequirement {
+        object PermissionNeeded : LocationRequirement()
+        object LocationActive : LocationRequirement()
     }
+
 }
-
 @HiltViewModel
 class HomeViewModelImpl @Inject constructor(
     coroutineProvider: CoroutineScope?,
     private val carRepository: CarRepository,
     private val paymentRepository: PaymentRepository,
-    private val directionsRepository: DirectionsRepository
+    private val directionsRepository: DirectionsRepository,
+    private val makeReservationUseCase: MakeReservationUseCase,
+    private val cancelReservationUseCase: CancelReservationUseCase
 ):HomeViewModel(coroutineProvider){
 
     override val nearbyCars: MutableStateFlow<HomeViewModelState> = MutableStateFlow(HomeViewModelState.Loading)
@@ -188,23 +168,28 @@ class HomeViewModelImpl @Inject constructor(
                 cameraPosition.emit(firstResolvedLocation.location)
             }
         }
+        coroutineScope.launch {
+            carReservationState.collect{
+                if(it is CarReservationState.Default){
+                    cancelTimer()
+                }
+            }
+        }
 
         coroutineScope.launch {
-
-             carReservationState.combine(locationState){ carReservationValue,locationValue->
+               combine(carReservationState,locationState){ carReservationValue,locationValue->
                 if(carReservationValue is CarReservationState.Reserved && locationValue is LocationState.Resolved){
                     return@combine Pair(locationValue.location,carReservationValue.car.location.toLocation())
                 }else{
                     return@combine null
                 }
-            }.filterNotNull().collect{locationPair->
-                 Log.d("Home view model", "Getting directions")
+            }.filterNotNull().collectLatest{locationPair->
+                Timber.d("Getting directions")
                 getDirections(
                     startLocation = locationPair.first,
                     endLocation = locationPair.second
                 )
             }
-
         }
 
         coroutineScope.launch {
@@ -229,19 +214,8 @@ class HomeViewModelImpl @Inject constructor(
          directionsRepository.getDirections(
              startLocation = startLocation,
              endLocation = endLocation
-         ).collect{ request->
-             when(request){
-                 is RequestState.Success ->{
-                     directionsState.emit(DirectionsState.Success(request.data.steps))
-                 }
-                 is RequestState.Loading -> {
-                     directionsState.emit(DirectionsState.Loading)
-                 }
-                 else ->{
-                     directionsState.emit(DirectionsState.Error)
-                 }
-             }
-         }
+         ).collect{ directionsState.emit(it.toState())}
+
     }
 
     private fun startReservationTimer(){
@@ -268,18 +242,8 @@ class HomeViewModelImpl @Inject constructor(
     }
 
     private suspend fun getNearbyCars(location:Location) {
-        carRepository.fetchNearby(location.latitude,location.longitude).collect {requestState->
-            when(requestState){
-                is RequestState.Success->{
-                    nearbyCars.emit(HomeViewModelState.Success(requestState.data))
-                }
-                is RequestState.Loading -> {
-                    nearbyCars.emit(HomeViewModelState.Loading)
-                }
-                else-> {
-                    nearbyCars.emit(HomeViewModelState.Error)
-                }
-            }
+        carRepository.fetchNearby(location.latitude,location.longitude).collect {
+           nearbyCars.emit(it.toHomeViewModelState())
         }
     }
 
@@ -290,38 +254,20 @@ class HomeViewModelImpl @Inject constructor(
 
     override fun reserveCar(car: Car) {
         coroutineScope.launch {
-            carRepository.makeReservation(
-                ReservationRequest(car.id)
-            ).collect{
-                when(it){
-                    is RequestState.Success -> {
-                        carReservationState.emit(CarReservationState.Reserved(car))
-                        startReservationTimer()
-                    }
-                    is RequestState.Loading -> carReservationState.emit(CarReservationState.InProgress)
-                    else -> carReservationState.emit(CarReservationState.Error)
-                }
-            }
+             makeReservationUseCase(car).collect{
+                 carReservationState.emit(it)
+                 if(it is CarReservationState.Reserved){
+                     startReservationTimer()
+                 }
+             }
         }
     }
 
     override fun cancelReservation() {
         coroutineScope.launch {
-            carRepository.cancelCurrentReservation().collect{
-                when(it){
-                    is RequestState.Success -> {
-                        cancelTimer()
-                        carReservationState.emit(CarReservationState.Default)
-                    }
-                    is RequestState.Loading -> {
-
-                    }
-                    else -> {
-
-                    }
-                }
+            cancelReservationUseCase().collect{
+                carReservationState.emit(it)
             }
-
         }
     }
 

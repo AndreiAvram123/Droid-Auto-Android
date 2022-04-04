@@ -24,8 +24,8 @@ class RetrofitComponentsModule {
         authTokenInterceptor: AuthTokenInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .callTimeout(Duration.ofSeconds(10))
-            .readTimeout(Duration.ofSeconds(10))
+            .callTimeout(Duration.ofSeconds(15))
+            .readTimeout(Duration.ofSeconds(15))
             .addNetworkInterceptor(authTokenInterceptor)
             .authenticator(refreshTokenAuthenticator)
             .build()

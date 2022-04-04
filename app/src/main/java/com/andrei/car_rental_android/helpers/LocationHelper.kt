@@ -13,6 +13,7 @@ import com.google.android.gms.location.*
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import timber.log.Timber
 
 
 interface LocationHelper{
@@ -32,13 +33,13 @@ class LocationHelperImpl(
         interval = 1000
         fastestInterval = 500
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        smallestDisplacement = 3f
+        smallestDisplacement = 10f
     }
     override val highPrecisionHighIntervalRequest: LocationRequest = LocationRequest.create().apply {
         interval = 6000
         fastestInterval = 4000
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        smallestDisplacement = 3f
+        smallestDisplacement = 10f
 
     }
 
@@ -54,6 +55,7 @@ class LocationHelperImpl(
 
         override fun onLocationResult(locationResult: LocationResult) {
             lastKnownLocation.tryEmit(locationResult.lastLocation)
+            Timber.d("New location ${locationResult.lastLocation}")
         }
     }
 
