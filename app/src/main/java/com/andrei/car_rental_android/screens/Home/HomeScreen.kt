@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -421,6 +422,7 @@ private fun BottomSheet(
 
 
 
+
 @Composable
 private fun BottomSheetContent(
     carState:State<Car?>,
@@ -508,6 +510,9 @@ private fun ReservationState(
         }
         is CarReservationState.Reserved -> {
             ReservationTimeLeft(
+                modifier = Modifier.padding(
+                    top = Dimens.small.dp
+                ),
                 timeLeft = reservationTimeLeft
             )
             CancelReservationButton(
@@ -668,6 +673,13 @@ private fun ReserveButton(
         Text(text = stringResource(R.string.screen_home_reserve))
     }
 }
+
+@Preview
+@Composable
+private fun PreviewCarDetails(){
+
+}
+
 @Composable
 private fun CarDetails(
     modifier:Modifier = Modifier,
@@ -676,12 +688,12 @@ private fun CarDetails(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .size(100.dp),
+            .height(100.dp),
         horizontalArrangement = Arrangement.Start
     ) {
 
         AsyncImage(
-            modifier = Modifier.size(100.dp),
+            modifier = Modifier.fillMaxHeight(),
             model = car.model.image.url,
             contentDescription =null
         )
@@ -702,4 +714,25 @@ private fun CarDetails(
             )
         }
     }
+    PricePerMinute(
+        modifier = Modifier.fillMaxWidth().padding(top = Dimens.small.dp),
+        price = car.pricePerMinute
+    )
 }
+
+
+@Composable
+private fun PricePerMinute(
+    modifier :Modifier = Modifier,
+    price:Double
+){
+   Text(
+       modifier = modifier,
+       textAlign = TextAlign.Center,
+       fontWeight = FontWeight.SemiBold,
+       fontSize = Dimens.medium.sp,
+       color = Color.Black,
+       text = stringResource(R.string.screen_home_price_per_minute, price/100)
+   )
+}
+
