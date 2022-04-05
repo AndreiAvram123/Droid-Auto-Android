@@ -9,13 +9,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
+import com.andrei.car_rental_android.screens.register.base.BackButton
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
-import com.andrei.car_rental_android.screens.register.base.RegisterBackButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
+import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 
@@ -56,23 +59,34 @@ private fun TopContent(
     navigateBack:()->Unit
 ){
     Column(modifier = Modifier.fillMaxSize()) {
-        RegisterBackButton {
+        BackButton {
             navigateBack()
         }
-        Headings()
+        Headings(
+            modifier = Modifier.padding(top = Dimens.medium.dp)
+        )
     }
 
 }
 @Composable
 private fun Headings(
-    modifier: Modifier = Modifier
+   modifier:Modifier = Modifier
 ){
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+    Column(
+        modifier = modifier
     ) {
-        Text(text = stringResource(R.string.screen_email_provide_email))
+        Text(
+            modifier =Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            text = stringResource(R.string.screen_email_heading1)
+        )
+        Text(
+            modifier =Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            text = stringResource(R.string.screen_email_heading2)
+        )
     }
+
 }
 
 @Composable
@@ -102,7 +116,7 @@ private fun BottomContent(
         verticalArrangement = Arrangement.Bottom
     ) {
         ContinueButton(
-            enabled = viewModel.nextButtonEnabled.collectAsState(),
+            enabled = viewModel.nextButtonEnabled.collectAsState().value,
             onClick = {
                 navigateForward()
             }
@@ -127,7 +141,7 @@ private fun EmailTextFieldColumn(
             modifier = modifier,
             value = state.value,
             onValueChange = {
-                onValueChanged(it)
+                onValueChanged(it.trim())
             },
             isError = invalid,
             placeholder = {

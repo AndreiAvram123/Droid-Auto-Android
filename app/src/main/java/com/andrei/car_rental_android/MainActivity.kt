@@ -6,14 +6,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
-import com.andrei.car_rental_android.navigation.MainNavigation
+import com.andrei.car_rental_android.navigation.NavGraph
+import com.andrei.car_rental_android.navigation.Navigation
+import com.andrei.car_rental_android.state.SessionManager
 import com.andrei.car_rental_android.ui.theme.CarrentalandroidTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var sessionManager:SessionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -29,7 +37,14 @@ class MainActivity : ComponentActivity() {
                   )
             }
             CarrentalandroidTheme {
-                MainNavigation()
+                val currentLoginState = sessionManager.authenticationState.collectAsState()
+                val graph = when(currentLoginState.value){
+                    is SessionManager.AuthenticationState.Authenticated -> NavGraph.MainGraph
+                    else  -> NavGraph.LoginGraph
+                }
+                Navigation(
+                   graph
+                )
             }
         }
     }

@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface LocationHelper{
     val highPrecisionLowIntervalRequest:LocationRequest
-    val balancedPrecisionHighIntervalRequest:LocationRequest
+    val highPrecisionHighIntervalRequest:LocationRequest
     fun checkLocationSettings(locationSettingsLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,onLocationEnabled: () -> Unit)
     fun requestLocationUpdates(locationRequest: LocationRequest)
     fun stopLocationUpdates()
@@ -32,11 +32,14 @@ class LocationHelperImpl(
         interval = 1000
         fastestInterval = 500
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        smallestDisplacement = 10f
     }
-    override val balancedPrecisionHighIntervalRequest: LocationRequest = LocationRequest.create().apply {
+    override val highPrecisionHighIntervalRequest: LocationRequest = LocationRequest.create().apply {
         interval = 6000
         fastestInterval = 4000
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        smallestDisplacement = 10f
+
     }
 
     private val builder = LocationSettingsRequest.Builder()
@@ -57,7 +60,7 @@ class LocationHelperImpl(
 
     @SuppressLint("MissingPermission")
      fun getLastKnownLocation(
-        onLocationResolved:(location:Location)->Unit,
+        onLocationResolved:()->Unit,
         onError: ()-> Unit
     ){
 
@@ -68,7 +71,7 @@ class LocationHelperImpl(
         ).addOnSuccessListener { location: Location? ->
             if(location != null){
                 lastKnownLocation.tryEmit(location)
-                onLocationResolved(location)
+                onLocationResolved()
             }else{
                 onError()
 
@@ -101,11 +104,12 @@ class LocationHelperImpl(
     @SuppressLint("MissingPermission")
     override fun requestLocationUpdates(locationRequest: LocationRequest) {
           stopLocationUpdates()
+
           locationClient.requestLocationUpdates(locationRequest,locationCallback, Looper.getMainLooper())
     }
 
     override fun stopLocationUpdates() {
-       locationClient.removeLocationUpdates(locationCallback)
+   //    locationClient.removeLocationUpdates(locationCallback)
     }
 
 

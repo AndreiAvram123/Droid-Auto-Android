@@ -38,6 +38,9 @@ object NetworkModule {
     @Provides
     fun provideCarService(retrofit: Retrofit):CarService = retrofit.create(CarService::class.java)
 
+    @Singleton
+    @Provides
+    fun provideDirectionsService(retrofit: Retrofit):DirectionsService = retrofit.create(DirectionsService::class.java)
 
 
 

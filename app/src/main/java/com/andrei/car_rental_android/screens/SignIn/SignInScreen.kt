@@ -2,6 +2,7 @@ package com.andrei.car_rental_android.screens.SignIn
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -27,7 +28,6 @@ import com.andrei.car_rental_android.composables.CarRentalDialog
 import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.screens.SignIn.navigation.SignInNavigator
 import com.andrei.car_rental_android.screens.SignIn.navigation.SignInNavigatorImpl
-import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.ButtonText
 
@@ -35,22 +35,26 @@ import com.andrei.car_rental_android.ui.composables.ButtonText
 @Composable
 fun SignInScreen(navController: NavController) {
     val navigator = SignInNavigatorImpl(navController)
-    RegisterScreenSurface{
-        MainContent(navigator = navigator)
-    }
+    val loginViewModel = hiltViewModel<LoginViewModelImpl>()
+    MainContent(
+        navigator = navigator,
+        loginViewModel = loginViewModel
+    )
+
 }
 
 
 
 @Composable
 fun MainContent(
-    navigator: SignInNavigator
+    navigator: SignInNavigator,
+    loginViewModel: LoginViewModel
 ) {
 
 
-    val loginViewModel = hiltViewModel<LoginViewModelImpl>()
     val loginUIState = loginViewModel.loginUiState.collectAsState()
-    Box(modifier = Modifier.background(Color.White)) {
+    Box(
+       modifier = Modifier.background(Color.White).fillMaxSize()) {
         BottomColumn {
             EmailTextField(
                 viewModel = loginViewModel,
@@ -131,7 +135,7 @@ private fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modif
             focusManager.moveFocus(FocusDirection.Down)
         }),
         onValueChange = {
-            viewModel.setUsername(it)
+            viewModel.setUsername(it.trim())
         },
         label = {
             TextFieldLabel(text = stringResource(R.string.screen_sign_in_email))
@@ -165,7 +169,7 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) 
             modifier = modifier.fillMaxWidth(),
             value = passwordState.value,
             onValueChange = {
-                viewModel.setPassword(it)
+                viewModel.setPassword(it.trim())
             },
             label = {
                 TextFieldLabel(text = stringResource(R.string.screen_sign_in_password))
@@ -206,11 +210,13 @@ private fun SignInButton(
 ) {
     Button(modifier = modifier
         .fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
+        shape = RoundedCornerShape(Dimens.small.dp),
         onClick = {
             login()
         }) {
-         ButtonText(text = stringResource(id = R.string.screen_sign_in_login))
+         ButtonText(
+             modifier = Modifier.padding(vertical = Dimens.tiny.dp),
+             text = stringResource(id = R.string.screen_sign_in_login))
     }
 }
 
@@ -221,11 +227,14 @@ private fun RegisterButton(
 ) {
     Button(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
+        shape = RoundedCornerShape(Dimens.small.dp),
         onClick = {
             navigateToRegister()
         }) {
-        ButtonText(text = stringResource(id = R.string.screen_sign_in_register))
+        ButtonText(
+            modifier = Modifier.padding(vertical = Dimens.tiny.dp),
+            text = stringResource(id = R.string.screen_sign_in_register)
+        )
     }
 }
 
