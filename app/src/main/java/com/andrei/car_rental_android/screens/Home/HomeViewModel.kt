@@ -2,6 +2,9 @@ package com.andrei.car_rental_android.screens.Home
 
 import android.location.Location
 import android.os.CountDownTimer
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.IntentSenderRequest
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.toLocation
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
@@ -9,6 +12,7 @@ import com.andrei.car_rental_android.engine.repositories.CarRepository
 import com.andrei.car_rental_android.engine.repositories.DirectionsRepository
 import com.andrei.car_rental_android.engine.repositories.PaymentRepository
 import com.andrei.car_rental_android.engine.request.RequestState
+import com.andrei.car_rental_android.helpers.LocationHelper
 import com.andrei.car_rental_android.screens.Home.states.CarReservationState
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState.Companion.toState
@@ -30,7 +34,9 @@ import kotlin.time.Duration.Companion.seconds
 
 abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(coroutineProvider) {
     protected val reservationTimeSeconds: Long = 15 * 60
-    protected val unlockDistance: Long = 20
+    protected val unlockDistance: Long = 200
+
+    abstract fun checkLocationSettings(locationSettingsLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>, onLocationEnabled: () -> Unit)
 
     abstract val nearbyCars: StateFlow<HomeViewModelState>
     abstract val locationState: StateFlow<LocationState>
@@ -80,8 +86,14 @@ class HomeViewModelImpl @Inject constructor(
     private val directionsRepository: DirectionsRepository,
     private val makeReservationUseCase: MakeReservationUseCase,
     private val cancelReservationUseCase: CancelReservationUseCase,
-    private val formatTimeUseCase: FormatTimeUseCase
+    private val formatTimeUseCase: FormatTimeUseCase,
+    private val locationHelper: LocationHelper
 ):HomeViewModel(coroutineProvider){
+
+    override fun checkLocationSettings(
+        locationSettingsLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,
+        onLocationEnabled: () -> Unit
+    ) = locationHelper.checkLocationSettings(locationSettingsLauncher,onLocationEnabled)
 
     override val nearbyCars: MutableStateFlow<HomeViewModelState> = MutableStateFlow(HomeViewModelState.Loading)
     override val locationState: MutableStateFlow<LocationState> = MutableStateFlow(LocationState.NotRequested)
@@ -107,6 +119,10 @@ class HomeViewModelImpl @Inject constructor(
             remove(locationRequirement)
         }
         locationRequirements.tryEmit(newSet)
+    }
+
+    override fun onCleared() {
+        locationHelper.stopLocationUpdates()
     }
 
     override fun onFeePaymentResult(paymentResult: PaymentSheetResult) {
@@ -166,6 +182,21 @@ class HomeViewModelImpl @Inject constructor(
 
 
     init {
+
+        coroutineScope.launch {
+            locationRequirements.collect{
+                if(it.isEmpty()){
+                    val location = locationHelper.getLastKnownLocation()
+                    if(location != null){
+                        locationState.emit(LocationState.Resolved(location))
+                        locationHelper.requestLocationUpdates(LocationHelper.highPrecisionHighIntervalRequest)
+                    }else{
+                        locationState.emit(LocationState.Unknown)
+                    }
+                }
+            }
+        }
+
         coroutineScope.launch {
             val firstResolvedLocation =  locationState.first{state->
                 state is LocationState.Resolved
