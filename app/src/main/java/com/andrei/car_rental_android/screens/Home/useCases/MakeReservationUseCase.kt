@@ -16,7 +16,7 @@ class MakeReservationUseCase @Inject constructor(
         ReservationRequest(car.id)
     ).transform {
         when(it) {
-            is RequestState.Success -> emit(CarReservationState.Reserved(car))
+            is RequestState.Success -> emit(CarReservationState.PreReserved(car))
             is RequestState.Loading -> emit(CarReservationState.InProgress)
             is RequestState.Error -> {
                 if(it.code == 409){

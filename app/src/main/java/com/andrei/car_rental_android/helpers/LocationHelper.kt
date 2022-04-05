@@ -13,7 +13,6 @@ import com.google.android.gms.location.*
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import timber.log.Timber
 
 
 interface LocationHelper{
@@ -55,7 +54,6 @@ class LocationHelperImpl(
 
         override fun onLocationResult(locationResult: LocationResult) {
             lastKnownLocation.tryEmit(locationResult.lastLocation)
-            Timber.d("New location ${locationResult.lastLocation}")
         }
     }
 

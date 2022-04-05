@@ -14,6 +14,7 @@ import com.andrei.car_rental_android.screens.Home.states.DirectionsState
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState.Companion.toState
 import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
 import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState.Companion.toHomeViewModelState
+import com.andrei.car_rental_android.screens.Home.states.PaymentState
 import com.andrei.car_rental_android.screens.Home.useCases.CancelReservationUseCase
 import com.andrei.car_rental_android.screens.Home.useCases.MakeReservationUseCase
 import com.stripe.android.paymentsheet.PaymentSheetResult
@@ -114,7 +115,7 @@ class HomeViewModelImpl @Inject constructor(
                 carReservationState.tryEmit(carReservationState.value)
             }
             is PaymentSheetResult.Failed -> {
-                carReservationState.tryEmit(CarReservationState.PaymentState.PaymentFailed)
+                carReservationState.tryEmit(PaymentState.PaymentFailed)
             }
         }
     }
@@ -143,10 +144,10 @@ class HomeViewModelImpl @Inject constructor(
             paymentRepository.makeUnlockFeePayment().collect{
                 when(it){
                     is RequestState.Success -> {
-                        carReservationState.emit(CarReservationState.PaymentState.PaymentDataReady(it.data))
+                        carReservationState.emit(PaymentState.PaymentDataReady(it.data))
                     }
                     is RequestState.Loading ->{
-                        carReservationState.emit(CarReservationState.PaymentState.LoadingPaymentData)
+                        carReservationState.emit(PaymentState.LoadingPaymentData)
                     }
                     else -> {
                     }
@@ -178,7 +179,7 @@ class HomeViewModelImpl @Inject constructor(
 
         coroutineScope.launch {
                combine(carReservationState,locationState){ carReservationValue,locationValue->
-                if(carReservationValue is CarReservationState.Reserved && locationValue is LocationState.Resolved){
+                if(carReservationValue is CarReservationState.PreReserved && locationValue is LocationState.Resolved){
                     return@combine Pair(locationValue.location,carReservationValue.car.location.toLocation())
                 }else{
                     return@combine null
@@ -194,7 +195,7 @@ class HomeViewModelImpl @Inject constructor(
 
         coroutineScope.launch {
             combine(locationState,carReservationState){ locationState, reservationState ->
-                if(locationState is LocationState.Resolved && reservationState is CarReservationState.Reserved ){
+                if(locationState is LocationState.Resolved && reservationState is CarReservationState.PreReserved ){
                     return@combine locationState.location.distanceTo(
                         reservationState.car.location.toLocation()
                     ).toDouble()
@@ -203,7 +204,7 @@ class HomeViewModelImpl @Inject constructor(
                 }
             }.filterNotNull().collect{ distance->
                 if(distance <= unlockDistance){
-                    carReservationState.emit(CarReservationState.PaymentState.ReadyForUnlockPayment)
+                    carReservationState.emit(PaymentState.ReadyForUnlockPayment)
                 }
             }
         }
@@ -256,7 +257,7 @@ class HomeViewModelImpl @Inject constructor(
         coroutineScope.launch {
              makeReservationUseCase(car).collect{
                  carReservationState.emit(it)
-                 if(it is CarReservationState.Reserved){
+                 if(it is CarReservationState.PreReserved){
                      startReservationTimer()
                  }
              }

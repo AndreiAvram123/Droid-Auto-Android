@@ -32,6 +32,7 @@ import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
 import com.andrei.car_rental_android.screens.Home.states.CarReservationState
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState
 import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
+import com.andrei.car_rental_android.screens.Home.states.PaymentState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
@@ -525,7 +526,8 @@ private fun ReservationState(
     reservationTimeLeft : State<Long>,
     carReservationState:State<CarReservationState>,
     currentPreviewedCar: Car,
-    reservationStateListener: ReservationStateListener
+    reservationStateListener: ReservationStateListener,
+
 ){
 
     when (val stateValue = carReservationState.value) {
@@ -550,7 +552,7 @@ private fun ReservationState(
                 )
             )
         }
-        is CarReservationState.Reserved -> {
+        is CarReservationState.PreReserved -> {
             ReservationTimeLeft(
                 modifier = Modifier.padding(
                     top = Dimens.small.dp
@@ -564,40 +566,62 @@ private fun ReservationState(
 
 
         }
-        is CarReservationState.PaymentState.ReadyForUnlockPayment-> {
+        is PaymentState ->{
+            UnlockCarPayment(
+                state = stateValue,
+                reservationStateListener = reservationStateListener
+            )
+        }
+
+        else -> {
+            //no action
+        }
+    }
+}
+
+
+@Composable
+private fun UnlockCarPayment(
+    state: PaymentState,
+    reservationStateListener: ReservationStateListener
+
+) {
+    when (state) {
+        is PaymentState.ReadyForUnlockPayment -> {
             UnlockFeeHint(
                 modifier = Modifier.padding(Dimens.medium.dp)
             )
             PaymentButton(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
-                )){
+                )
+            ) {
                 reservationStateListener.payUnlockFee()
             }
         }
-        is CarReservationState.PaymentState.LoadingPaymentData -> {
+        is PaymentState.LoadingPaymentData -> {
             LinearProgressIndicator(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
                 )
             )
         }
-        is CarReservationState.PaymentState.PaymentDataReady ->{
+        is PaymentState.PaymentDataReady -> {
             UnlockFeeHint(
                 modifier = Modifier.padding(Dimens.medium.dp)
             )
             PaymentButton(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
-                )){
-                reservationStateListener.onPaymentDataReady(stateValue.paymentResponse)
+                )
+            ) {
+                reservationStateListener.onPaymentDataReady(state.paymentResponse)
             }
 
-            reservationStateListener.onPaymentDataReady(stateValue.paymentResponse)
+            reservationStateListener.onPaymentDataReady(state.paymentResponse)
         }
-        else -> {
-            //no action
-        }
+
+        else -> {}
     }
 }
 
