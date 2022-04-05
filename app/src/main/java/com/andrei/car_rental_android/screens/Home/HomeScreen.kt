@@ -103,7 +103,7 @@ private fun MainContent(
     BottomSheet(
         carState = currentSelectedCarState,
         carReservationState = viewModel.carReservationState.collectAsState(),
-        reservationTimeLeft = viewModel.reservationTimeLeftMillis.collectAsState(),
+        reservationTimeLeft = viewModel.reservationTimeLeft.collectAsState(),
         reservationStateListener = object : ReservationStateListener {
             override fun reserveCar(car: Car) = viewModel.reserveCar(car)
             override fun cancelReservation()  = viewModel.cancelReservation()
@@ -304,13 +304,12 @@ private fun MapContent(
 private fun Directions(
     directionsState:State<DirectionsState>,
 ){
-    when(val stateValue = directionsState.value){
-        is DirectionsState.Success ->{
+    val stateValue = directionsState.value
+        if(stateValue is DirectionsState.Success ) {
             stateValue.directions.forEach {
-                 DirectionOnMap(directionStep = it)
+                DirectionOnMap(directionStep = it)
             }
         }
-    }
 }
 
 @Composable
@@ -426,7 +425,7 @@ private fun MapMarkers(
 private fun BottomSheet(
     carState: State<Car?>,
     carReservationState: State<CarReservationState>,
-    reservationTimeLeft: State<Long>,
+    reservationTimeLeft: State<String>,
     reservationStateListener: ReservationStateListener,
     content: @Composable ()->Unit
 ){
@@ -466,7 +465,7 @@ private fun BottomSheet(
 private fun BottomSheetContent(
     carState:State<Car?>,
     carReservationState: State<CarReservationState>,
-    reservationTimeLeft:State<Long>,
+    reservationTimeLeft:State<String>,
     reservationStateListener: ReservationStateListener
 
 ) {
@@ -523,7 +522,7 @@ private fun Ride(
 
 @Composable
 private fun ReservationState(
-    reservationTimeLeft : State<Long>,
+    reservationTimeLeft : State<String>,
     carReservationState:State<CarReservationState>,
     currentPreviewedCar: Car,
     reservationStateListener: ReservationStateListener,
@@ -671,21 +670,14 @@ private fun CancelReservationButton(
 @Composable
 private fun ReservationTimeLeft(
     modifier:Modifier = Modifier,
-    timeLeft:State<Long>
+    timeLeft:State<String>
 ){
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
-        val timeSeconds = timeLeft.value
-        val formattedSeconds:String = if(timeSeconds % 60 < 10){
-            //add a zero to the beginning
-            "0${timeSeconds % 60}"
-        }else{
-            (timeSeconds % 60).toString()
-        }
         Text(
-            text = "${timeSeconds /  60}:$formattedSeconds",
+            text = timeLeft.value,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
             fontSize = Dimens.large.sp
