@@ -1,5 +1,6 @@
 package com.andrei.car_rental_android.helpers
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IntentSender
@@ -8,6 +9,8 @@ import android.os.Looper
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
+import androidx.core.location.LocationRequestCompat.QUALITY_HIGH_ACCURACY
+import com.andrei.car_rental_android.utils.hasPermission
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -25,7 +28,7 @@ interface LocationHelper{
 }
 
 class LocationHelperImpl(
-    context:Context,
+   private val  context:Context,
 ) : LocationHelper {
 
     override val highPrecisionLowIntervalRequest: LocationRequest  = LocationRequest.create().apply {
@@ -62,24 +65,25 @@ class LocationHelperImpl(
      fun getLastKnownLocation(
         onLocationResolved:()->Unit,
         onError: ()-> Unit
-    ){
+    ) {
+        if (context.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            val cancellationTokenSource = CancellationTokenSource()
+            locationClient.getCurrentLocation(
+                QUALITY_HIGH_ACCURACY,
+                cancellationTokenSource.token
+            ).addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    lastKnownLocation.tryEmit(location)
+                    onLocationResolved()
+                } else {
+                    onError()
 
-        val cancellationTokenSource = CancellationTokenSource()
-        locationClient.getCurrentLocation(
-            android.location.LocationRequest.QUALITY_HIGH_ACCURACY,
-            cancellationTokenSource.token
-        ).addOnSuccessListener { location: Location? ->
-            if(location != null){
-                lastKnownLocation.tryEmit(location)
-                onLocationResolved()
-            }else{
+                }
+            }.addOnFailureListener {
                 onError()
-
             }
-        }.addOnFailureListener {
-            onError()
-        }
 
+        }
     }
 
     override fun checkLocationSettings(
@@ -109,8 +113,7 @@ class LocationHelperImpl(
     }
 
     override fun stopLocationUpdates() {
-   //    locationClient.removeLocationUpdates(locationCallback)
+        locationClient.removeLocationUpdates(locationCallback)
     }
-
 
 }
