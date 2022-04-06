@@ -180,19 +180,22 @@ class HomeViewModelImpl @Inject constructor(
 
     private var  reservationTimer:CountDownTimer? = null
 
+    private suspend fun getLastKnownLocation(){
+        locationState.emit(LocationState.Loading)
+        val location = locationHelper.getLastKnownLocation()
+        if(location != null){
+            locationState.emit(LocationState.Resolved(location))
+            locationHelper.requestLocationUpdates(LocationHelper.highPrecisionHighIntervalRequest)
+        }else{
+            locationState.emit(LocationState.Unknown)
+        }
+    }
 
     init {
-
         coroutineScope.launch {
             locationRequirements.collect{
                 if(it.isEmpty()){
-                    val location = locationHelper.getLastKnownLocation()
-                    if(location != null){
-                        locationState.emit(LocationState.Resolved(location))
-                        locationHelper.requestLocationUpdates(LocationHelper.highPrecisionHighIntervalRequest)
-                    }else{
-                        locationState.emit(LocationState.Unknown)
-                    }
+                    getLastKnownLocation()
                 }
             }
         }

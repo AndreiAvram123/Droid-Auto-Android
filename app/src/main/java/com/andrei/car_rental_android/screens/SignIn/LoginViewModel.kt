@@ -8,7 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,7 +16,7 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
     abstract val passwordState:StateFlow<String>
     abstract val loginUiState:StateFlow<LoginUIState>
     abstract fun resetUIState()
-    abstract fun setUsername(username:String)
+    abstract fun setEmail(username:String)
     abstract fun setPassword(password:String)
     abstract fun login()
 
@@ -28,11 +27,6 @@ abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewMode
         object ServerError:LoginUIState()
         object InvalidCredentials:LoginUIState()
 
-    }
-    sealed class ValidationStateField{
-        object Unvalidated:ValidationStateField()
-        data class Error(val error:String):ValidationStateField()
-        object Valid:ValidationStateField()
     }
 }
 
@@ -52,7 +46,7 @@ class LoginViewModelImpl @Inject constructor(
         }
     }
 
-    override fun setUsername(username: String) {
+    override fun setEmail(username: String) {
         coroutineScope.launch {
             usernameState.emit(username)
         }

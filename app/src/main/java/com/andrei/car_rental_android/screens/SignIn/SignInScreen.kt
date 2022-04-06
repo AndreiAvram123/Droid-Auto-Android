@@ -135,7 +135,7 @@ private fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modif
             focusManager.moveFocus(FocusDirection.Down)
         }),
         onValueChange = {
-            viewModel.setUsername(it.trim())
+            viewModel.setEmail(it.trim())
         },
         label = {
             TextFieldLabel(text = stringResource(R.string.screen_sign_in_email))

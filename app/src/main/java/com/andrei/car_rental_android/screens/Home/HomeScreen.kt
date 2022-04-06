@@ -35,6 +35,7 @@ import com.andrei.car_rental_android.screens.Home.states.DirectionsState
 import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
 import com.andrei.car_rental_android.screens.Home.states.PaymentState
 import com.andrei.car_rental_android.ui.Dimens
+import com.andrei.car_rental_android.ui.composables.LoadingSnackbar
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
 import com.google.android.gms.maps.model.CameraPosition
@@ -110,7 +111,9 @@ private fun MainContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
-                LocationState(locationState = viewModel.locationState.collectAsState().value)
+                LocationState(
+                    locationState = viewModel.locationState.collectAsState()
+                )
             }
 
             Ride(
@@ -178,8 +181,8 @@ private fun LocationRequirements(
                 checkLocationSettings = checkLocationSettings
             )
         }
-        else -> {
-
+        null -> {
+             //no action
         }
     }
 }
@@ -210,7 +213,7 @@ private fun Map(
             isMyLocationEnabled = isMyLocationEnabled
         ),
         uiSettings = MapUiSettings(
-            zoomControlsEnabled = true,
+            zoomControlsEnabled = false,
         )
     ) {
         MapContent(
@@ -294,24 +297,21 @@ private fun DirectionOnMap(directionStep: DirectionStep){
 
 @Composable
 private fun LocationState(
-    locationState: HomeViewModel.LocationState
+    locationState: State<HomeViewModel.LocationState>
 ){
-    when(locationState){
-        is HomeViewModel.LocationState.Resolved -> {
-            //no action required here
-        }
+    when(locationState.value){
         is  HomeViewModel.LocationState.Loading -> {
-            Snackbar {
-                Text(text = "We are working hard to get your location")
-            }
+            LoadingSnackbar(
+                text = stringResource(id = R.string.screen_home_loading_location)
+            )
         }
         is HomeViewModel.LocationState.Unknown -> {
             Snackbar {
                 Text(text = "We could not determine your location ")
             }
         }
-        HomeViewModel.LocationState.NotRequested -> {
-
+        else -> {
+            //no action
         }
     }
 }
@@ -754,4 +754,3 @@ private fun PricePerMinute(
         text = stringResource(R.string.screen_home_price_per_minute, price/100)
     )
 }
-

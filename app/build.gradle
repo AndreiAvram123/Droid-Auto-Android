@@ -151,12 +151,17 @@ android {
         qa {
             dimension "environment"
             applicationIdSuffix ".qa"
-            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_STAGING")]
-            buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-staging.herokuapp.com/"'
+            manifestPlaceholders = [MAPS_API_KEY : getMapsKey("QA")]
+
+            buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-dev.herokuapp.com/"'
+
+            //todo
+            //once api is sorted change to QA
+          //  buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-staging.herokuapp.com/"'
         }
         prod {
             dimension "environment"
-            manifestPlaceholders = [MAPS_API_KEY : ""+ System.getenv("MAPS_KEY_QA")]
+            manifestPlaceholders = [MAPS_API_KEY : getMapsKey("PROD")]
             buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-prod.herokuapp.com/"'
         }
     }

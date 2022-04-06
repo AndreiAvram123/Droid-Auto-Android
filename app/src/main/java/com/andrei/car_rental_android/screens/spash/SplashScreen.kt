@@ -31,8 +31,7 @@ fun SplashScreen(onFinished:()->Unit){
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         LottieAnimation(
-            composition = composition ,
-            speed = 0.7f
+            composition = composition 
         )
     }
 }
