@@ -5,11 +5,10 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
-import com.andrei.car_rental_android.navigation.NavGraph
 import com.andrei.car_rental_android.navigation.Navigation
+import com.andrei.car_rental_android.screens.spash.SplashScreen
 import com.andrei.car_rental_android.state.SessionManager
 import com.andrei.car_rental_android.ui.theme.CarrentalandroidTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -37,14 +36,21 @@ class MainActivity : ComponentActivity() {
                   )
             }
             CarrentalandroidTheme {
-                val currentLoginState = sessionManager.authenticationState.collectAsState()
-                val graph = when(currentLoginState.value){
-                    is SessionManager.AuthenticationState.Authenticated -> NavGraph.MainGraph
-                    else  -> NavGraph.LoginGraph
+                var splashFinished by remember{
+                   mutableStateOf(false)
+               }
+                if(!splashFinished) {
+                    SplashScreen {
+                        splashFinished = true
+                    }
                 }
-                Navigation(
-                   graph
-                )
+
+                if(splashFinished) {
+                    Navigation(
+                        currentLoginState =sessionManager.authenticationState.collectAsState()
+                    )
+                }
+
             }
         }
     }
