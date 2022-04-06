@@ -3,6 +3,7 @@ package com.andrei.car_rental_android.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,6 +23,7 @@ import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAc
 import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountScreen
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordScreen
+import com.andrei.car_rental_android.state.SessionManager
 
 sealed class NavGraph{
     object MainGraph:NavGraph()
@@ -31,9 +33,13 @@ sealed class NavGraph{
 
 @Composable
 fun Navigation(
-     graph: NavGraph
+     currentLoginState: State<SessionManager.AuthenticationState>
 ) {
     val navController = rememberNavController()
+    val graph = when (currentLoginState.value) {
+        is SessionManager.AuthenticationState.Authenticated -> NavGraph.MainGraph
+        else -> NavGraph.LoginGraph
+    }
     when(graph){
         is NavGraph.MainGraph -> {
             AppBottomNavigation(

@@ -94,10 +94,3 @@ fun CarRentalDialog(
         )
     }
 }
-
-@Composable
-fun LoadingAlert(
-    modifier:Modifier = Modifier
-){
-
-}

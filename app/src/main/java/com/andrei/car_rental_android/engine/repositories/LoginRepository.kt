@@ -21,13 +21,13 @@ class LoginRepositoryImpl @Inject constructor(
 ): LoginRepository {
 
     override fun login(loginRequest: LoginRequest):Flow<RequestState<LoginResponse>> = requestExecutor.performRequest{
-            loginService.login(loginRequest)
-        }.transform {request->
-            emit(request)
-           if(request is RequestState.Success){
-               localRepository.setAccessToken(request.data.accessToken)
-               localRepository.setRefreshToken(request.data.refreshToken)
-           }
-      }
+        loginService.login(loginRequest)
+    }.transform {requestState->
+        emit(requestState)
+        if(requestState is RequestState.Success){
+            localRepository.setAccessToken(requestState.data.accessToken)
+            localRepository.setRefreshToken(requestState.data.refreshToken)
+        }
+    }
 
 }

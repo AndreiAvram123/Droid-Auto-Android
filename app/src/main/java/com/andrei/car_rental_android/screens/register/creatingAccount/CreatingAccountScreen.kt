@@ -132,7 +132,7 @@ private fun ErrorContent(
   CenterColumn{
        ErrorAnimation()
        Text(
-           modifier = Modifier.padding(horizontal = Dimens.medium.dp),
+           modifier = modifier.padding(horizontal = Dimens.medium.dp),
            text = stringResource(R.string.screen_creating_account_error),
            textAlign = TextAlign.Center,
            fontSize = Dimens.medium.sp,

@@ -4,17 +4,13 @@ import com.andrei.car_rental_android.engine.request.RequestState
 import io.mockk.MockKMatcherScope
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlin.time.ExperimentalTime
 
 
 typealias RepositoryCall<DataType> = MockKMatcherScope.() -> Flow<RequestState<DataType>>
 
 
-@ExperimentalTime
-@ExperimentalCoroutinesApi
 abstract class BaseViewModelTest : BaseTest() {
 
     protected inline fun <reified DataType> returnSuccess(crossinline repositoryCall: RepositoryCall<DataType>) {
