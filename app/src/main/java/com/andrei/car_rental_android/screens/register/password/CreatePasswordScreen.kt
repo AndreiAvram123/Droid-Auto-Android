@@ -7,38 +7,48 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
+import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
 @Composable
-fun CreatePasswordScreen(navController: NavController){
-   MainContent(navigateForward = {
+fun CreatePasswordScreen(
+    navController: NavController,
+    arguments : CreatePasswordNavHelper.CreatePasswordNavArgs
+){
+    val navigator = CreatePasswordNavigatorImpl(
+        navController = navController,
+        args = arguments
+    )
+   MainContent(navigator)
 
-   })
 }
 
-@Preview(showSystemUi = true, showBackground = true)
 @Composable
-private fun MainContent(navigateForward:()-> Unit = {}){
+private fun MainContent(
+    navigator:CreatePasswordNavigator,
+){
+    val viewModel = hiltViewModel<CreatePasswordViewModelImpl>()
     RegisterScreenSurface {
        TopContent()
-       CenterContent()
+       CenterContent(viewModel = viewModel)
+        BottomContent(nextButtonEnabled = viewModel.nextButtonEnabled.collectAsState() ) {
+            navigator.navigateToCreatingAccountScreen(viewModel.password.value)
+        }
     }
 }
+
 
 
 @Composable
@@ -51,33 +61,54 @@ private fun TopContent(){
     }
 }
 
+
 @Composable
-private fun CenterContent(){
-    val viewModel = hiltViewModel<CreatePasswordViewModelImpl>()
+private fun CenterContent(
+    modifier:Modifier = Modifier,
+    viewModel:CreatePasswordViewModel
+) {
+
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center
     ){
-
         PasswordTextField(
             state = viewModel.password.collectAsState(),
             onValueChanged = {
-                viewModel.setPassword(it)
+                viewModel.setPassword(it.trim())
             }
         )
         PasswordStrengthIndicators(
-            modifier = Modifier.padding(top = Dimens.medium.dp),
+            modifier = Modifier.padding(
+                horizontal = Dimens.small.dp,
+                vertical = Dimens.medium.dp
+            ),
             passwordStrengthState = viewModel.passwordStrength.collectAsState()
         )
-
-       ReenterPasswordTextField(
-           modifier = Modifier.padding(top = Dimens.medium.dp),
-           state = viewModel.reenteredPassword.collectAsState() ,
-           onValueChanged = {
-               viewModel.setReenteredPassword(it)
-           },
-           validationState = viewModel.reenteredPasswordValidation.collectAsState()
-       )
+        ReenterPasswordTextField(
+            modifier = Modifier.padding(top = Dimens.medium.dp),
+            state = viewModel.reenteredPassword.collectAsState(),
+            onValueChanged = {
+                viewModel.setReenteredPassword(it.trim())
+            },
+            validation = viewModel.reenteredPasswordValidation.collectAsState()
+        )
+    }
+}
+@Composable
+private fun BottomContent(
+    modifier:Modifier = Modifier,
+    nextButtonEnabled: State<Boolean>,
+    navigateForward: () -> Unit
+){
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        ContinueButton(enabled = nextButtonEnabled.value){
+            navigateForward()
+        }
     }
 }
 
@@ -93,6 +124,7 @@ private fun PasswordTextField(
     OutlinedTextField(
         modifier = modifier.fillMaxWidth(),
         value = state.value ,
+        singleLine = true,
         onValueChange = onValueChanged,
         placeholder = {
             Text(text = stringResource(R.string.screen_password_enter_password_here))
@@ -107,12 +139,16 @@ private fun ReenterPasswordTextField(
     modifier: Modifier = Modifier,
     state:State<String>,
     onValueChanged: (newValue: String) -> Unit,
-    validationState:State<CreatePasswordViewModel.ReenteredPasswordValidation>
+    validation : State<CreatePasswordViewModel.ReenteredPasswordValidation>
 ){
-    val isError = validationState.value is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid
+    val isError by remember{
+        derivedStateOf { validation.value is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid }
+    }
+
     OutlinedTextField(
         modifier = modifier.fillMaxWidth(),
         value = state.value,
+        singleLine = true,
         onValueChange = onValueChanged,
         placeholder = {
             Text(text =  stringResource(R.string.screen_password_reenter_password))
@@ -128,7 +164,7 @@ private fun ReenterPasswordTextField(
 @Composable
 private fun PasswordStrengthIndicators(
     modifier: Modifier = Modifier,
-    passwordStrengthState:State<List<CreatePasswordViewModel.PasswordStrengthCriteria>?>,
+    passwordStrengthState:State<List<CreatePasswordViewModel.PasswordStrengthCriteria>>,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -140,7 +176,7 @@ private fun PasswordStrengthIndicators(
             PasswordStrengthIndicator(
                 text = stringResource(getHintResourceForCriteria(criteria)),
                 state = when {
-                    passwordStrength == null -> PasswordIndicatorState.Default
+                    passwordStrength.isEmpty() -> PasswordIndicatorState.Default
                     passwordStrength.contains(criteria) -> PasswordIndicatorState.Valid
                     else -> PasswordIndicatorState.Invalid
                 }
@@ -167,7 +203,9 @@ private fun PasswordStrengthIndicator(
     text:String,
     state:PasswordIndicatorState
 ){
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Row(modifier = Modifier
+        .height(24.dp)
+        .fillMaxWidth()) {
        PasswordStrengthCriteriaIcon(state = state)
        Text(
            text = text,
@@ -183,7 +221,7 @@ private fun PasswordStrengthCriteriaIcon(
 ){
     when(state){
         is PasswordIndicatorState.Default-> {
-          //no icon
+
         }
         is PasswordIndicatorState.Valid->{
             Icon(modifier = modifier, imageVector = Icons.Filled.Check , contentDescription = null)

@@ -9,9 +9,7 @@ import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,19 +17,12 @@ abstract class CreatePasswordViewModel(coroutineProvider:CoroutineScope?):BaseVi
     abstract val password:StateFlow<String>
     abstract val reenteredPassword:StateFlow<String>
     abstract val reenteredPasswordValidation:StateFlow<ReenteredPasswordValidation>
-    abstract val passwordStrength:StateFlow<List<PasswordStrengthCriteria>?>
+    abstract val passwordStrength:StateFlow<List<PasswordStrengthCriteria>>
     abstract val nextButtonEnabled:StateFlow<Boolean>
 
     abstract fun setPassword(newPassword:String)
     abstract fun setReenteredPassword(newReenteredPassword: String)
 
-
-
-    sealed class ReenteredPasswordValidation{
-        object NotValidated:ReenteredPasswordValidation()
-        object Valid:ReenteredPasswordValidation()
-        object Invalid:ReenteredPasswordValidation()
-    }
 
     enum class PasswordStrengthCriteria{
         IncludesLowercaseLetter,
@@ -41,6 +32,14 @@ abstract class CreatePasswordViewModel(coroutineProvider:CoroutineScope?):BaseVi
         IncludesMinNumberCharacters;
 
     }
+
+    sealed class ReenteredPasswordValidation{
+        object NotValidated:ReenteredPasswordValidation()
+        object Valid:ReenteredPasswordValidation()
+        object Invalid:ReenteredPasswordValidation()
+    }
+
+
 }
 
 @HiltViewModel
@@ -52,7 +51,7 @@ class CreatePasswordViewModelImpl @Inject constructor(
     override val reenteredPassword: MutableStateFlow<String> = MutableStateFlow("")
 
     override val reenteredPasswordValidation: MutableStateFlow<ReenteredPasswordValidation> = MutableStateFlow(ReenteredPasswordValidation.NotValidated)
-    override val passwordStrength: MutableStateFlow<List<PasswordStrengthCriteria>?> = MutableStateFlow(null)
+    override val passwordStrength: MutableStateFlow<List<PasswordStrengthCriteria>> = MutableStateFlow(emptyList())
     override val nextButtonEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 
@@ -65,45 +64,47 @@ class CreatePasswordViewModelImpl @Inject constructor(
     }
 
     private fun checkReenteredPassword() {
-        if(reenteredPassword.value.isNotBlank()){
-           if(reenteredPassword.value== password.value){
-              reenteredPasswordValidation.tryEmit(ReenteredPasswordValidation.Valid)
-           }else{
-               reenteredPasswordValidation.tryEmit(ReenteredPasswordValidation.Invalid)
-           }
+        if(reenteredPassword.value == password.value){
+            reenteredPasswordValidation.tryEmit(ReenteredPasswordValidation.Valid)
+        }else{
+            reenteredPasswordValidation.tryEmit(ReenteredPasswordValidation.Invalid)
         }
     }
 
 
     private suspend fun resetStates(){
-        nextButtonEnabled.emit(false)
         reenteredPasswordValidation.emit(ReenteredPasswordValidation.NotValidated)
         reenteredPassword.emit("")
-        passwordStrength.emit(null)
     }
     init {
         coroutineScope.launch {
             password.collectLatest {
                 resetStates()
                 evaluatePasswordStrength()
-                checkShouldEnableNextButton()
             }
         }
         coroutineScope.launch {
             reenteredPassword.collectLatest {
-                delay(1000L)
+                delay(500L)
                 checkReenteredPassword()
+            }
+        }
+        coroutineScope.launch {
+            combine(reenteredPasswordValidation, passwordStrength) { passwordValidation, strength ->
+                passwordValidation is ReenteredPasswordValidation.Valid && strength.containsAll(
+                    PasswordStrengthCriteria.values().toList()
+                )
+            }.collect {
+                nextButtonEnabled.emit(it)
             }
         }
     }
 
-    private fun checkShouldEnableNextButton() {
-        passwordStrength.value?.let { nextButtonEnabled.tryEmit(it.containsAll(PasswordStrengthCriteria.values().toList())) }
-    }
-
 
     private fun evaluatePasswordStrength() {
+        passwordStrength.tryEmit(emptyList())
         val password = password.value
+
         if (password.isNotBlank()) {
             val passwordStrengthList = mutableListOf<PasswordStrengthCriteria>()
             PasswordStrengthCriteria.values().forEach { criteria ->

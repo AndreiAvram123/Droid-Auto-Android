@@ -1,6 +1,7 @@
 package com.andrei.car_rental_android.engine.configuration
 
 import com.andrei.car_rental_android.DI.NetworkDispatcher
+import com.andrei.car_rental_android.engine.request.RequestState
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow

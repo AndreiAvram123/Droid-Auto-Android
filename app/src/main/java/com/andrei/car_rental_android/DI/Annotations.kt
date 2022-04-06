@@ -5,3 +5,7 @@ import javax.inject.Qualifier
 @Retention(AnnotationRetention.RUNTIME)
 @Qualifier
 annotation class NetworkDispatcher
+
+@Retention(AnnotationRetention.RUNTIME)
+@Qualifier
+annotation class RepositoryScope

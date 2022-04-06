@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-abstract class UsernameViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
+abstract class FirstNameLastNameViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
     abstract val firstName:StateFlow<String>
     abstract val lastName:StateFlow<String>
     abstract fun setFirstName(newName:String)
@@ -19,9 +19,9 @@ abstract class UsernameViewModel(coroutineProvider:CoroutineScope?) : BaseViewMo
 }
 
 @HiltViewModel
-class UsernameViewModelImpl @Inject constructor(
+class FirstNameLastNameViewModelImpl @Inject constructor(
     coroutineProvider: CoroutineScope?
-):UsernameViewModel(coroutineProvider){
+):FirstNameLastNameViewModel(coroutineProvider){
 
     override val firstName: MutableStateFlow<String> = MutableStateFlow("")
 

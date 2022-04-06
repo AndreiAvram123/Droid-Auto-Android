@@ -1,4 +1,4 @@
-package com.andrei.car_rental_android.navigation
+package com.andrei.car_rental_android.screens.register.password
 
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
@@ -16,13 +16,13 @@ class CreatePasswordNavHelper {
         private const val routePrefix = "createPassword"
 
         val route :String = routePrefix + "?${CreatePasswordNavArgs::firstName.name}={firstName}," +
-                     "${CreatePasswordNavArgs::lastName.name}={lastName}" +
+                     "${CreatePasswordNavArgs::lastName.name}={lastName}," +
                      "${CreatePasswordNavArgs::email.name}={email}"
 
         fun getDestination(createPasswordNavArgs: CreatePasswordNavArgs):String =  routePrefix +
                 "?${CreatePasswordNavArgs::firstName.name}=${createPasswordNavArgs.firstName}," +
-                "${CreatePasswordNavArgs::lastName.name}=${createPasswordNavArgs.lastName}" +
-                "${CreatePasswordNavArgs::email}=${createPasswordNavArgs.email}"
+                "${CreatePasswordNavArgs::lastName.name}=${createPasswordNavArgs.lastName}," +
+                "${CreatePasswordNavArgs::email.name}=${createPasswordNavArgs.email}"
 
         fun getArguments():List<NamedNavArgument> {
             return listOf(

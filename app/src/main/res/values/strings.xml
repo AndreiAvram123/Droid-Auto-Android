@@ -1,27 +1,41 @@
 <resources>
     <string name="app_name">car-rental-android</string>
 
+    <!-- Screen home -->
+    <string name="screen_home_reserve">Reserve</string>
+    <string name="screen_home_cancel_reservation">Cancel reservation</string>
+    <string name ="screen_home_unlock_fee">A £2 fee will be needed before staring your ride </string>
+    <string name ="screen_home_pay">Pay</string>
+    <string name ="screen_home_unlocking_car">Unlocking car</string>
+    <string name="screen_home_price_per_minute">£%.2f per minute</string>
+    <string name="screen_home_loading_location">We\'re trying to find where you are</string>
+
+
     <!--Screen sign in-->
     <string name="screen_sign_in_email">Email</string>
     <string name="screen_sign_in_password">Password</string>
     <string name="screen_sign_in_login">Login</string>
+    <string name="screen_sign_in_register">Register</string>
     <string name="screen_sign_in_invalid_credentials_dialog_title">Please try again…</string>
     <string name="screen_sign_in_invalid_credentials_dialog_content">The email and password you entered do not match our records.Please double check and try again.</string>
     <string name="screen_sign_in_invalid_credentials_dialog_positive_bt">OK</string>
 
 
-    <!--Screen UserName-->
-    <string name="screen_user_name_heading_1">Hey! It\'s really nice to meet you!</string>
-    <string name="screen_user_name_heading_2">Let\'s get to know each other better</string>
-    <string name="screen_user_name_first_name">First name</string>
-    <string name="screen_user_name_surname">Surname</string>
-    <string name="screen_user_name_continue">Continue</string>
+    <!--Screen names-->
+    <string name="screen_names_heading1">Hey! It\'s really nice to meet you!</string>
+    <string name="screen_names_heading_2">Let\'s get to know each other better</string>
+    <string name="screen_names_first_name">First name</string>
+    <string name="screen_names_surname">Surname</string>
+    <string name="screen_names_continue">Continue</string>
+    <string name="screen_names_beautiful_name">That`s a really beautiful name</string>
 
     <!--Screen email -->
-    <string name="screen_email_email">Email</string>
+    <string name="screen_email_enter_email_hint">Email</string>
     <string name="screen_email_invalid_email_format">Uups..Seems like that\'s not a valid email</string>
     <string name="screen_email_already_taken">Hmmm..Seems like this email is already used</string>
     <string name="screen_email_unknown_error">That\'s on our side.It seems like we have a problem verifying this email </string>
+    <string name="screen_email_heading1">We promise we won\'t send any marketing offers</string>
+    <string name="screen_email_heading2">But you might need to reset your password </string>
 
     <!--Screen password-->
     <string name="screen_password_choose_password_title">Let\'s choose a password</string>
@@ -33,4 +47,18 @@
     <string name="screen_password_include_number">Include at least one number</string>
     <string name="screen_password_include_8_characters">Include at least 8 characters</string>
     <string name="screen_password_include_special_character">Include at least one special character</string>
+
+
+    <!--Screen creating account-->
+    <string name="screen_creating_account_error">That\'s on our side.It seems like there was a problem creating your account</string>
+    <string name="screen_creating_account_success">We successfully created your account. We also sent you a verification email</string>
+    <string name="screen_creating_account_try_again">Try again</string>
+    <string name="screen_creating_account_navigate_to_login">Navigate to login</string>
+
+    <!--Sign out -->
+    <string name="screen_settings_sign_out">Sign out</string>
+
+
+    <string name="home">Home</string>
+    <string name="settings">Settings</string>
 </resources>
