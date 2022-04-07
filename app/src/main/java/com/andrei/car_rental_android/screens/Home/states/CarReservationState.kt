@@ -7,19 +7,21 @@ import com.andrei.car_rental_android.DTOs.PaymentResponse
 sealed class CarReservationState {
     object Default : CarReservationState()
     object NotAvailable:CarReservationState()
-    data class PreReserved(val car: Car) : CarReservationState()
+    data class TemporaryReserved(val car: Car) : CarReservationState()
     object Error : CarReservationState()
     object InProgress : CarReservationState()
+    object FullyReserved:CarReservationState()
 
 }
 
-sealed class PaymentState : CarReservationState() {
-    object ReadyForUnlockPayment : PaymentState()
-    object LoadingPaymentData : PaymentState()
-    data class PaymentDataReady(
+sealed class UnlockPaymentState {
+    object Default:UnlockPaymentState()
+    object ReadyForUnlockUnlockPayment : UnlockPaymentState()
+    object LoadingUnlockPaymentData : UnlockPaymentState()
+    data class UnlockPaymentDataReady(
         val paymentResponse: PaymentResponse
-    ) : PaymentState()
+    ) : UnlockPaymentState()
 
-    object PaymentFailed : PaymentState()
+    object UnlockPaymentFailed : UnlockPaymentState()
 }
 

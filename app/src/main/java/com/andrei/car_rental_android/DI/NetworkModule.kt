@@ -42,6 +42,9 @@ object NetworkModule {
     @Provides
     fun provideDirectionsService(retrofit: Retrofit):DirectionsService = retrofit.create(DirectionsService::class.java)
 
+    @Singleton
+    @Provides
+    fun provideReservationsService(retrofit: Retrofit):ReservationService = retrofit.create(ReservationService::class.java)
 
 
 }
