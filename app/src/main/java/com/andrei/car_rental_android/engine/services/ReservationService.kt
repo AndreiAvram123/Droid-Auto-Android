@@ -1,7 +1,7 @@
 package com.andrei.car_rental_android.engine.services
 
+import com.andrei.car_rental_android.DTOs.Reservation
 import com.andrei.car_rental_android.engine.response.ReservationRequest
-import com.andrei.car_rental_android.engine.response.Reservation
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET

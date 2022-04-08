@@ -202,7 +202,7 @@ class HomeViewModelImpl @Inject constructor(
 
     init {
         coroutineScope.launch {
-            reservationRepository.getCurrentReservation().collect{state->
+            reservationRepository.getCurrentReservation().collect{ state->
                 when(state){
                     is RequestState.Success ->{
                         val reservation = state.data?.temporaryReservation
