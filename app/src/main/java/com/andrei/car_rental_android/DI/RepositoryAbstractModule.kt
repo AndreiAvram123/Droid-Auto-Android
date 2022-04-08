@@ -53,4 +53,8 @@ abstract class RepositoryAbstractModule {
     @Singleton
     abstract fun bindDirectionsRepository(directionsRepository: DirectionsRepositoryImpl):DirectionsRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindReservationRepository(reservationRepositoryIml: ReservationRepositoryIml):ReservationRepository
+
 }
