@@ -33,7 +33,7 @@ import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
 import com.andrei.car_rental_android.screens.Home.states.CarReservationState
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState
 import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
-import com.andrei.car_rental_android.screens.Home.states.PaymentState
+import com.andrei.car_rental_android.screens.Home.states.UnlockPaymentState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.LoadingSnackbar
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
@@ -80,9 +80,10 @@ private fun MainContent(
     )
 
     BottomSheet(
-        carState = currentSelectedCarState,
+        carSelected = currentSelectedCarState,
         carReservationState = viewModel.carReservationState.collectAsState(),
-        reservationTimeLeft = viewModel.reservationTimeLeft.collectAsState(),
+        unlockPaymentState = viewModel.unlockPaymentState.collectAsState(),
+        reservationTimeLeft = viewModel.reservationTimeLeftText.collectAsState(),
         reservationStateListener = object : ReservationStateListener {
             override fun reserveCar(car: Car) = viewModel.reserveCar(car)
             override fun cancelReservation()  = viewModel.cancelReservation()
@@ -370,9 +371,10 @@ private fun MapMarkers(
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
 private fun BottomSheet(
-    carState: State<Car?>,
+    carSelected: State<Car?>,
     carReservationState: State<CarReservationState>,
     reservationTimeLeft: State<String>,
+    unlockPaymentState: State<UnlockPaymentState>,
     reservationStateListener: ReservationStateListener,
     content: @Composable ()->Unit
 ){
@@ -380,23 +382,52 @@ private fun BottomSheet(
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
-    LaunchedEffect(carState.value){
-        if(carState.value != null) {
+    val carToPreview:State<Car?> = remember {
+        derivedStateOf {
+            val carReservationValue =  carReservationState.value
+            when{
+                carReservationValue is CarReservationState.TemporaryReserved -> {
+                    carReservationValue.car
+                }
+                carSelected.value != null -> {
+                   carSelected.value
+                }
+                else -> null
+            }
+        }
+    }
+
+    LaunchedEffect(carToPreview.value ){
+        if(carToPreview.value != null) {
             bottomSheetScaffoldState.bottomSheetState.expand()
         }
     }
+
+
     BottomSheetScaffold(
         modifier = Modifier.padding(bottom = Dimens.medium.dp),
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
             BottomSheetLayout {
-                BottomSheetContent(
-                    carState = carState,
-                    carReservationState = carReservationState,
-                    reservationTimeLeft = reservationTimeLeft,
-                    reservationStateListener = reservationStateListener
+                val car = carToPreview.value
+                if(car != null){
+                    CarDetails(
+                        modifier = Modifier.padding(
+                            horizontal = Dimens.medium.dp
+                        ),
+                        car = car
+                    )
+                    ReservationState(
+                        unlockPaymentState = unlockPaymentState,
+                        reservationTimeLeft = reservationTimeLeft,
+                        carReservationState = carReservationState,
+                        currentPreviewedCar =car ,
+                        reservationStateListener =  reservationStateListener
+                    )
 
-                )
+                }else{
+                    NoCarSelected()
+                }
             }
         }, sheetPeekHeight = 15.dp
     ){
@@ -404,46 +435,6 @@ private fun BottomSheet(
     }
 }
 
-
-
-
-
-@Composable
-private fun BottomSheetContent(
-    carState:State<Car?>,
-    carReservationState: State<CarReservationState>,
-    reservationTimeLeft:State<String>,
-    reservationStateListener: ReservationStateListener
-
-) {
-    val car = carState.value
-
-    if (car != null) {
-        CarDetails(
-            modifier = Modifier.padding(
-                horizontal = Dimens.medium.dp
-            ),
-            car = car
-        )
-
-        ReservationState(
-            reservationTimeLeft = reservationTimeLeft,
-            carReservationState = carReservationState,
-            currentPreviewedCar = car,
-            reservationStateListener = reservationStateListener
-        )
-
-    }else{
-        NoCarSelected(
-            modifier = Modifier.padding(
-                horizontal = Dimens.medium.dp
-            )
-        )
-    }
-
-
-
-}
 
 
 
@@ -469,14 +460,15 @@ private fun Ride(
 
 @Composable
 private fun ReservationState(
+    unlockPaymentState: State<UnlockPaymentState>,
     reservationTimeLeft : State<String>,
     carReservationState:State<CarReservationState>,
     currentPreviewedCar: Car,
     reservationStateListener: ReservationStateListener,
 
-){
+    ){
 
-    when (val stateValue = carReservationState.value) {
+    when (carReservationState.value) {
         is CarReservationState.Default -> {
             PricePerMinute(
                 modifier = Modifier
@@ -498,7 +490,7 @@ private fun ReservationState(
                 )
             )
         }
-        is CarReservationState.PreReserved -> {
+        is CarReservationState.TemporaryReserved -> {
             ReservationTimeLeft(
                 modifier = Modifier.padding(
                     top = Dimens.small.dp
@@ -510,30 +502,30 @@ private fun ReservationState(
                     horizontal = Dimens.medium.dp
                 ), cancelReservation = { reservationStateListener.cancelReservation() })
 
-
-        }
-        is PaymentState ->{
-            UnlockCarPayment(
-                state = stateValue,
-                reservationStateListener = reservationStateListener
-            )
         }
 
         else -> {
             //no action
         }
     }
+    val paymentState = unlockPaymentState.value
+    if(paymentState !is UnlockPaymentState.Default){
+        UnlockCarPayment(
+            unlockPaymentState = paymentState ,
+            reservationStateListener = reservationStateListener
+        )
+    }
 }
 
 
 @Composable
 private fun UnlockCarPayment(
-    state: PaymentState,
+    unlockPaymentState: UnlockPaymentState,
     reservationStateListener: ReservationStateListener
 
 ) {
-    when (state) {
-        is PaymentState.ReadyForUnlockPayment -> {
+    when (unlockPaymentState) {
+        is UnlockPaymentState.ReadyForUnlockUnlockPayment -> {
             UnlockFeeHint(
                 modifier = Modifier.padding(Dimens.medium.dp)
             )
@@ -545,14 +537,14 @@ private fun UnlockCarPayment(
                 reservationStateListener.payUnlockFee()
             }
         }
-        is PaymentState.LoadingPaymentData -> {
+        is UnlockPaymentState.LoadingUnlockPaymentData -> {
             LinearProgressIndicator(
                 modifier = Modifier.padding(
                     horizontal = Dimens.medium.dp
                 )
             )
         }
-        is PaymentState.PaymentDataReady -> {
+        is UnlockPaymentState.UnlockPaymentDataReady -> {
             UnlockFeeHint(
                 modifier = Modifier.padding(Dimens.medium.dp)
             )
@@ -561,10 +553,10 @@ private fun UnlockCarPayment(
                     horizontal = Dimens.medium.dp
                 )
             ) {
-                reservationStateListener.onPaymentDataReady(state.paymentResponse)
+                reservationStateListener.onPaymentDataReady(unlockPaymentState.paymentResponse)
             }
 
-            reservationStateListener.onPaymentDataReady(state.paymentResponse)
+            reservationStateListener.onPaymentDataReady(unlockPaymentState.paymentResponse)
         }
 
         else -> {}
@@ -652,13 +644,15 @@ private fun BottomSheetLayout(
 
 @Composable
 private fun NoCarSelected(
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ){
     Row(
         modifier = modifier.fillMaxSize(),
         horizontalArrangement = Arrangement.Center
     ) {
-        Text(text = "Click on a car on the map to see the details here")
+        Text(
+            color = Color.Black,
+            text = "Click on a car on the map to see the details here")
     }
 }
 
