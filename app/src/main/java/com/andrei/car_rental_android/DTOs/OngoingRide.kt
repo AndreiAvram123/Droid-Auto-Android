@@ -1,6 +1,7 @@
 package com.andrei.car_rental_android.DTOs
 
 data class OngoingRide(
-    val carID:Long,
-    val userID:Long
+    val car:Car,
+    val user:Car,
+    val startedTime:Long
 )

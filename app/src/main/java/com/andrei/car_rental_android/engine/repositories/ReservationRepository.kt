@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface ReservationRepository {
-    fun makeReservation(reservationRequest: ReservationRequest): Flow<RequestState<Nothing>>
+    fun makeReservation(reservationRequest: ReservationRequest): Flow<RequestState<Reservation>>
     fun cancelCurrentReservation(): Flow<RequestState<Nothing>>
     fun getCurrentReservation():Flow<RequestState<Reservation?>>
 }
@@ -21,7 +21,7 @@ class ReservationRepositoryIml @Inject constructor(
 ): ReservationRepository{
 
 
-    override fun makeReservation(reservationRequest: ReservationRequest): Flow<RequestState<Nothing>> = requestExecutor.performRequest {
+    override fun makeReservation(reservationRequest: ReservationRequest): Flow<RequestState<Reservation>> = requestExecutor.performRequest {
         reservationService.makeReservation(reservationRequest)
     }
 

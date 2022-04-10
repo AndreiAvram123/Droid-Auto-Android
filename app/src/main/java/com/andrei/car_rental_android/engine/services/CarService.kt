@@ -15,6 +15,6 @@ sealed interface CarService{
     ):ApiResponse<List<Car>>
 
 
-    @POST("/reservation/car/unlock")
+    @POST("/car/unlock")
     suspend fun unlockCar():ApiResponse<Nothing>
 }

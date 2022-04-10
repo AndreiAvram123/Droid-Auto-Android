@@ -43,10 +43,10 @@ fun LoadingAlert(
            CircularProgressIndicator(
                modifier = Modifier.size(70.dp)
            )
-           if (text != null) {
+           text?.let {
                Text(
                    modifier = Modifier.padding(top = Dimens.medium.dp),
-                   text = text,
+                   text = it,
                    color = Color.Black,
                    fontSize = Dimens.large.sp,
                    fontWeight = FontWeight.SemiBold

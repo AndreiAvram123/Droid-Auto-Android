@@ -9,3 +9,4 @@ package com.andrei.car_rental_android.DTOs
      val car:Car,
      val remainingTime:Int
 )
+

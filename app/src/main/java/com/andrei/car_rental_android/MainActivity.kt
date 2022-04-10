@@ -5,9 +5,10 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
-import com.andrei.car_rental_android.screens.ride.RideScreen
+import com.andrei.car_rental_android.navigation.Navigation
+import com.andrei.car_rental_android.screens.spash.SplashScreen
 import com.andrei.car_rental_android.state.SessionManager
 import com.andrei.car_rental_android.ui.theme.CarrentalandroidTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
         setContent {
+
             val systemUiController  = rememberSystemUiController()
             val useDarkIcons = MaterialTheme.colors.isLight
             SideEffect {
@@ -35,22 +37,20 @@ class MainActivity : ComponentActivity() {
                   )
             }
             CarrentalandroidTheme {
-//                var splashFinished by remember{
-//                   mutableStateOf(false)
-//               }
-//                if(!splashFinished) {
-//                    SplashScreen {
-//                        splashFinished = true
-//                    }
-//                }
-//
-//                if(splashFinished) {
-//                    Navigation(
-//                        currentLoginState =sessionManager.authenticationState.collectAsState()
-//                    )
-//                }
-                RideScreen()
+                var splashFinished by remember{
+                   mutableStateOf(false)
+               }
+                if(!splashFinished) {
+                    SplashScreen {
+                        splashFinished = true
+                    }
+                }
 
+                if(splashFinished) {
+                    Navigation(
+                        currentLoginState =sessionManager.authenticationState.collectAsState()
+                    )
+                }
             }
         }
     }

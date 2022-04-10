@@ -5,10 +5,11 @@
     <string name="screen_home_reserve">Reserve</string>
     <string name="screen_home_cancel_reservation">Cancel reservation</string>
     <string name ="screen_home_unlock_fee">A £2 fee will be needed before staring your ride </string>
-    <string name ="screen_home_pay">Pay</string>
+    <string name ="screen_home_pay">Pay £2</string>
     <string name ="screen_home_unlocking_car">Unlocking car</string>
     <string name="screen_home_price_per_minute">£%.2f per minute</string>
     <string name="screen_home_loading_location">We\'re trying to find where you are</string>
+    <string name="screen_home_redirecting">Kudos!Let\'s start your ride</string>
 
 
     <!--Screen sign in-->

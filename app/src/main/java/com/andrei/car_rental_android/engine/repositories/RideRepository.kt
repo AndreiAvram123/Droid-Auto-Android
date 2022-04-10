@@ -8,14 +8,14 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface RideRepository {
-    fun getOngoingRide(): Flow<RequestState<OngoingRide>>
+    fun getOngoingRide(): Flow<RequestState<OngoingRide?>>
 }
 
 class RideRepositoryImpl @Inject constructor(
     private val requestExecutor: RequestExecutor,
     private val rideService: RideService
 ):RideRepository{
-    override fun getOngoingRide(): Flow<RequestState<OngoingRide>> = requestExecutor.performRequest {
+    override fun getOngoingRide(): Flow<RequestState<OngoingRide?>> = requestExecutor.performRequest {
         rideService.getOngoingRide()
     }
 

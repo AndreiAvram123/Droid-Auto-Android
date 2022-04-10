@@ -9,7 +9,7 @@ import retrofit2.http.POST
 
 sealed interface ReservationService{
     @POST("/reservation")
-    suspend fun makeReservation(@Body reservationRequest: ReservationRequest):ApiResponse<Nothing>
+    suspend fun makeReservation(@Body reservationRequest: ReservationRequest):ApiResponse<Reservation>
 
     @DELETE("/reservation")
     suspend fun cancelReservation():ApiResponse<Nothing>

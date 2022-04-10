@@ -6,6 +6,7 @@ import retrofit2.http.GET
 sealed interface RideService{
 
     @GET("/rides/ongoing")
-    suspend fun getOngoingRide():ApiResponse<OngoingRide>
+    suspend fun getOngoingRide():ApiResponse<OngoingRide?>
+
 
 }

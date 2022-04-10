@@ -8,7 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -23,6 +23,7 @@ import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAc
 import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountScreen
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordScreen
+import com.andrei.car_rental_android.screens.ride.RideScreen
 import com.andrei.car_rental_android.state.SessionManager
 
 sealed class NavGraph{
@@ -43,13 +44,14 @@ fun Navigation(
     when(graph){
         is NavGraph.MainGraph -> {
             AppBottomNavigation(
-                navHostController = navController
-            ){
-                MainGraph(
-                    navController = navController,
-                    modifier = it
-                )
-            }
+                navHostController = navController,
+                mainScreenNavigation = {
+                    MainGraph(
+                        it,
+                        navController
+                    )
+                }
+            )
         }
         is NavGraph.LoginGraph ->{
             LoginGraph(
@@ -79,6 +81,10 @@ private fun MainGraph(
         composable(route = BottomNavigationScreen.HomeScreen.route) {
             HomeScreen(navController)
         }
+        composable(route = Screen.RideScreen.route){
+             RideScreen()
+        }
+
     }
 }
 
@@ -137,33 +143,43 @@ private fun AppBottomNavigation(
         BottomNavigationScreen.HomeScreen,
         BottomNavigationScreen.Settings,
     )
+
     Scaffold(
         bottomBar = {
-            BottomNavigation {
-                val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                bottomNavigationItems.forEach { screen ->
-                    BottomNavigationItem(
-                        icon = { Icon(screen.imageVector, contentDescription = null) },
-                        label = { Text(stringResource(screen.resourceID)) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navHostController.navigate(screen.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
-                                popUpTo(navHostController.graph.findStartDestination().id) {
-                                    saveState = true
+            val navBackStackEntry by navHostController.currentBackStackEntryAsState()
+            val currentDestination = navBackStackEntry?.destination
+            if (currentDestination != null && currentDestination.shouldShowBottomNav()) {
+                BottomNavigation {
+                    bottomNavigationItems.forEach { screen ->
+                        BottomNavigationItem(
+                            icon = { Icon(screen.imageVector, contentDescription = null) },
+                            label = { Text(stringResource(screen.resourceID)) },
+                            selected = currentDestination.route == screen.route,
+                            onClick = {
+                                navHostController.navigate(screen.route) {
+                                    // Pop up to the start destination of the graph to
+                                    // avoid building up a large stack of destinations
+                                    // on the back stack as users select items
+                                    popUpTo(navHostController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding -> mainScreenNavigation(Modifier.padding(innerPadding))
     }
+}
+
+private fun NavDestination.shouldShowBottomNav():Boolean{
+    val excludedScreens = listOf(
+        Screen.RideScreen.route
+    )
+   return !excludedScreens.contains(this.route)
 }
 

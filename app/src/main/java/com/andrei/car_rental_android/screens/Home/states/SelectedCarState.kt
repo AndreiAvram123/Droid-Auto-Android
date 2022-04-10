@@ -2,15 +2,19 @@ package com.andrei.car_rental_android.screens.Home.states
 
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.PaymentResponse
+import kotlin.time.Duration
 
 
-sealed class CarReservationState {
-    object Default : CarReservationState()
-    object NotAvailable:CarReservationState()
-    data class TemporaryReserved(val car: Car) : CarReservationState()
-    object Error : CarReservationState()
-    object InProgress : CarReservationState()
-    object FullyReserved:CarReservationState()
+sealed class SelectedCarState {
+    object Default : SelectedCarState()
+    object NotAvailable:SelectedCarState()
+    data class Reserved(
+        val car: Car,
+        val remainingTime:Duration
+        ) : SelectedCarState()
+    object Error : SelectedCarState()
+    object InProgress : SelectedCarState()
+    object UnlockingCar:SelectedCarState()
 
 }
 
