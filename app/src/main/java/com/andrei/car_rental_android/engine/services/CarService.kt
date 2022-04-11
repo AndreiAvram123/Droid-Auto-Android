@@ -1,6 +1,7 @@
 package com.andrei.car_rental_android.engine.services
 
 import com.andrei.car_rental_android.DTOs.Car
+import com.andrei.car_rental_android.DTOs.OngoingRide
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
@@ -16,5 +17,5 @@ sealed interface CarService{
 
 
     @POST("/car/unlock")
-    suspend fun unlockCar():ApiResponse<Nothing>
+    suspend fun unlockCar():ApiResponse<OngoingRide>
 }

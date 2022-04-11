@@ -6,6 +6,12 @@ import com.andrei.car_rental_android.navigation.Screen
 
 interface HomeNavigator {
   fun navigateToOngoingRide()
+
+    sealed class HomeNavigationState{
+        object Default:HomeNavigationState()
+        object NavigateToRideScreen:HomeNavigationState()
+    }
+
 }
 
 class HomeNavigatorImpl(

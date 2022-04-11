@@ -24,6 +24,10 @@ data class AlertDialogArgs(
     val onDismiss: () -> Unit
 )
 
+/**
+ * Alert that should be displayed on top of all current content of the screen
+ * Make sure o put it at the top of the hierarchy
+ */
 @Preview
 @Composable
 fun LoadingAlert(

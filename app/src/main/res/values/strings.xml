@@ -61,6 +61,7 @@
 
     <!--Screen ride-->
     <string name="screen_ride_finish_ride">Finish ride</string>
+    <string name="screen_ride_finishing_ride">Finishing ride</string>
 
 
 

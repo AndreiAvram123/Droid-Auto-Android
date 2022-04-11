@@ -30,7 +30,10 @@ import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.LoadingAlert
 import com.andrei.car_rental_android.engine.response.DirectionStep
 import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
-import com.andrei.car_rental_android.screens.Home.states.*
+import com.andrei.car_rental_android.screens.Home.states.DirectionsState
+import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
+import com.andrei.car_rental_android.screens.Home.states.SelectedCarState
+import com.andrei.car_rental_android.screens.Home.states.UnlockPaymentState
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.LoadingSnackbar
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
@@ -134,12 +137,12 @@ private fun MainContent(
 
 @Composable
 private fun ScreenNavigation(
-    homeNavigationState: State<HomeNavigationState>,
+    homeNavigationState: State<HomeNavigator.HomeNavigationState>,
     homeNavigator: HomeNavigator
 ){
 
     LaunchedEffect(key1 = homeNavigationState.value ){
-        if(homeNavigationState.value is HomeNavigationState.NavigateToRideScreen){
+        if(homeNavigationState.value is HomeNavigator.HomeNavigationState.NavigateToRideScreen){
             homeNavigator.navigateToOngoingRide()
         }
     }

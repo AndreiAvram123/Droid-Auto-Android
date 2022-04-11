@@ -4,10 +4,7 @@ import android.text.format.DateUtils
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,6 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -29,13 +27,32 @@ import com.andrei.car_rental_android.ui.Dimens
 
 @Composable
 fun RideScreen(
+    navController: NavController
 ){
-    MainContent()
+    val viewModel:RideViewModel = hiltViewModel<RideViewModelImpl>()
+    val navigator = RideNavigatorImpl(
+        navController = navController
+    )
+    MainContent(
+        viewModel = viewModel,
+        navigator = navigator
+    )
 }
 @Composable
-private fun MainContent() {
-    val viewModel:RideViewModel = hiltViewModel<RideViewModelImpl>()
-    viewModel.getOngoingRide()
+private fun MainContent(
+    viewModel: RideViewModel,
+    navigator: RideNavigator
+) {
+
+    LaunchedEffect(null){
+        viewModel.getOngoingRide()
+    }
+
+    NavigationLogic(
+        finishRideResult = viewModel.finishRideResult.collectAsState() ,
+        navigator = navigator
+    )
+
 
     Box(
         modifier = Modifier
@@ -62,6 +79,26 @@ private fun MainContent() {
 
 }
 
+@Composable
+private fun NavigationLogic(
+    finishRideResult: State<RideViewModel.FinishRideResult>,
+    navigator: RideNavigator
+){
+    when(finishRideResult.value){
+        RideViewModel.FinishRideResult.Default -> {
+            //nothing
+        }
+        RideViewModel.FinishRideResult.Error -> {
+
+        }
+        RideViewModel.FinishRideResult.Loading -> {
+            LoadingAlert(stringResource(R.string.screen_ride_finishing_ride))
+        }
+        RideViewModel.FinishRideResult.Success -> {
+            navigator.navigateToReceiptScreen()
+        }
+    }
+}
 
 @Composable
 private fun SuccessState(
@@ -81,7 +118,9 @@ private fun SuccessState(
     CenterContent {
         RideOngoingAnimation()
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = Dimens.medium.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Dimens.medium.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             ElapsedTime(

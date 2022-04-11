@@ -16,6 +16,7 @@ import androidx.navigation.compose.*
 import com.andrei.car_rental_android.screens.Home.HomeScreen
 import com.andrei.car_rental_android.screens.Settings.SettingsScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
+import com.andrei.car_rental_android.screens.receipt.ReceiptScreen
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
 import com.andrei.car_rental_android.screens.register.NamesScreen
@@ -82,7 +83,10 @@ private fun MainGraph(
             HomeScreen(navController)
         }
         composable(route = Screen.RideScreen.route){
-             RideScreen()
+             RideScreen(navController)
+        }
+        composable(route = Screen.ReceiptScreen.route){
+            ReceiptScreen(navController)
         }
 
     }

@@ -1,6 +1,7 @@
 package com.andrei.car_rental_android.engine.repositories
 
 import com.andrei.car_rental_android.DTOs.Car
+import com.andrei.car_rental_android.DTOs.OngoingRide
 import com.andrei.car_rental_android.engine.configuration.RequestExecutor
 import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.engine.services.CarService
@@ -9,7 +10,7 @@ import javax.inject.Inject
 
 interface CarRepository{
     fun fetchNearby(latitude:Double,longitude:Double):Flow<RequestState<List<Car>>>
-    fun unlockCar():Flow<RequestState<Nothing>>
+    fun unlockCar():Flow<RequestState<OngoingRide>>
 }
 
 class CarRepositoryImpl @Inject constructor(
@@ -24,7 +25,7 @@ class CarRepositoryImpl @Inject constructor(
         )
     }
 
-    override fun unlockCar(): Flow<RequestState<Nothing>> = requestExecutor.performRequest {
+    override fun unlockCar(): Flow<RequestState<OngoingRide>> = requestExecutor.performRequest {
        carService.unlockCar()
     }
 

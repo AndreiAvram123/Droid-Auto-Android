@@ -17,14 +17,23 @@ abstract class RideViewModel(coroutineProvider: CoroutineScope?): BaseViewModel(
     abstract fun finishRide()
     abstract fun getOngoingRide()
     abstract val currentRideState:StateFlow<RideState>
-     abstract val elapsedSeconds:StateFlow<Long>
+    abstract val elapsedSeconds:StateFlow<Long>
     abstract val rideCost:StateFlow<Double>
+    abstract val finishRideResult:StateFlow<FinishRideResult>
 
     sealed class RideState{
         data class Success(val ongoingRide: OngoingRide):RideState()
         object Loading:RideState()
         data class Error(val message:String):RideState()
     }
+
+    sealed class FinishRideResult{
+        object Default:FinishRideResult()
+        object Loading:FinishRideResult()
+        object Success:FinishRideResult()
+        object Error:FinishRideResult()
+    }
+
     companion object{
         fun  RequestState<OngoingRide?>.toRideState(): RideState{
             return when(this){
@@ -61,12 +70,14 @@ class RideViewModelImpl @Inject constructor(
     override val currentRideState: MutableStateFlow<RideState> = MutableStateFlow(RideState.Loading)
     override val elapsedSeconds: MutableStateFlow<Long> = MutableStateFlow(0)
     override val rideCost: StateFlow<Double>  =  elapsedSeconds.transform {
-        emit(it * pricePerMinute)
+        emit((it/60) * pricePerMinute)
     }.stateIn(
         scope = coroutineScope,
         started = SharingStarted.Lazily,
         initialValue = 0.0
     )
+    override val finishRideResult: MutableStateFlow<FinishRideResult> = MutableStateFlow(FinishRideResult.Default)
+
 
     private var pricePerMinute:Double= 0.0
 
@@ -97,7 +108,22 @@ class RideViewModelImpl @Inject constructor(
 
     override fun finishRide() {
         coroutineScope.launch {
+           rideRepository.finishOngoingRide().collect{requestState->
+               when(requestState){
+                   is RequestState.Success -> {
+                       finishRideResult.emit(FinishRideResult.Success)
+                   }
+                   is RequestState.Loading -> {
 
+                   }
+                  is RequestState.Error->{
+
+                  }
+                  is RequestState.ConnectionError -> {
+
+                  }
+               }
+           }
         }
     }
 
