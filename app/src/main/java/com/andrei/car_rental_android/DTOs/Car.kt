@@ -3,14 +3,18 @@ package com.andrei.car_rental_android.DTOs
 import android.location.Location
 import com.google.android.gms.maps.model.LatLng
 
+data class CarWithLocation(
+     val car :Car,
+     val location:LatLng
+)
+
 data class Car(
      var id: Long = 0,
      var model:CarModel,
-     val location: LatLng,
      val pricePerMinute:Double
 )
 
-fun LatLng.toLocation():Location{
+fun LatLng.toAndroidLocation():Location{
      val location =  Location("")
      location.latitude = latitude
      location.longitude = longitude

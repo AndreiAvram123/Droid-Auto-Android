@@ -1,6 +1,6 @@
 package com.andrei.car_rental_android.engine.services
 
-import com.andrei.car_rental_android.DTOs.Car
+import com.andrei.car_rental_android.DTOs.CarWithLocation
 import com.andrei.car_rental_android.DTOs.OngoingRide
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -13,7 +13,7 @@ sealed interface CarService{
         @Query("latitude") latitude:Double,
         @Query("longitude") longitude:Double,
 
-    ):ApiResponse<List<Car>>
+    ):ApiResponse<List<CarWithLocation>>
 
 
     @POST("/car/unlock")

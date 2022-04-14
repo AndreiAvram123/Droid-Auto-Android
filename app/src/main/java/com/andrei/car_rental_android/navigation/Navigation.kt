@@ -17,6 +17,7 @@ import com.andrei.car_rental_android.screens.Home.HomeScreen
 import com.andrei.car_rental_android.screens.Settings.SettingsScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
 import com.andrei.car_rental_android.screens.receipt.ReceiptScreen
+import com.andrei.car_rental_android.screens.receipt.ReceiptScreenNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
 import com.andrei.car_rental_android.screens.register.NamesScreen
@@ -85,7 +86,9 @@ private fun MainGraph(
         composable(route = Screen.RideScreen.route){
              RideScreen(navController)
         }
-        composable(route = Screen.ReceiptScreen.route){
+        composable(
+            arguments = ReceiptScreenNavHelper.getArguments(),
+            route = Screen.ReceiptScreen.route){
             ReceiptScreen(navController)
         }
 
@@ -182,7 +185,8 @@ private fun AppBottomNavigation(
 
 private fun NavDestination.shouldShowBottomNav():Boolean{
     val excludedScreens = listOf(
-        Screen.RideScreen.route
+        Screen.RideScreen.route,
+        Screen.ReceiptScreen.route
     )
    return !excludedScreens.contains(this.route)
 }

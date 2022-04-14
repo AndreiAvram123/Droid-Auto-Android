@@ -1,5 +1,6 @@
 package com.andrei.car_rental_android.screens.ride
 
+import com.andrei.car_rental_android.DTOs.FinishedRide
 import com.andrei.car_rental_android.DTOs.OngoingRide
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.RideRepository
@@ -19,20 +20,16 @@ abstract class RideViewModel(coroutineProvider: CoroutineScope?): BaseViewModel(
     abstract val currentRideState:StateFlow<RideState>
     abstract val elapsedSeconds:StateFlow<Long>
     abstract val rideCost:StateFlow<Double>
-    abstract val finishRideResult:StateFlow<FinishRideResult>
 
     sealed class RideState{
-        data class Success(val ongoingRide: OngoingRide):RideState()
         object Loading:RideState()
+        data class Success(val ongoingRide: OngoingRide):RideState()
         data class Error(val message:String):RideState()
+        object FinishingRide:RideState()
+        data class RideFinished(val finishedRide: FinishedRide):RideState()
+        data class ErrorFinishingRide(val message: String):RideState()
     }
 
-    sealed class FinishRideResult{
-        object Default:FinishRideResult()
-        object Loading:FinishRideResult()
-        object Success:FinishRideResult()
-        object Error:FinishRideResult()
-    }
 
     companion object{
         fun  RequestState<OngoingRide?>.toRideState(): RideState{
@@ -76,7 +73,6 @@ class RideViewModelImpl @Inject constructor(
         started = SharingStarted.Lazily,
         initialValue = 0.0
     )
-    override val finishRideResult: MutableStateFlow<FinishRideResult> = MutableStateFlow(FinishRideResult.Default)
 
 
     private var pricePerMinute:Double= 0.0
@@ -91,7 +87,7 @@ class RideViewModelImpl @Inject constructor(
             currentRideState.collect{ rideState->
                 if(rideState is RideState.Success){
                      pricePerMinute = rideState.ongoingRide.car.pricePerMinute
-                     val elapsedTime  = System.currentTimeMillis()/1000L - rideState.ongoingRide.startedTime
+                     val elapsedTime  = System.currentTimeMillis()/1000L - rideState.ongoingRide.startTime
                      elapsedSeconds.emit(elapsedTime)
                      startTimer()
                 }
@@ -111,10 +107,10 @@ class RideViewModelImpl @Inject constructor(
            rideRepository.finishOngoingRide().collect{requestState->
                when(requestState){
                    is RequestState.Success -> {
-                       finishRideResult.emit(FinishRideResult.Success)
+                       currentRideState.emit(RideState.RideFinished(requestState.data))
                    }
                    is RequestState.Loading -> {
-
+                      currentRideState.emit(RideState.FinishingRide)
                    }
                   is RequestState.Error->{
 

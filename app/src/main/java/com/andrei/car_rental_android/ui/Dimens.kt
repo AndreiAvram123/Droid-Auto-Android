@@ -4,6 +4,7 @@ object Dimens{
     const val tiny:Int = 4
     const val small:Int = 8
     const val medium:Int = 16
+    const val big:Int = 20
     const val large:Int = 24
     const val huge:Int = 32
 

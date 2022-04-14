@@ -4,6 +4,7 @@ import com.andrei.car_rental_android.DTOs.FinishedRide
 import com.andrei.car_rental_android.DTOs.OngoingRide
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 sealed interface RideService{
 
@@ -12,5 +13,8 @@ sealed interface RideService{
 
      @DELETE("/rides/ongoing")
      suspend fun finishOngoingRide():ApiResponse<FinishedRide>
+
+    @GET("/rides/{id}")
+    suspend fun getRideByID(@Path("id") id:Long):ApiResponse<FinishedRide>
 
 }

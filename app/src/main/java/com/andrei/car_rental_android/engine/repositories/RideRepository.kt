@@ -10,6 +10,7 @@ import javax.inject.Inject
 
 interface RideRepository {
     fun getOngoingRide(): Flow<RequestState<OngoingRide?>>
+    fun getRideByID(id:Long):Flow<RequestState<FinishedRide>>
     fun finishOngoingRide():Flow<RequestState<FinishedRide>>
 }
 
@@ -20,6 +21,10 @@ class RideRepositoryImpl @Inject constructor(
 
     override fun getOngoingRide(): Flow<RequestState<OngoingRide?>> = requestExecutor.performRequest {
         rideService.getOngoingRide()
+    }
+
+    override fun getRideByID(id: Long): Flow<RequestState<FinishedRide>> = requestExecutor.performRequest {
+        rideService.getRideByID(id)
     }
 
     override fun finishOngoingRide(): Flow<RequestState<FinishedRide>> =  requestExecutor.performRequest{

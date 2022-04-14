@@ -48,8 +48,8 @@ private fun MainContent(
         viewModel.getOngoingRide()
     }
 
-    NavigationLogic(
-        finishRideResult = viewModel.finishRideResult.collectAsState() ,
+    NavigationState (
+        rideState = viewModel.currentRideState.collectAsState() ,
         navigator = navigator
     )
 
@@ -65,7 +65,8 @@ private fun MainContent(
                   SuccessState(
                       ride = ride,
                       elapsedTime = viewModel.elapsedSeconds.collectAsState(),
-                      totalCost = viewModel.rideCost.collectAsState()
+                      totalCost = viewModel.rideCost.collectAsState(),
+                      finishRide = viewModel::finishRide
                   )
             },
             loading = {
@@ -80,22 +81,23 @@ private fun MainContent(
 }
 
 @Composable
-private fun NavigationLogic(
-    finishRideResult: State<RideViewModel.FinishRideResult>,
+private fun NavigationState(
+    rideState: State<RideViewModel.RideState>,
     navigator: RideNavigator
 ){
-    when(finishRideResult.value){
-        RideViewModel.FinishRideResult.Default -> {
-            //nothing
-        }
-        RideViewModel.FinishRideResult.Error -> {
 
+    val showLoading  = remember {
+        derivedStateOf {
+            rideState.value is RideViewModel.RideState.FinishingRide
         }
-        RideViewModel.FinishRideResult.Loading -> {
-            LoadingAlert(stringResource(R.string.screen_ride_finishing_ride))
-        }
-        RideViewModel.FinishRideResult.Success -> {
-            navigator.navigateToReceiptScreen()
+    }
+    if(showLoading.value){
+        LoadingAlert(stringResource(id = R.string.screen_ride_finishing_ride))
+    }
+    LaunchedEffect(key1 = rideState.value){
+        val stateValue = rideState.value
+        if(stateValue is RideViewModel.RideState.RideFinished){
+            navigator.navigateToReceiptScreen(stateValue.finishedRide)
         }
     }
 }
@@ -104,7 +106,8 @@ private fun NavigationLogic(
 private fun SuccessState(
     ride:OngoingRide,
     elapsedTime: State<Long>,
-    totalCost:State<Double>
+    totalCost:State<Double>,
+    finishRide:()->Unit
 ){
     TopContent(
         modifier = Modifier.padding(
@@ -135,9 +138,7 @@ private fun SuccessState(
         FinishRideButton(
             modifier = Modifier.padding(
                 bottom = Dimens.small.dp
-            ), onClick = {
-
-            })
+            ), onClick = finishRide)
     }
 
 }
