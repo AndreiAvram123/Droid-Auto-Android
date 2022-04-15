@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import com.andrei.car_rental_android.navigation.Navigation
 import com.andrei.car_rental_android.screens.spash.SplashScreen
 import com.andrei.car_rental_android.state.SessionManager
-import com.andrei.car_rental_android.ui.theme.CarrentalandroidTheme
+import com.andrei.car_rental_android.ui.theme.CarrentalAndroidTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                       darkIcons = useDarkIcons
                   )
             }
-            CarrentalandroidTheme {
+            CarrentalAndroidTheme {
                 var splashFinished by remember{
                    mutableStateOf(false)
                }

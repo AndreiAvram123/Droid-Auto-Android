@@ -33,7 +33,7 @@ private val LightColorPalette = lightColors(
     */
 )
 @Composable
-fun CarrentalandroidTheme(
+fun CarrentalAndroidTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable() () -> Unit
 ) {

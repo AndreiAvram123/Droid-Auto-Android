@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -63,6 +64,7 @@ fun HomeScreen(
     )
 
 }
+
 @Composable
 private fun MainContent(
     viewModel: HomeViewModel,
@@ -145,6 +147,13 @@ private fun MainContent(
 }
 
 
+@Preview(showBackground = true)
+@Composable
+private fun PreviewBottomSheetNoCar(){
+    BottomSheetLayout {
+        NoCarSelected()
+    }
+}
 
 
 @Composable
@@ -387,7 +396,7 @@ private fun LocationPermission(
 
 @Composable
 private fun ReservedCarMarker(
-     carLocation:Location
+    carLocation:Location
 ){
     val markerState = rememberMarkerState(
         position = LatLng(
@@ -491,7 +500,7 @@ private fun BottomSheet(
                     NoCarSelected()
                 }
             }
-        }, sheetPeekHeight = 15.dp
+        }, sheetPeekHeight = Dimens.small.dp
     ){
         content()
     }
@@ -506,7 +515,7 @@ private fun ReservationState(
     selectedCarState:State<SelectedCarState>,
     currentPreviewedCar: Car,
     reservationStateListener: ReservationStateListener,
-    ){
+){
 
     val reservation = selectedCarState.value
     if(reservation is SelectedCarState.Reserved){
@@ -659,15 +668,23 @@ private fun ReservationTimeLeft(
 private fun BottomSheetLayout(
     content:@Composable ()->Unit
 ) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .height(240.dp)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            content()
+        Row(
+            modifier= Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ){
+            Divider(
+                modifier = Modifier
+                    .width(60.dp)
+                    .padding(top = Dimens.small.dp),
+                thickness = Dimens.tiny.dp
+            )
         }
-
+        content()
     }
 }
 
@@ -675,15 +692,18 @@ private fun BottomSheetLayout(
 private fun NoCarSelected(
     modifier: Modifier = Modifier
 ){
-    Row(
-        modifier = modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(
-            color = Color.Black,
-            text = stringResource(R.string.screen_home_select_car)
-        )
-    }
+
+    Text(
+        modifier = modifier.fillMaxWidth()
+            .padding(
+                top = Dimens.small.dp
+            ),
+        textAlign = TextAlign.Center,
+        color = Color.Black,
+        text = stringResource(R.string.screen_home_select_car),
+        fontWeight = FontWeight.SemiBold,
+        fontSize = Dimens.large.sp
+    )
 }
 
 
