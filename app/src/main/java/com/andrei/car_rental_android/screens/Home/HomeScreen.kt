@@ -12,11 +12,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,12 +56,14 @@ import kotlin.time.Duration
 @Composable
 fun HomeScreen(
     navController: NavController,
+    openDrawer:()->Unit
 ) {
     val viewModel:HomeViewModel = hiltViewModel<HomeViewModelImpl>()
     val navigator = HomeNavigatorImpl(
         navController = navController
     )
     MainContent(
+        openDrawer = openDrawer,
         homeNavigator = navigator,
         viewModel = viewModel
     )
@@ -67,6 +72,7 @@ fun HomeScreen(
 
 @Composable
 private fun MainContent(
+    openDrawer: () -> Unit,
     viewModel: HomeViewModel,
     homeNavigator: HomeNavigator
 ) {
@@ -123,7 +129,10 @@ private fun MainContent(
         }
     ) {
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+
             Map(
                 cameraLocation = viewModel.cameraPosition.collectAsState(),
                 onCarSelected = {
@@ -133,16 +142,40 @@ private fun MainContent(
                 directionsState = viewModel.directionsState.collectAsState(),
                 reservedCarLocationState = viewModel.reservedCarLocation.collectAsState()
             )
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(bottom = Dimens.huge.dp), verticalArrangement = Arrangement.Bottom) {
-                LocationState(
-                    locationState = viewModel.locationState.collectAsState()
-                )
-            }
-
+            LocationState(
+                locationState = viewModel.locationState.collectAsState()
+            )
+           }
+            DrawerButton(
+                modifier = Modifier.padding(
+                    start = Dimens.medium.dp,
+                    top = Dimens.medium.dp
+                ), onClick = openDrawer
+            )
         }
+    }
+}
+
+@Composable
+private fun DrawerButton(
+    modifier:Modifier = Modifier,
+    onClick: () -> Unit
+){
+    FloatingActionButton(
+         modifier =  modifier.size(48.dp),
+        onClick = onClick,
+        backgroundColor = colorResource(R.color.dark_white)
+    ) {
+        Icon(
+            modifier = Modifier.size(24.dp),
+            imageVector = Icons.Filled.Menu ,
+            contentDescription = null
+        )
     }
 }
 
@@ -694,7 +727,8 @@ private fun NoCarSelected(
 ){
 
     Text(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
             .padding(
                 top = Dimens.small.dp
             ),

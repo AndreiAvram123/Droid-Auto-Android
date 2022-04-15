@@ -1,18 +1,27 @@
 package com.andrei.car_rental_android.navigation
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
+import androidx.navigation.compose.rememberNavController
 import com.andrei.car_rental_android.screens.Home.HomeScreen
 import com.andrei.car_rental_android.screens.Settings.SettingsScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
@@ -28,6 +37,8 @@ import com.andrei.car_rental_android.screens.register.password.CreatePasswordScr
 import com.andrei.car_rental_android.screens.ride.RideScreen
 import com.andrei.car_rental_android.screens.rideHistory.RideHistoryScreen
 import com.andrei.car_rental_android.state.SessionManager
+import com.andrei.car_rental_android.ui.Dimens
+import kotlinx.coroutines.launch
 
 sealed class NavGraph{
     object MainGraph:NavGraph()
@@ -37,7 +48,7 @@ sealed class NavGraph{
 
 @Composable
 fun Navigation(
-     currentLoginState: State<SessionManager.AuthenticationState>
+    currentLoginState: State<SessionManager.AuthenticationState>
 ) {
     val navController = rememberNavController()
     val graph = when (currentLoginState.value) {
@@ -46,15 +57,14 @@ fun Navigation(
     }
     when(graph){
         is NavGraph.MainGraph -> {
-            AppBottomNavigation(
-                navHostController = navController,
-                mainScreenNavigation = {
-                    MainGraph(
-                        it,
-                        navController
-                    )
-                }
-            )
+            SideDrawer(
+                navController = navController
+            ){ openDrawer ->
+                MainGraph(
+                    openDrawer = openDrawer,
+                    navController =  navController
+                )
+            }
         }
         is NavGraph.LoginGraph ->{
             LoginGraph(
@@ -69,27 +79,26 @@ fun Navigation(
 
 @Composable
 private fun MainGraph(
-    modifier: Modifier = Modifier,
+    openDrawer: () -> Unit,
     navController: NavHostController
 ){
     NavHost(
-        modifier = modifier,
         navController = navController,
-        startDestination = BottomNavigationScreen.HomeScreen.route
+        startDestination = Screen.HomeScreen.route
     ) {
 
-        composable(route = BottomNavigationScreen.Settings.route){
+        composable(route = DrawerNavigationScreen.Settings.route){
             SettingsScreen()
         }
-        composable(route = BottomNavigationScreen.HomeScreen.route) {
-            HomeScreen(navController)
+        composable(route = Screen.HomeScreen.route) {
+            HomeScreen(navController, openDrawer)
         }
-        composable(route = BottomNavigationScreen.RideHistoryScreen.route) {
+        composable(route = DrawerNavigationScreen.RideHistory.route) {
             RideHistoryScreen(navController)
         }
 
         composable(route = Screen.RideScreen.route){
-             RideScreen(navController)
+            RideScreen(navController)
         }
         composable(
             arguments = FinishedRideNavHelper.getArguments(),
@@ -134,58 +143,100 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
             route = Screen.RegistrationScreen.PasswordScreen.route,
             arguments = CreatePasswordNavHelper.getArguments()
         ) {
-            backStack -> CreatePasswordScreen(navController, CreatePasswordNavHelper.parseArguments(backStack))
+                backStack -> CreatePasswordScreen(navController, CreatePasswordNavHelper.parseArguments(backStack))
         }
         composable(
             route = Screen.RegistrationScreen.CreatingAccount.route,
             arguments = CreatingAccountNavHelper.getArguments()
         ){
-             CreatingAccountScreen(navController)
+            CreatingAccountScreen(navController)
         }
 
     }
 }
 
 @Composable
-private fun AppBottomNavigation(
-    navHostController: NavHostController,
-    mainScreenNavigation: @Composable (modifier:Modifier)->Unit
-) {
-    val bottomNavigationItems = listOf(
-        BottomNavigationScreen.HomeScreen,
-        BottomNavigationScreen.RideHistoryScreen,
-        BottomNavigationScreen.Settings
-    )
-
-    Scaffold(
-        bottomBar = {
-            val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
-            if (currentDestination != null && currentDestination.shouldShowBottomNav()) {
-                BottomNavigation {
-                    bottomNavigationItems.forEach { screen ->
-                        BottomNavigationItem(
-                            icon = { Icon(screen.imageVector, contentDescription = null) },
-                            label = { Text(stringResource(screen.resourceID)) },
-                            selected = currentDestination.route == screen.route,
-                            onClick = {
-                                navHostController.navigate(screen.route) {
-                                    // Pop up to the start destination of the graph to
-                                    // avoid building up a large stack of destinations
-                                    // on the back stack as users select items
-                                    popUpTo(navHostController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        )
-                    }
-                }
+private fun SideDrawer(
+    navController: NavHostController,
+    content: @Composable (openDrawer:()->Unit)->Unit,
+){
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    ModalDrawer(
+        drawerState = drawerState,
+        drawerShape = RoundedCornerShape(0),
+        drawerContent = {
+            DrawerContent(navigate = {
+                navController.navigate(it.route)
+            })
+        }) {
+        content(openDrawer = {
+            scope.launch {
+                drawerState.open()
             }
-        }
-    ) { innerPadding -> mainScreenNavigation(Modifier.padding(innerPadding))
+        })
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewDrawer(){
+    DrawerContent(navigate = {})
+    
+}
+
+@Composable
+private fun DrawerContent(
+    modifier: Modifier = Modifier,
+    navigate:(screen:Screen) -> Unit
+){
+    val navigationItems = listOf(
+        DrawerNavigationScreen.RideHistory,
+        DrawerNavigationScreen.Settings,
+
+    )
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(
+                start = Dimens.medium.dp,
+                top = Dimens.medium.dp
+            ),
+    ) {
+       navigationItems.forEach {
+           DrawerNavigationItem(
+               text = stringResource(it.resourceID),
+               imageVector = it.imageVector,
+               onClick = {
+                   navigate(it)
+               }
+           )
+           Spacer(modifier = Modifier.height(Dimens.large.dp))
+       }
+    }
+}
+
+@Composable
+private fun DrawerNavigationItem(
+    text:String,
+    imageVector:ImageVector,
+    onClick:()->Unit
+){
+    Row (
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Icon(
+            modifier = Modifier.size(24.dp),
+            imageVector = imageVector,
+            contentDescription = null
+        )
+        Spacer(modifier = Modifier.width(Dimens.large.dp))
+        Text(
+            text = text,
+            fontSize = Dimens.medium.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
     }
 }
 
@@ -194,6 +245,6 @@ private fun NavDestination.shouldShowBottomNav():Boolean{
         Screen.RideScreen.route,
         Screen.ReceiptScreen.route
     )
-   return !excludedScreens.contains(this.route)
+    return !excludedScreens.contains(this.route)
 }
 
