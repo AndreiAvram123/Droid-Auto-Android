@@ -17,4 +17,7 @@ sealed interface RideService{
     @GET("/rides/{id}")
     suspend fun getRideByID(@Path("id") id:Long):ApiResponse<FinishedRide>
 
+    @GET("/rides")
+    suspend fun getRideHistory():ApiResponse<List<FinishedRide>>
+
 }

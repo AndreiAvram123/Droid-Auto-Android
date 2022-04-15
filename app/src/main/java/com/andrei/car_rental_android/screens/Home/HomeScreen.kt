@@ -85,7 +85,7 @@ private fun MainContent(
         onResult = viewModel::onFeePaymentResult
     )
 
-    val currentSelectedCarState: MutableState<Car?> =  remember {
+    val currentCarSelected: MutableState<Car?> =  remember {
         mutableStateOf(null)
     }
 
@@ -99,7 +99,7 @@ private fun MainContent(
     )
 
     BottomSheet(
-        carSelected = currentSelectedCarState,
+        carSelected = currentCarSelected,
         selectedCarState = viewModel.selectedCarState.collectAsState(),
         unlockPaymentState = viewModel.unlockPaymentState.collectAsState(),
         reservationTimeLeft = viewModel.reservationTimeLeft.collectAsState(),
@@ -125,10 +125,11 @@ private fun MainContent(
             Map(
                 cameraLocation = viewModel.cameraPosition.collectAsState(),
                 onCarSelected = {
-                    currentSelectedCarState.value = it
+                    currentCarSelected.value = it
                 },
-                state = viewModel.nearbyCars.collectAsState(),
-                directionsState = viewModel.directionsState.collectAsState()
+                state = viewModel.nearbyCarsState.collectAsState(),
+                directionsState = viewModel.directionsState.collectAsState(),
+                reservedCarLocationState = viewModel.reservedCarLocation.collectAsState()
             )
             Column(
                 modifier = Modifier
@@ -221,6 +222,7 @@ private fun LocationRequirements(
 
 @Composable
 private fun Map(
+    reservedCarLocationState: State<Location?>,
     cameraLocation:State<Location?>,
     state: State<HomeViewModelState>,
     directionsState: State<DirectionsState>,
@@ -233,22 +235,17 @@ private fun Map(
         cameraPositionState = cameraPositionState,
         location = cameraLocation
     )
-    val isMyLocationEnabled by remember{
-        derivedStateOf { (cameraLocation.value != null)}
-    }
 
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
-        properties = MapProperties(
-            isMyLocationEnabled = isMyLocationEnabled
-        ),
         uiSettings = MapUiSettings(
             zoomControlsEnabled = false,
         )
     ) {
         MapContent(
-            state = state,
+            reservedCarLocationState =reservedCarLocationState ,
+            homeViewModelStateCompose = state,
             directionsState = directionsState
         ){
             onCarSelected(it)
@@ -274,24 +271,29 @@ private fun MapCameraPosition(
 
 @Composable
 private fun MapContent(
-    state : State<HomeViewModelState>,
+    reservedCarLocationState:State<Location?>,
+    homeViewModelStateCompose : State<HomeViewModelState>,
     directionsState:State<DirectionsState>,
     onMarkerClicked: (car: Car) -> Unit
 ){
 
-    when(val stateValue = state.value){
-        is HomeViewModelState.Success -> {
-            MapMarkers(
-                stateValue.data,
+    val reservedCarLocation = reservedCarLocationState.value
+    val homeViewModelState = homeViewModelStateCompose.value
+    when{
+        reservedCarLocation != null ->{
+            ReservedCarMarker(carLocation = reservedCarLocation)
+        }
+        homeViewModelState is HomeViewModelState.Success -> {
+            NearbyCarsMarkers(
+                nearbyCars = homeViewModelState.data,
                 onMarkerClicked = onMarkerClicked
             )
             Directions(
                 directionsState = directionsState
             )
         }
-        else->{
-            //no action yet
-        }
+
+
     }
 }
 
@@ -375,7 +377,26 @@ private fun LocationPermission(
 
 
 @Composable
-private fun MapMarkers(
+private fun ReservedCarMarker(
+     carLocation:Location
+){
+    val markerState = rememberMarkerState(
+        position = LatLng(
+            carLocation.latitude,
+            carLocation.longitude
+        )
+    )
+    Marker(
+        state = markerState,
+        icon =  bitmapDescriptorFromVector(
+            context = LocalContext.current,
+            vectorResId = R.drawable.ic_car
+        )
+    )
+}
+
+@Composable
+private fun NearbyCarsMarkers(
     nearbyCars: List<CarWithLocation>,
     onMarkerClicked:(car:Car)-> Unit
 ){

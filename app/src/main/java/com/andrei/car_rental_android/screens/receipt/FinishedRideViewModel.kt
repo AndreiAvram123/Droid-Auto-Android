@@ -12,41 +12,41 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-abstract class ReceiptViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
+abstract class FinishedRideViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
   abstract fun getReceipt()
-  abstract val receiptState:StateFlow<ReceiptState>
+  abstract val rideState:StateFlow<ScreenState>
 
-  sealed class ReceiptState{
-      data class Success(val finishedRide: FinishedRide):ReceiptState()
-      object Loading:ReceiptState()
-      object Error:ReceiptState()
+  sealed class ScreenState{
+      data class Success(val finishedRide: FinishedRide):ScreenState()
+      object Loading:ScreenState()
+      object Error:ScreenState()
   }
 }
 
 @HiltViewModel
-class ReceiptViewModelImpl @Inject constructor(
+class FinishedRideViewModelImpl @Inject constructor(
     coroutineProvider: CoroutineScope?,
     savedStateHandle: SavedStateHandle,
     private val rideRepository: RideRepository
-): ReceiptViewModel(coroutineProvider) {
+): FinishedRideViewModel(coroutineProvider) {
 
     private val args:ReceiptScreenNavHelper.Args  = ReceiptScreenNavHelper.parseArguments(
         savedStateHandle
     )
-    override val receiptState: MutableStateFlow<ReceiptState> = MutableStateFlow(ReceiptState.Loading)
+    override val rideState: MutableStateFlow<ScreenState> = MutableStateFlow(ScreenState.Loading)
 
     override fun getReceipt() {
        coroutineScope.launch {
            rideRepository.getRideByID(args.rideID).collect{requestState->
                when(requestState){
                    is RequestState.Success -> {
-                       receiptState.emit(ReceiptState.Success(requestState.data))
+                       rideState.emit(ScreenState.Success(requestState.data))
                    }
                    is RequestState.Loading -> {
-                       receiptState.emit(ReceiptState.Loading)
+                       rideState.emit(ScreenState.Loading)
                    }
                    else ->{
-                       receiptState.emit(ReceiptState.Error)
+                       rideState.emit(ScreenState.Error)
                    }
                }
            }

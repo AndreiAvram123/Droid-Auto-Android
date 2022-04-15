@@ -1,7 +1,6 @@
 package com.andrei.car_rental_android.screens.Home.useCases
 
 import com.andrei.car_rental_android.DTOs.Car
-import com.andrei.car_rental_android.DTOs.toAndroidLocation
 import com.andrei.car_rental_android.engine.repositories.ReservationRepository
 import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.engine.response.ReservationRequest
@@ -20,7 +19,6 @@ class MakeReservationUseCase @Inject constructor(
             is RequestState.Success -> emit(SelectedCarState.Reserved(
                 car = car,
                 remainingTime = it.data.remainingTime.seconds,
-                location = it.data.carLocation.toAndroidLocation()
             ))
             is RequestState.Loading -> emit(SelectedCarState.InProgress)
             is RequestState.Error -> {

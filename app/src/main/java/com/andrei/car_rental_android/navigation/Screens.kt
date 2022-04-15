@@ -2,6 +2,7 @@ package com.andrei.car_rental_android.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -32,6 +33,7 @@ sealed class BottomNavigationScreen(
 ):Screen(route){
     object HomeScreen: BottomNavigationScreen("Home", R.string.home, Icons.Filled.Home)
     object Settings: BottomNavigationScreen("Settings", R.string.settings, Icons.Filled.Settings )
+    object RideHistoryScreen:BottomNavigationScreen("RideHistory",R.string.ride_history, Icons.Filled.History )
 }
 
 

@@ -1,6 +1,5 @@
 package com.andrei.car_rental_android.screens.Home.states
 
-import android.location.Location
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.PaymentResponse
 import kotlin.time.Duration
@@ -11,7 +10,6 @@ sealed class SelectedCarState {
     object NotAvailable:SelectedCarState()
     data class Reserved(
         val car: Car,
-        val location: Location,
         val remainingTime:Duration
         ) : SelectedCarState()
     object Error : SelectedCarState()

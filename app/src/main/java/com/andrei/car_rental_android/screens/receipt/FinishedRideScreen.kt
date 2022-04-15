@@ -28,17 +28,17 @@ import java.time.ZoneId
 import java.util.*
 
 @Composable
-fun ReceiptScreen(
+fun FinishedRideScreen(
     navController: NavController
 ){
-    val viewModel = hiltViewModel<ReceiptViewModelImpl>()
+    val viewModel = hiltViewModel<FinishedRideViewModelImpl>()
    MainContent(viewModel = viewModel )
 
 }
 
 @Composable
 private fun MainContent(
-    viewModel: ReceiptViewModel
+    viewModel: FinishedRideViewModel
 ){
     LaunchedEffect(key1 = null ){
         viewModel.getReceipt()
@@ -50,24 +50,24 @@ private fun MainContent(
             .padding(Dimens.small.dp)
     ) {
        ScreenState(
-           receiptState = viewModel.receiptState.collectAsState()
+           finishedRideState = viewModel.rideState.collectAsState()
        )
     }
 }
 
 @Composable
 private fun ScreenState(
-    receiptState: State<ReceiptViewModel.ReceiptState>
+    finishedRideState: State<FinishedRideViewModel.ScreenState>
 ){
-   when(val state = receiptState.value){
-       is ReceiptViewModel.ReceiptState.Success -> {
+   when(val state = finishedRideState.value){
+       is FinishedRideViewModel.ScreenState.Success -> {
            SuccessContent(finishedRide = state.finishedRide)
 
        }
-       is ReceiptViewModel.ReceiptState.Error -> {
+       is FinishedRideViewModel.ScreenState.Error -> {
 
        }
-       is ReceiptViewModel.ReceiptState.Loading -> {
+       is FinishedRideViewModel.ScreenState.Loading -> {
 
        }
    }
@@ -157,7 +157,7 @@ private fun CarImage(
 ){
     AsyncImage(
         modifier = modifier
-            .size(60.dp)
+            .size(200.dp)
             .clip(RoundedCornerShape(Dimens.medium.dp)),
         model = image.url,
         contentDescription =null

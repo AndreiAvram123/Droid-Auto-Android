@@ -16,7 +16,8 @@ import androidx.navigation.compose.*
 import com.andrei.car_rental_android.screens.Home.HomeScreen
 import com.andrei.car_rental_android.screens.Settings.SettingsScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
-import com.andrei.car_rental_android.screens.receipt.ReceiptScreen
+import com.andrei.car_rental_android.screens.rideHistory.RideHistoryScreen
+import com.andrei.car_rental_android.screens.receipt.FinishedRideScreen
 import com.andrei.car_rental_android.screens.receipt.ReceiptScreenNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
@@ -83,13 +84,17 @@ private fun MainGraph(
         composable(route = BottomNavigationScreen.HomeScreen.route) {
             HomeScreen(navController)
         }
+        composable(route = BottomNavigationScreen.RideHistoryScreen.route) {
+            RideHistoryScreen()
+        }
+
         composable(route = Screen.RideScreen.route){
              RideScreen(navController)
         }
         composable(
             arguments = ReceiptScreenNavHelper.getArguments(),
             route = Screen.ReceiptScreen.route){
-            ReceiptScreen(navController)
+            FinishedRideScreen(navController)
         }
 
     }
@@ -148,7 +153,8 @@ private fun AppBottomNavigation(
 ) {
     val bottomNavigationItems = listOf(
         BottomNavigationScreen.HomeScreen,
-        BottomNavigationScreen.Settings,
+        BottomNavigationScreen.RideHistoryScreen,
+        BottomNavigationScreen.Settings
     )
 
     Scaffold(
