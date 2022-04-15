@@ -231,6 +231,10 @@ private fun Map(
 
     val cameraPositionState = rememberCameraPositionState()
 
+    val isMyLocationEnabled by remember{
+        derivedStateOf { (cameraLocation.value != null)}
+    }
+
     MapCameraPosition(
         cameraPositionState = cameraPositionState,
         location = cameraLocation
@@ -239,8 +243,13 @@ private fun Map(
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
+        properties = MapProperties(
+            isMyLocationEnabled = isMyLocationEnabled
+        ),
+
         uiSettings = MapUiSettings(
             zoomControlsEnabled = false,
+            myLocationButtonEnabled = false
         )
     ) {
         MapContent(

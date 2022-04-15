@@ -1,4 +1,4 @@
-package com.andrei.car_rental_android.screens.receipt
+package com.andrei.car_rental_android.screens.finishedRide
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,40 +18,54 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.CarModel
 import com.andrei.car_rental_android.DTOs.FinishedRide
 import com.andrei.car_rental_android.DTOs.Image
+import com.andrei.car_rental_android.engine.utils.TestData
+import com.andrei.car_rental_android.screens.register.base.BackButton
 import com.andrei.car_rental_android.ui.Dimens
-import java.text.SimpleDateFormat
-import java.time.ZoneId
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Composable
 fun FinishedRideScreen(
     navController: NavController
 ){
+
     val viewModel = hiltViewModel<FinishedRideViewModelImpl>()
-   MainContent(viewModel = viewModel )
+    MainContent(
+        viewModel = viewModel,
+       navController = navController
+    )
 
 }
 
 @Composable
 private fun MainContent(
-    viewModel: FinishedRideViewModel
+    viewModel: FinishedRideViewModel,
+    navController: NavController
 ){
-    LaunchedEffect(key1 = null ){
+    LaunchedEffect(null ){
         viewModel.getReceipt()
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Dimens.small.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
-       ScreenState(
-           finishedRideState = viewModel.rideState.collectAsState()
-       )
+        Column{
+            BackButton(
+                Modifier.padding(
+                    vertical = Dimens.small.dp
+                )
+            ) {
+               navController.popBackStack()
+            }
+            ScreenState(
+                finishedRideState = viewModel.rideState.collectAsState()
+            )
+        }
+
     }
 }
 
@@ -59,41 +73,24 @@ private fun MainContent(
 private fun ScreenState(
     finishedRideState: State<FinishedRideViewModel.ScreenState>
 ){
-   when(val state = finishedRideState.value){
-       is FinishedRideViewModel.ScreenState.Success -> {
-           SuccessContent(finishedRide = state.finishedRide)
+    when(val state = finishedRideState.value){
+        is FinishedRideViewModel.ScreenState.Success -> {
+            SuccessContent(finishedRide = state.finishedRide)
 
-       }
-       is FinishedRideViewModel.ScreenState.Error -> {
+        }
+        is FinishedRideViewModel.ScreenState.Error -> {
 
-       }
-       is FinishedRideViewModel.ScreenState.Loading -> {
+        }
+        is FinishedRideViewModel.ScreenState.Loading -> {
 
-       }
-   }
+        }
+    }
 }
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 private fun PreviewSuccessContent(){
-    val finishedRide = FinishedRide(
-        id = 0,
-        startTime = 1649711881,
-        endTime = 1649794681,
-        totalCharge = 2340,
-        car = Car(
-            model = CarModel(
-                id = 0,
-                name = "Aventator",
-                manufacturerName = "Lamborghini",
-                image = Image(
-                    url = "https://robohash.org/40.77.167.63.png"
-                )
-            ),
-            pricePerMinute = 14.3,
-        )
-    )
-    SuccessContent(finishedRide = finishedRide)
+    SuccessContent(finishedRide = TestData.finishedRide)
 }
 
 @Composable
@@ -178,11 +175,12 @@ private fun CarModelAndMake(
 
 @Composable
 private fun RideStartDate(
-    startTime:Long
+    startTime:LocalDateTime
 ){
     InformationRow {
         StartLabel(text = "Started")
-        FieldValue(text = formatRideDate(timeSeconds = startTime))
+        FieldValue(text = formatRideDate(
+            localDateTime = startTime))
     }
 }
 
@@ -215,13 +213,13 @@ private fun InformationRow(
 
 @Composable
 private fun RideEndDate(
-    endTime:Long
+    endTime:LocalDateTime
 ){
-  InformationRow{
-       StartLabel(text = "Finished")
+    InformationRow{
+        StartLabel(text = "Finished")
         FieldValue(
             text = formatRideDate(
-                timeSeconds = endTime
+                localDateTime = endTime
             )
         )
     }
@@ -237,21 +235,19 @@ private fun FieldValue(
     )
 }
 
-@Composable
 private fun formatRideDate(
-    timeSeconds:Long
+    localDateTime: LocalDateTime
 ):String{
-    val date = Date(timeSeconds * 1000)
-    val localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
-    val pattern =  if(localDate.year == Calendar.YEAR){
+
+    val pattern =  if(localDateTime.year == Calendar.YEAR){
         "dd MMMM, HH:mm "
     }else{
         "dd MMMM YYYY, HH:mm "
     }
 
-    val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)
-    return sdf.format(date)
+    val sdf = DateTimeFormatter.ofPattern(pattern)
+    return sdf.format(localDateTime)
 
 }
 

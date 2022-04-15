@@ -1,4 +1,4 @@
-package com.andrei.car_rental_android.screens.receipt
+package com.andrei.car_rental_android.screens.finishedRide
 
 import androidx.lifecycle.SavedStateHandle
 import com.andrei.car_rental_android.DTOs.FinishedRide
@@ -30,7 +30,7 @@ class FinishedRideViewModelImpl @Inject constructor(
     private val rideRepository: RideRepository
 ): FinishedRideViewModel(coroutineProvider) {
 
-    private val args:ReceiptScreenNavHelper.Args  = ReceiptScreenNavHelper.parseArguments(
+    private val args:FinishedRideNavHelper.Args  = FinishedRideNavHelper.parseArguments(
         savedStateHandle
     )
     override val rideState: MutableStateFlow<ScreenState> = MutableStateFlow(ScreenState.Loading)

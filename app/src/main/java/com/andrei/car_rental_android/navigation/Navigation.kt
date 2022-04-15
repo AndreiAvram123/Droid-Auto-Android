@@ -16,9 +16,8 @@ import androidx.navigation.compose.*
 import com.andrei.car_rental_android.screens.Home.HomeScreen
 import com.andrei.car_rental_android.screens.Settings.SettingsScreen
 import com.andrei.car_rental_android.screens.SignIn.SignInScreen
-import com.andrei.car_rental_android.screens.rideHistory.RideHistoryScreen
-import com.andrei.car_rental_android.screens.receipt.FinishedRideScreen
-import com.andrei.car_rental_android.screens.receipt.ReceiptScreenNavHelper
+import com.andrei.car_rental_android.screens.finishedRide.FinishedRideNavHelper
+import com.andrei.car_rental_android.screens.finishedRide.FinishedRideScreen
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailScreen
 import com.andrei.car_rental_android.screens.register.NamesScreen
@@ -27,6 +26,7 @@ import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAc
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordScreen
 import com.andrei.car_rental_android.screens.ride.RideScreen
+import com.andrei.car_rental_android.screens.rideHistory.RideHistoryScreen
 import com.andrei.car_rental_android.state.SessionManager
 
 sealed class NavGraph{
@@ -85,14 +85,14 @@ private fun MainGraph(
             HomeScreen(navController)
         }
         composable(route = BottomNavigationScreen.RideHistoryScreen.route) {
-            RideHistoryScreen()
+            RideHistoryScreen(navController)
         }
 
         composable(route = Screen.RideScreen.route){
              RideScreen(navController)
         }
         composable(
-            arguments = ReceiptScreenNavHelper.getArguments(),
+            arguments = FinishedRideNavHelper.getArguments(),
             route = Screen.ReceiptScreen.route){
             FinishedRideScreen(navController)
         }

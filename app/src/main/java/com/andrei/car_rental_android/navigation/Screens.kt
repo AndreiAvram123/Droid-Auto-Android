@@ -7,7 +7,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.andrei.car_rental_android.R
-import com.andrei.car_rental_android.screens.receipt.ReceiptScreenNavHelper
+import com.andrei.car_rental_android.screens.finishedRide.FinishedRideNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
@@ -15,7 +15,7 @@ import com.andrei.car_rental_android.screens.register.password.CreatePasswordNav
 sealed class Screen(val route:String){
     object SignInScreen: Screen("SignIn")
     object RideScreen:Screen("RideScreen")
-    object ReceiptScreen:Screen(ReceiptScreenNavHelper.route)
+    object ReceiptScreen:Screen(FinishedRideNavHelper.route)
 
 
     sealed class RegistrationScreen(screenName:String) : Screen(screenName){
