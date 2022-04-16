@@ -1,3 +1,5 @@
+
+
 package com.andrei.car_rental_android.navigation
 
 import androidx.compose.foundation.clickable
@@ -16,7 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -156,6 +157,7 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun SideDrawer(
     navController: NavHostController,
@@ -163,8 +165,9 @@ private fun SideDrawer(
 ){
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
     ModalDrawer(
-        gesturesEnabled = false,
+        gesturesEnabled = drawerState.isOpen,
         drawerState = drawerState,
         drawerShape = RoundedCornerShape(0),
         drawerContent = {
@@ -237,17 +240,10 @@ private fun DrawerNavigationItem(
         Text(
             text = text,
             fontSize = Dimens.medium.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
         )
 
     }
 }
 
-private fun NavDestination.shouldShowBottomNav():Boolean{
-    val excludedScreens = listOf(
-        Screen.RideScreen.route,
-        Screen.ReceiptScreen.route
-    )
-    return !excludedScreens.contains(this.route)
-}
 

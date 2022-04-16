@@ -21,16 +21,9 @@ private val LightColorPalette = lightColors(
     secondary = Color.White,
     surface = Color.White,
     onSurface = Color.Black,
+    onPrimary = Color.Black,
     background = Color(0xFFF9F9F9)
 
-    /* Other default colors to override
-    background = Color.White,
-    surface = Color.White,
-    onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    */
 )
 @Composable
 fun CarrentalAndroidTheme(
