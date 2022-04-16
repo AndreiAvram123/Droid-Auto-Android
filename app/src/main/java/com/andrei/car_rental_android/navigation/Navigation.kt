@@ -1,5 +1,6 @@
 package com.andrei.car_rental_android.navigation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -163,6 +164,7 @@ private fun SideDrawer(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     ModalDrawer(
+        gesturesEnabled = false,
         drawerState = drawerState,
         drawerShape = RoundedCornerShape(0),
         drawerContent = {
@@ -223,6 +225,7 @@ private fun DrawerNavigationItem(
     onClick:()->Unit
 ){
     Row (
+        modifier = Modifier.clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ){
         Icon(

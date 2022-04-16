@@ -533,7 +533,7 @@ private fun BottomSheet(
                     NoCarSelected()
                 }
             }
-        }, sheetPeekHeight = Dimens.medium.dp
+        }, sheetPeekHeight = Dimens.huge.dp
     ){
         content()
     }
