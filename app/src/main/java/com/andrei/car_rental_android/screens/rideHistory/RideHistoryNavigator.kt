@@ -7,6 +7,7 @@ import com.andrei.car_rental_android.ui.utils.navigateSafely
 
 interface RideHistoryNavigator {
     fun navigateToFinishedRideScreen(finishedRide: FinishedRide)
+    fun navigateBack()
 }
 
 class RideHistoryNavigatorImpl(
@@ -21,6 +22,10 @@ class RideHistoryNavigatorImpl(
                 )
             )
         )
+    }
+
+    override fun navigateBack() {
+        navController.popBackStack()
     }
 
 }

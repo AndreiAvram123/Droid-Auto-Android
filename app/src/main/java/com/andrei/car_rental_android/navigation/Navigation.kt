@@ -173,6 +173,9 @@ private fun SideDrawer(
         drawerContent = {
             DrawerContent(navigate = {
                 navController.navigate(it.route)
+                scope.launch {
+                    drawerState.close()
+                }
             })
         }) {
         content(openDrawer = {

@@ -16,7 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +29,7 @@ import com.andrei.car_rental_android.DTOs.FinishedRide
 import com.andrei.car_rental_android.DTOs.Image
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.engine.utils.TestData
+import com.andrei.car_rental_android.screens.register.base.BackButton
 import com.andrei.car_rental_android.ui.Dimens
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -59,6 +62,21 @@ private fun MainContent(
                 )
             )
     ) {
+        Box(
+            modifier = Modifier.padding(
+                vertical = Dimens.tiny.dp
+            ), contentAlignment = Alignment.CenterStart
+        ) {
+            BackButton(
+                navigateBack = navigator::navigateBack
+            )
+           Text(
+               modifier = Modifier.fillMaxWidth(),
+               textAlign = TextAlign.Center,
+               fontSize = Dimens.large.sp,
+               text = stringResource(R.string.screen_ride_history_title)
+           )
+        }
          ScreenState(
              viewModel.screenState.collectAsState(),
              navigateToFinishedRideScreen = {
@@ -133,7 +151,8 @@ private  fun RideRowLayout(
             .fillMaxWidth()
             .padding(
                 top = Dimens.small.dp
-            ).height(120.dp),
+            )
+            .height(120.dp),
         elevation = Dimens.tiny.dp,
         backgroundColor = Color.White
     ) {
@@ -148,9 +167,11 @@ private fun RideRowContent(
     finishedRide: FinishedRide
 ){
     Row(
-        modifier = modifier.padding(
-            Dimens.medium.dp,
-        ).fillMaxSize(),
+        modifier = modifier
+            .padding(
+                Dimens.medium.dp,
+            )
+            .fillMaxSize(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CarImage(
