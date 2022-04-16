@@ -530,10 +530,14 @@ private fun BottomSheet(
                     )
 
                 }else{
-                    NoCarSelected()
+                    NoCarSelected(
+                        modifier = Modifier.padding(
+                            top = Dimens.tiny.dp
+                        ),
+                    )
                 }
             }
-        }, sheetPeekHeight = Dimens.huge.dp
+        }, sheetPeekHeight = 36.dp
     ){
         content()
     }
@@ -725,13 +729,8 @@ private fun BottomSheetLayout(
 private fun NoCarSelected(
     modifier: Modifier = Modifier
 ){
-
     Text(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                top = Dimens.small.dp
-            ),
+        modifier = modifier.fillMaxWidth(),
         textAlign = TextAlign.Center,
         color = Color.Black,
         text = stringResource(R.string.screen_home_select_car),
