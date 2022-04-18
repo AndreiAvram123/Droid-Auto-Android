@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.andrei.car_rental_android.ui.Dimens
 
@@ -18,6 +19,7 @@ fun ButtonText(
         fontWeight = FontWeight.Bold,
         fontSize = Dimens.medium.sp,
         modifier = modifier,
+        textAlign = TextAlign.Center,
         text = text,
         color = color
     )

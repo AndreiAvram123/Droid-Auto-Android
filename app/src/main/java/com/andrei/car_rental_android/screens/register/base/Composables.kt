@@ -35,7 +35,7 @@ private fun PreviewOutlinedButton(){
 @Preview
 @Composable
 private fun PreviewCustomButton(){
-    CustomButton(text = "End ride") {
+    CustomButton(text = "End") {
 
     }
 }
@@ -56,15 +56,7 @@ fun CustomOutlinedButton(
             MaterialTheme.colors.primary
         )
     ) {
-        Row(
-            modifier = Modifier
-                .padding(
-                    horizontal = Dimens.big.dp,
-                    vertical = Dimens.small.dp
-                ).height(24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimens.medium.dp)
-        ){
+        ButtonContentLayout{
             if(imageVector != null){
                 Icon(
                     modifier = Modifier.fillMaxHeight(),
@@ -77,6 +69,21 @@ fun CustomOutlinedButton(
     }
 }
 
+
+@Composable
+private fun ButtonContentLayout(content: @Composable () -> Unit){
+    Row(
+        modifier = Modifier
+            .padding(
+                horizontal = Dimens.extraSmall.dp,
+                vertical = Dimens.small.dp
+            ).height(24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.medium.dp)
+    ){
+        content()
+    }
+}
 @Composable
 fun CustomButton(
     text: String,
@@ -86,15 +93,7 @@ fun CustomButton(
         onClick = onClick,
         shape = RoundedCornerShape(Dimens.medium.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(
-                    horizontal = Dimens.big.dp,
-                    vertical = Dimens.small.dp
-                ).height(24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimens.medium.dp)
-        ) {
+        ButtonContentLayout{
             ButtonText(
                 text = text,
                 color = MaterialTheme.colors.onPrimary

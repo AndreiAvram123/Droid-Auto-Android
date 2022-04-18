@@ -152,7 +152,7 @@ private fun SuccessState(
 ){
     Column(
         modifier = Modifier.padding(
-            vertical = Dimens.huge.dp
+            vertical = Dimens.extraLarge.dp
         )
     ) {
 
@@ -200,7 +200,7 @@ private fun ActionButtons(
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceAround
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         if(carLocked.value) {
             CustomOutlinedButton(
