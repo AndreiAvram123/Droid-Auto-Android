@@ -24,6 +24,10 @@ data class AlertDialogArgs(
     val onDismiss: () -> Unit
 )
 
+/**
+ * Alert that should be displayed on top of all current content of the screen
+ * Make sure o put it at the top of the hierarchy
+ */
 @Preview
 @Composable
 fun LoadingAlert(
@@ -43,10 +47,10 @@ fun LoadingAlert(
            CircularProgressIndicator(
                modifier = Modifier.size(70.dp)
            )
-           if (text != null) {
+           text?.let {
                Text(
                    modifier = Modifier.padding(top = Dimens.medium.dp),
-                   text = text,
+                   text = it,
                    color = Color.Black,
                    fontSize = Dimens.large.sp,
                    fontWeight = FontWeight.SemiBold

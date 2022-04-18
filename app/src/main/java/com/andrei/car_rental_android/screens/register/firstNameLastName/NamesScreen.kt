@@ -8,6 +8,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
@@ -22,7 +23,6 @@ import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.screens.register.base.BackButton
-import com.andrei.car_rental_android.screens.register.base.CenterColumn
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.screens.register.firstNameLastName.FirstNameLastNameNavigator
@@ -142,7 +142,11 @@ private fun ScreenHeadings(modifier: Modifier = Modifier){
 private fun CenterSection(
     viewModel: FirstNameLastNameViewModel
 ){
-    CenterColumn{
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         FirstNameField(
             state = viewModel.firstName.collectAsState(),
             onValueChanged = {

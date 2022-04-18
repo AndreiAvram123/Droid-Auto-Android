@@ -2,17 +2,21 @@ package com.andrei.car_rental_android.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.andrei.car_rental_android.R
+import com.andrei.car_rental_android.screens.finishedRide.FinishedRideNavHelper
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailNavHelper
 import com.andrei.car_rental_android.screens.register.creatingAccount.CreatingAccountNavHelper
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordNavHelper
 
 sealed class Screen(val route:String){
     object SignInScreen: Screen("SignIn")
-    object IdentityVerificationScreen:Screen("IdentifyVerification")
+    object RideScreen:Screen("RideScreen")
+    object HomeScreen: Screen("Home")
+    object ReceiptScreen:Screen(FinishedRideNavHelper.route)
+
 
     sealed class RegistrationScreen(screenName:String) : Screen(screenName){
         object NamesScreen: RegistrationScreen("Names")
@@ -22,13 +26,13 @@ sealed class Screen(val route:String){
     }
 }
 
-sealed class BottomNavigationScreen(
+sealed class DrawerNavigationScreen(
      route: String,
      @StringRes val resourceID:Int,
      val imageVector: ImageVector
 ):Screen(route){
-    object HomeScreen: BottomNavigationScreen("Home", R.string.home, Icons.Filled.Home)
-    object Settings: BottomNavigationScreen("Settings", R.string.settings, Icons.Filled.Settings )
+    object Settings: DrawerNavigationScreen("Settings", R.string.settings, Icons.Filled.Settings )
+    object RideHistory:DrawerNavigationScreen("RideHistory",R.string.ride_history, Icons.Filled.History )
 }
 
 

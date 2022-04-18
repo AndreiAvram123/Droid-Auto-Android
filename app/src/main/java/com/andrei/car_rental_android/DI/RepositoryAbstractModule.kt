@@ -57,4 +57,12 @@ abstract class RepositoryAbstractModule {
     @Singleton
     abstract fun bindReservationRepository(reservationRepositoryIml: ReservationRepositoryIml):ReservationRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindRideRepository(rideRepositoryImpl: RideRepositoryImpl):RideRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(userRepository: UserRepositoryImpl):UserRepository
+
 }

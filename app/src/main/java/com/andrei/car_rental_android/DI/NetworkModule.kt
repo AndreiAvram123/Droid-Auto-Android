@@ -46,5 +46,12 @@ object NetworkModule {
     @Provides
     fun provideReservationsService(retrofit: Retrofit):ReservationService = retrofit.create(ReservationService::class.java)
 
+    @Singleton
+    @Provides
+    fun provideRideService(retrofit: Retrofit):RideService = retrofit.create(RideService::class.java)
+
+    @Singleton
+    @Provides
+    fun provideUserService(retrofit: Retrofit):UserService = retrofit.create(UserService::class.java)
 
 }

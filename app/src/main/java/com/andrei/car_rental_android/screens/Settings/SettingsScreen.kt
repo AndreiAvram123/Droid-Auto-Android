@@ -1,6 +1,5 @@
 package com.andrei.car_rental_android.screens.Settings
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -13,8 +12,6 @@ import com.andrei.car_rental_android.R
 
 @Composable
 fun SettingsScreen() {
-    Log.d("Recomposition","Settings screen")
-
     Box(
         modifier = Modifier.fillMaxSize()
     ){

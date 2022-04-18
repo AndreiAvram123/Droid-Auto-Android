@@ -1,9 +1,9 @@
 package com.andrei.car_rental_android.engine.repositories
 
 import com.andrei.car_rental_android.engine.configuration.RequestExecutor
+import com.andrei.car_rental_android.engine.request.NewTokenRequest
 import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.engine.response.TokenResponse
-import com.andrei.car_rental_android.engine.services.NewTokenRequest
 import com.andrei.car_rental_android.engine.services.TokenService
 import com.andrei.car_rental_android.state.LocalRepository
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +28,8 @@ class TokenRepositoryImpl @Inject constructor(
             requestExecutor.performRequest {
                 tokenService.getNewAccessToken(NewTokenRequest(
                     refreshToken = refreshToken
-                ))
+                )
+                )
             }.collect{
                 emit(it)
             }

@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrei.car_rental_android.R
@@ -37,14 +39,45 @@ private fun SnackbarLayout(
     }
 }
 
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewSnackbars(){
+    Column {
+        CustomSnackbar(text = "We could not determine your location")
+        Spacer(modifier = Modifier.height(Dimens.large.dp))
+        LoadingSnackbar(text = "We are trying to load your location")
+    }
+}
+
+@Composable
+fun CustomSnackbar(
+    modifier: Modifier = Modifier,
+    text:String
+){
+    SnackbarLayout {
+        Text(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(Dimens.small.dp),
+            text = text,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = Dimens.medium.sp,
+            textAlign = TextAlign.Center
+        )
+
+    }
+}
+
 @Composable
 fun LoadingSnackbar(
     modifier: Modifier = Modifier,
     text:String
 ) {
-    SnackbarLayout {
+    SnackbarLayout(modifier = modifier) {
         Row(
-            modifier = modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(Dimens.small.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
