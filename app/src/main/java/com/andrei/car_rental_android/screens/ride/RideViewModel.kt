@@ -5,21 +5,26 @@ import com.andrei.car_rental_android.DTOs.OngoingRide
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import com.andrei.car_rental_android.engine.repositories.RideRepository
 import com.andrei.car_rental_android.engine.request.RequestState
+import com.andrei.car_rental_android.ui.utils.unixTimeSeconds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import kotlin.concurrent.timerTask
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 abstract class RideViewModel(coroutineProvider: CoroutineScope?): BaseViewModel(coroutineProvider) {
 
     abstract fun finishRide()
     abstract fun getOngoingRide()
     abstract val currentRideState:StateFlow<RideState>
-    abstract val elapsedSeconds:StateFlow<Long>
-    abstract val rideCost:StateFlow<Double>
+    abstract val elapsedTime:StateFlow<Duration>
 
     sealed class RideState{
         object Loading:RideState()
@@ -65,20 +70,10 @@ class RideViewModelImpl @Inject constructor(
 
 
     override val currentRideState: MutableStateFlow<RideState> = MutableStateFlow(RideState.Loading)
-    override val elapsedSeconds: MutableStateFlow<Long> = MutableStateFlow(0)
-    override val rideCost: StateFlow<Double>  =  elapsedSeconds.transform {
-        emit((it/60) * pricePerMinute)
-    }.stateIn(
-        scope = coroutineScope,
-        started = SharingStarted.Lazily,
-        initialValue = 0.0
-    )
-
-
-    private var pricePerMinute:Double= 0.0
+    override val elapsedTime: MutableStateFlow<Duration> = MutableStateFlow(0.seconds)
 
     private val incrementTask = timerTask {
-        elapsedSeconds.tryEmit(elapsedSeconds.value + 1)
+        elapsedTime.tryEmit(elapsedTime.value + 1.seconds)
     }
 
     init {
@@ -86,9 +81,10 @@ class RideViewModelImpl @Inject constructor(
         coroutineScope.launch {
             currentRideState.collect{ rideState->
                 if(rideState is RideState.Success){
-                     pricePerMinute = rideState.ongoingRide.car.pricePerMinute
-                     val elapsedTime  = System.currentTimeMillis()/1000L - rideState.ongoingRide.startTime
-                     elapsedSeconds.emit(elapsedTime)
+                     val elapsedSeconds  = unixTimeSeconds()-  rideState.ongoingRide.startTime
+                     this@RideViewModelImpl.elapsedTime.emit(elapsedSeconds.toDuration(
+                         DurationUnit.SECONDS
+                     ))
                      startTimer()
                 }
             }

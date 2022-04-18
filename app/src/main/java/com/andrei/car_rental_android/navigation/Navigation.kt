@@ -2,21 +2,9 @@
 
 package com.andrei.car_rental_android.navigation
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -39,8 +27,6 @@ import com.andrei.car_rental_android.screens.register.password.CreatePasswordScr
 import com.andrei.car_rental_android.screens.ride.RideScreen
 import com.andrei.car_rental_android.screens.rideHistory.RideHistoryScreen
 import com.andrei.car_rental_android.state.SessionManager
-import com.andrei.car_rental_android.ui.Dimens
-import kotlinx.coroutines.launch
 
 sealed class NavGraph{
     object MainGraph:NavGraph()
@@ -53,13 +39,18 @@ fun Navigation(
     currentLoginState: State<SessionManager.AuthenticationState>
 ) {
     val navController = rememberNavController()
-    val graph = when (currentLoginState.value) {
+    val loginState = currentLoginState.value
+    val graph = when (loginState) {
         is SessionManager.AuthenticationState.Authenticated -> NavGraph.MainGraph
         else -> NavGraph.LoginGraph
     }
     when(graph){
         is NavGraph.MainGraph -> {
+            val authenticatedState:SessionManager.AuthenticationState.Authenticated =
+                loginState as SessionManager.AuthenticationState.Authenticated
+
             SideDrawer(
+                sessionUserStateCompose = authenticatedState.sessionUserState.collectAsState(),
                 navController = navController
             ){ openDrawer ->
                 MainGraph(
@@ -157,96 +148,5 @@ fun NavGraphBuilder.registerGraph(navController:NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun SideDrawer(
-    navController: NavHostController,
-    content: @Composable (openDrawer:()->Unit)->Unit,
-){
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
-    ModalDrawer(
-        gesturesEnabled = drawerState.isOpen,
-        drawerState = drawerState,
-        drawerShape = RoundedCornerShape(0),
-        drawerContent = {
-            DrawerContent(navigate = {
-                navController.navigate(it.route)
-                scope.launch {
-                    drawerState.close()
-                }
-            })
-        }) {
-        content(openDrawer = {
-            scope.launch {
-                drawerState.open()
-            }
-        })
-    }
-}
-
-@Preview
-@Composable
-private fun PreviewDrawer(){
-    DrawerContent(navigate = {})
-    
-}
-
-@Composable
-private fun DrawerContent(
-    modifier: Modifier = Modifier,
-    navigate:(screen:Screen) -> Unit
-){
-    val navigationItems = listOf(
-        DrawerNavigationScreen.RideHistory,
-        DrawerNavigationScreen.Settings,
-
-    )
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(
-                start = Dimens.medium.dp,
-                top = Dimens.medium.dp
-            ),
-    ) {
-       navigationItems.forEach {
-           DrawerNavigationItem(
-               text = stringResource(it.resourceID),
-               imageVector = it.imageVector,
-               onClick = {
-                   navigate(it)
-               }
-           )
-           Spacer(modifier = Modifier.height(Dimens.large.dp))
-       }
-    }
-}
-
-@Composable
-private fun DrawerNavigationItem(
-    text:String,
-    imageVector:ImageVector,
-    onClick:()->Unit
-){
-    Row (
-        modifier = Modifier.clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Icon(
-            modifier = Modifier.size(24.dp),
-            imageVector = imageVector,
-            contentDescription = null
-        )
-        Spacer(modifier = Modifier.width(Dimens.large.dp))
-        Text(
-            text = text,
-            fontSize = Dimens.medium.sp,
-            fontWeight = FontWeight.SemiBold,
-        )
-
-    }
-}
 
 

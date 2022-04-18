@@ -94,10 +94,13 @@ private fun ScreenState(
 ){
     when(val screenState = screenStateCompose.value){
         is RideHistoryViewModel.ScreenState.Success->{
-            RideList(rideHistory = screenState.data, navigateToFinishedRideScreen = navigateToFinishedRideScreen)
+            RideList(
+                rideHistory = screenState.data,
+                navigateToFinishedRideScreen = navigateToFinishedRideScreen
+            )
         }
         is  RideHistoryViewModel.ScreenState.Loading -> {}
-        is RideHistoryViewModel.ScreenState.Error -> {}
+        is  RideHistoryViewModel.ScreenState.Error -> {}
     }
 }
 

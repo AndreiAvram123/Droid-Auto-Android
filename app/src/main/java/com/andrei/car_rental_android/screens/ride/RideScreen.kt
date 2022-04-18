@@ -1,15 +1,23 @@
 package com.andrei.car_rental_android.screens.ride
 
 import android.text.format.DateUtils
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -22,7 +30,12 @@ import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.OngoingRide
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.LoadingAlert
+import com.andrei.car_rental_android.engine.utils.TestData
+import com.andrei.car_rental_android.screens.register.base.CustomButton
+import com.andrei.car_rental_android.screens.register.base.CustomOutlinedButton
 import com.andrei.car_rental_android.ui.Dimens
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 
 @Composable
@@ -62,12 +75,11 @@ private fun MainContent(
         ScreenState(
             state = viewModel.currentRideState.collectAsState(),
             success = { ride ->
-                  SuccessState(
-                      ride = ride,
-                      elapsedTime = viewModel.elapsedSeconds.collectAsState(),
-                      totalCost = viewModel.rideCost.collectAsState(),
-                      finishRide = viewModel::finishRide
-                  )
+                SuccessState(
+                    ride = ride,
+                    elapsedTime = viewModel.elapsedTime.collectAsState(),
+                    endRide = viewModel::finishRide
+                )
             },
             loading = {
                 LoadingAlert()
@@ -102,43 +114,75 @@ private fun NavigationState(
     }
 }
 
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewSuccessState(){
+    val ride = TestData.ongoingRide
+
+    val elapsedTime:State<Duration> = remember {
+        mutableStateOf(100.seconds)
+    }
+
+    SuccessState(
+        ride = ride,
+        elapsedTime = elapsedTime,
+        endRide = {}
+
+    )
+}
+
 @Composable
 private fun SuccessState(
     ride:OngoingRide,
-    elapsedTime: State<Long>,
-    totalCost:State<Double>,
-    finishRide:()->Unit
+    elapsedTime: State<Duration>,
+    endRide:()->Unit
 ){
-    TopContent(
+    Column(
         modifier = Modifier.padding(
-            top = Dimens.huge.dp
+            vertical = Dimens.huge.dp
         )
     ) {
+
         EnjoyYourRide(
-            car = ride.car
+            car = ride.car,
         )
-    }
-    CenterContent {
-        RideOngoingAnimation()
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = Dimens.medium.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+
+        RideOngoingAnimation(
+            modifier = Modifier.padding(
+                vertical = Dimens.large.dp
+            )
+        )
+        Column(
+            modifier = Modifier.padding(
+                horizontal = 40.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(Dimens.huge.dp)
         ) {
             ElapsedTime(
                 elapsedSeconds = elapsedTime
             )
             TotalCost(
-                rideCost = totalCost
+                elapsedTime = elapsedTime,
+                pricePerMinute = ride.car.pricePerMinute
             )
+            BottomContent {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    CustomOutlinedButton(
+                        text = stringResource(R.string.screen_ride_lock),
+                        imageVector = Icons.Filled.Lock,
+                        onClick = endRide
+                    )
+                    CustomButton(
+                        text = stringResource(R.string.screen_ride_end_ride),
+                        onClick = endRide
+                    )
+                }
+            }
         }
-    }
-    BottomContent {
-        FinishRideButton(
-            modifier = Modifier.padding(
-                bottom = Dimens.small.dp
-            ), onClick = finishRide)
     }
 
 }
@@ -167,31 +211,7 @@ private fun ScreenState(
 
 
 
-@Composable
-private fun TopContent(
-    modifier:Modifier = Modifier,
-    content : @Composable () -> Unit
-){
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top
-    ) {
-        content()
-    }
-}
 
-@Composable
-private fun CenterContent(
-    modifier :Modifier = Modifier,
-    content:@Composable ()-> Unit
-){
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center
-    ) {
-        content()
-    }
-}
 
 @Composable
 private fun BottomContent(
@@ -207,9 +227,12 @@ private fun BottomContent(
 }
 
 @Composable
-private fun RideOngoingAnimation(){
+private fun RideOngoingAnimation(
+    modifier: Modifier = Modifier
+){
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.ride_ongoing))
     LottieAnimation(
+        modifier = modifier,
         composition = composition,
         iterations = LottieConstants.IterateForever
     )
@@ -218,52 +241,105 @@ private fun RideOngoingAnimation(){
 
 @Composable
 private fun TotalCost(
-    modifier: Modifier = Modifier,
-    rideCost:State<Double>
+    elapsedTime: State<Duration>,
+    pricePerMinute:Double
 ){
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-
-        Text(
-            text = "Total cost",
-            color = Color.Black,
-            fontSize = Dimens.large.sp
+    val rideCost = elapsedTime.value.inWholeMinutes * pricePerMinute
+    InformationBox {
+        StartLabel(
+            text = stringResource(R.string.screen_ride_total_cost),
+            imageVector = Icons.Filled.Schedule
         )
-        Text(
-            text =  "£ %.2f".format(rideCost.value),
-            fontSize = Dimens.large.sp,
-            color = Color.Black
+        FieldValue(
+            text ="£ %.2f".format(rideCost)
         )
     }
 }
 
 @Composable
 private fun ElapsedTime(
-    modifier: Modifier = Modifier,
-    elapsedSeconds:State<Long>
+    elapsedSeconds:State<Duration>
 ){
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-
-        Text(
-            text = "Elapsed Time",
-            color = Color.Black,
-            fontSize = Dimens.large.sp
+    InformationBox {
+        StartLabel(
+            text = stringResource(R.string.screen_ride_elapsed_seconds),
+            imageVector = Icons.Filled.Schedule
         )
-        Text(
-            text = DateUtils.formatElapsedTime(elapsedSeconds.value),
-            fontSize = Dimens.large.sp,
-            color = Color.Black
+        FieldValue(
+            text = DateUtils.formatElapsedTime(
+                elapsedSeconds.value.inWholeSeconds
+            )
         )
     }
 }
 
 
 
+
+
+
+@Composable
+private fun InformationBox(
+    content:@Composable ()->Unit
+){
+    Box(
+        modifier = Modifier.border(
+            width = 2.dp,
+            color = Color.LightGray,
+            shape = RoundedCornerShape(Dimens.big.dp)
+        )
+    ){
+        Column(
+            modifier = Modifier
+                .padding(
+                    Dimens.huge.dp
+                )
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.large.dp)
+        ) {
+            content()
+        }
+    }
+}
+
+
+@Composable
+private fun StartLabel(
+    text:String,
+    imageVector: ImageVector
+){
+    Row (
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Icon(
+            modifier = Modifier.size(24.dp),
+            imageVector = imageVector,
+            contentDescription = null
+        )
+        Spacer(
+            modifier = Modifier.width(Dimens.small.dp)
+        )
+        Text(
+            text = text,
+            color = Color.Gray,
+            fontSize = Dimens.large.sp
+        )
+    }
+}
+
+
+
+@Composable
+private fun FieldValue(
+    text:String
+){
+    Text(
+        text= text,
+        fontSize = Dimens.large.sp,
+        fontWeight = FontWeight.SemiBold
+    )
+}
 
 @Composable
 private fun EnjoyYourRide(
@@ -279,21 +355,5 @@ private fun EnjoyYourRide(
         color = Color.Black,
         textAlign = TextAlign.Center
     )
-
-}
-
-@Composable
-private fun FinishRideButton(
-    modifier: Modifier = Modifier,
-    onClick:()->Unit
-){
-    Button(
-        modifier = modifier.fillMaxWidth(),
-        onClick = onClick
-    ){
-        Text(
-            text = stringResource(R.string.screen_ride_finish_ride)
-        )
-    }
 
 }

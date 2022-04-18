@@ -61,11 +61,18 @@
     <string name="screen_settings_sign_out">Sign out</string>
 
     <!--Screen ride-->
-    <string name="screen_ride_finish_ride">Finish ride</string>
+    <string name="screen_ride_elapsed_seconds">Elapsed seconds</string>
+    <string name="screen_ride_total_cost">Total cost</string>
+    <string name="screen_ride_end_ride">End ride</string>
+    <string name="screen_ride_lock">Lock</string>
     <string name="screen_ride_finishing_ride">Finishing ride</string>
 
     <!-- Screen ride history -->
     <string name="screen_ride_history_title">Your previous rides</string>
+
+    <!-- Screen finished ride -->
+    <string name="screen_finished_ride_total_charge">Total charge</string>
+    <string name="screen_finished_ride_started">Started</string>
 
     <string name="home">Home</string>
     <string name="settings">Settings</string>

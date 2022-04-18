@@ -41,6 +41,7 @@ import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
 import com.andrei.car_rental_android.screens.Home.states.SelectedCarState
 import com.andrei.car_rental_android.screens.Home.states.UnlockPaymentState
 import com.andrei.car_rental_android.ui.Dimens
+import com.andrei.car_rental_android.ui.composables.CustomSnackbar
 import com.andrei.car_rental_android.ui.composables.LoadingSnackbar
 import com.andrei.car_rental_android.ui.composables.bitmapDescriptorFromVector
 import com.andrei.car_rental_android.utils.hasPermission
@@ -382,14 +383,19 @@ private fun LocationState(
     locationState: State<HomeViewModel.LocationState>
 ){
     when(locationState.value){
-        is  HomeViewModel.LocationState.Loading -> {
+        is HomeViewModel.LocationState.Loading -> {
             LoadingSnackbar(
-                text = stringResource(id = R.string.screen_home_loading_location)
+                modifier = Modifier.padding(
+                    bottom = Dimens.small.dp
+                ),
+                text = stringResource(id = R.string.screen_home_loading_location),
             )
         }
         is HomeViewModel.LocationState.Unknown -> {
             Snackbar {
-                Text(text = "We could not determine your location ")
+                CustomSnackbar(
+                    text = "We could not determine your location"
+                )
             }
         }
         else -> {

@@ -1,8 +1,13 @@
 package com.andrei.car_rental_android.screens.finishedRide
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Paid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -11,6 +16,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -18,9 +26,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.andrei.car_rental_android.DTOs.CarModel
+import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.FinishedRide
 import com.andrei.car_rental_android.DTOs.Image
+import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.engine.utils.TestData
 import com.andrei.car_rental_android.screens.register.base.BackButton
 import com.andrei.car_rental_android.ui.Dimens
@@ -33,10 +42,11 @@ fun FinishedRideScreen(
     navController: NavController
 ){
 
+
     val viewModel = hiltViewModel<FinishedRideViewModelImpl>()
     MainContent(
         viewModel = viewModel,
-       navController = navController
+        navController = navController
     )
 
 }
@@ -54,12 +64,8 @@ private fun MainContent(
         modifier = Modifier.fillMaxSize()
     ) {
         Column{
-            BackButton(
-                Modifier.padding(
-                    vertical = Dimens.small.dp
-                )
-            ) {
-               navController.popBackStack()
+            BackButton{
+                navController.popBackStack()
             }
             ScreenState(
                 finishedRideState = viewModel.rideState.collectAsState()
@@ -95,81 +101,104 @@ private fun PreviewSuccessContent(){
 
 @Composable
 private fun SuccessContent(finishedRide: FinishedRide){
-    Column {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            TotalCharge(chargePence = finishedRide.totalCharge)
-            CarImage(
-                modifier = Modifier.padding(
-                    top = Dimens.medium.dp
-                ),
-                image = finishedRide.car.model.image
+    Column(
+        modifier = Modifier
+            .padding(
+                horizontal = Dimens.huge.dp
             )
-            CarModelAndMake(
-                modifier = Modifier.padding(
-                    top = Dimens.small.dp
-                ),
-                carModel = finishedRide.car.model
-            )
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    top = Dimens.large.dp,
-                    start = Dimens.medium.dp,
-                    end = Dimens.medium.dp
-                )
-        ) {
-            RideStartDate(startTime = finishedRide.startTime)
-            Spacer(modifier = Modifier.height(Dimens.large.dp))
-            RideEndDate(endTime = finishedRide.endTime)
-        }
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Dimens.huge.dp)
+    ){
+
+        CarDetails(
+            modifier = Modifier.padding(
+                top = Dimens.small.dp
+            ),
+            car = finishedRide.car
+        )
+        TotalCharge(
+            chargePence = finishedRide.totalCharge
+        )
+        RideStartDate(
+            startTime = finishedRide.startTime
+        )
+
     }
 }
 
 
 @Composable
+private fun InformationBox(
+    content:@Composable ()->Unit
+){
+    Box(
+        modifier = Modifier.border(
+            width = 2.dp,
+            color = Color.LightGray,
+            shape = RoundedCornerShape(Dimens.big.dp)
+        )
+    ){
+        Column(
+            modifier = Modifier
+                .padding(
+                    horizontal = Dimens.huge.dp,
+                    vertical = 40.dp
+                )
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.large.dp)
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
 private fun TotalCharge(
-    modifier: Modifier = Modifier,
     chargePence:Long
 ){
-    Text(
-        modifier = modifier
-            .padding(
-                top = Dimens.huge.dp
-            ),
-        text = "£%.2f".format((chargePence/100.0)),
-        color = Color.Black,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = Dimens.huge.sp
-    )
+    InformationBox {
+        StartLabel(
+            text = stringResource(R.string.screen_finished_ride_total_charge),
+            imageVector = Icons.Filled.Paid
+        )
+        FieldValue(
+            text = "£%.2f".format((chargePence / 100.0))
+        )
+    }
 }
+
 @Composable
 private fun CarImage(
     modifier: Modifier = Modifier,
     image: Image
 ){
+
     AsyncImage(
         modifier = modifier
-            .size(200.dp)
-            .clip(RoundedCornerShape(Dimens.medium.dp)),
+            .height(150.dp)
+            .clip(RoundedCornerShape(Dimens.large.dp)),
         model = image.url,
+        placeholder = painterResource(R.drawable.car_placeholder),
         contentDescription =null
     )
 }
 
 @Composable
-private fun CarModelAndMake(
+private fun CarDetails(
     modifier: Modifier = Modifier,
-    carModel: CarModel)
-{
+    car: Car
+) {
+
     Text(
         modifier = modifier,
-        text = "${carModel.manufacturerName} ${carModel.name}",
-        fontSize = Dimens.medium.sp,
+        text = "${car.model.manufacturerName} ${car.model.name}",
+        fontSize = Dimens.large.sp,
+        fontWeight = FontWeight.SemiBold
+    )
+    CarImage(
+        image = car.model.image
     )
 }
 
@@ -177,8 +206,11 @@ private fun CarModelAndMake(
 private fun RideStartDate(
     startTime:LocalDateTime
 ){
-    InformationRow {
-        StartLabel(text = "Started")
+    InformationBox {
+        StartLabel(
+            text = stringResource(R.string.screen_finished_ride_started),
+            imageVector = Icons.Filled.Event
+        )
         FieldValue(text = formatRideDate(
             localDateTime = startTime))
     }
@@ -187,43 +219,29 @@ private fun RideStartDate(
 
 @Composable
 private fun StartLabel(
-    text:String
+    text:String,
+    imageVector:ImageVector
 ){
-    Text(
-        text = text,
-        color = Color.Gray,
-        fontSize = Dimens.large.sp
-    )
-}
-
-
-@Composable
-private fun InformationRow(
-    content: @Composable ()->Unit
-){
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+    Row (
         verticalAlignment = Alignment.CenterVertically
     ){
-        content()
-    }
-}
-
-
-@Composable
-private fun RideEndDate(
-    endTime:LocalDateTime
-){
-    InformationRow{
-        StartLabel(text = "Finished")
-        FieldValue(
-            text = formatRideDate(
-                localDateTime = endTime
-            )
+        Icon(
+            modifier = Modifier.size(24.dp),
+            imageVector = imageVector,
+            contentDescription = null
+        )
+        Spacer(
+            modifier = Modifier.width(Dimens.small.dp)
+        )
+        Text(
+            text = text,
+            color = Color.Gray,
+            fontSize = Dimens.large.sp
         )
     }
 }
+
+
 
 @Composable
 private fun FieldValue(
@@ -231,7 +249,8 @@ private fun FieldValue(
 ){
     Text(
         text= text,
-        fontSize = Dimens.big.sp
+        fontSize = Dimens.large.sp,
+        fontWeight = FontWeight.SemiBold
     )
 }
 

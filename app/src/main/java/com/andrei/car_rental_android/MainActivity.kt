@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
                 if(splashFinished) {
                     Navigation(
-                        currentLoginState =sessionManager.authenticationState.collectAsState()
+                        currentLoginState =sessionManager.authenticationState.collectAsState(),
                     )
                 }
             }

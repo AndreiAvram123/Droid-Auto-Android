@@ -61,4 +61,8 @@ abstract class RepositoryAbstractModule {
     @Singleton
     abstract fun bindRideRepository(rideRepositoryImpl: RideRepositoryImpl):RideRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(userRepository: UserRepositoryImpl):UserRepository
+
 }
