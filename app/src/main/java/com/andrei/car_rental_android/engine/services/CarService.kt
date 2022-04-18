@@ -1,7 +1,6 @@
 package com.andrei.car_rental_android.engine.services
 
 import com.andrei.car_rental_android.DTOs.CarWithLocation
-import com.andrei.car_rental_android.DTOs.OngoingRide
 import com.google.android.gms.maps.model.LatLng
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -18,8 +17,11 @@ sealed interface CarService{
     ):ApiResponse<List<CarWithLocation>>
 
 
-    @POST("/car/unlock")
-    suspend fun unlockCar():ApiResponse<OngoingRide>
+    @POST("/rides/current/car/unlock")
+    suspend fun unlockCar():ApiResponse<Nothing>
+
+    @POST("/rides/current/car/lock")
+    suspend fun lockCar():ApiResponse<Nothing>
 
     @GET("/cars/{id}/location")
     suspend fun getCarLocation(@Path("id") carID:Long):ApiResponse<LatLng?>

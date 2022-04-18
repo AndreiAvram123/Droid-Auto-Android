@@ -65,6 +65,7 @@
     <string name="screen_ride_total_cost">Total cost</string>
     <string name="screen_ride_end_ride">End ride</string>
     <string name="screen_ride_lock">Lock</string>
+    <string name="screen_ride_unlock">Unlock</string>
     <string name="screen_ride_finishing_ride">Finishing ride</string>
 
     <!-- Screen ride history -->

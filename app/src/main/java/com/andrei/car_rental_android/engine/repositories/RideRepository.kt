@@ -13,6 +13,7 @@ interface RideRepository {
     fun getRideByID(id:Long):Flow<RequestState<FinishedRide>>
     fun finishOngoingRide():Flow<RequestState<FinishedRide>>
     fun getRideHistory():Flow<RequestState<List<FinishedRide>>>
+    fun startRide():Flow<RequestState<OngoingRide>>
 }
 
 class RideRepositoryImpl @Inject constructor(
@@ -34,6 +35,10 @@ class RideRepositoryImpl @Inject constructor(
 
     override fun getRideHistory(): Flow<RequestState<List<FinishedRide>>>  = requestExecutor.performRequest{
         rideService.getRideHistory()
+    }
+
+    override fun startRide(): Flow<RequestState<OngoingRide>> = requestExecutor.performRequest{
+        rideService.startRide()
     }
 
 }

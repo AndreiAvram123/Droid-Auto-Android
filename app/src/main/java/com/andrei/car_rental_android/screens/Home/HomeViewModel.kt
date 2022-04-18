@@ -60,7 +60,7 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     abstract fun startUnlockPaymentProcess()
     abstract fun reserveCar(car: Car)
     abstract fun cancelReservation()
-    protected abstract fun unlockCar()
+    protected abstract fun startRide()
 
 
     sealed class LocationState {
@@ -133,7 +133,7 @@ class HomeViewModelImpl @Inject constructor(
     override fun onFeePaymentResult(paymentResult: PaymentSheetResult) {
         when(paymentResult){
             is PaymentSheetResult.Completed -> {
-                unlockCar()
+                startRide()
             }
             is PaymentSheetResult.Canceled -> {
                 //in this case carReservationState must be data ready
@@ -147,10 +147,9 @@ class HomeViewModelImpl @Inject constructor(
 
 
 
-    override fun unlockCar() {
+    override fun startRide() {
         coroutineScope.launch {
-            //when is done the reservation is finished and we can switch to ride
-            carRepository.unlockCar().collect{
+            rideRepository.startRide().collect{
                 when(it){
                     is RequestState.Success -> {
                         navigationState.emit(HomeNavigationState.NavigateToRideScreen)
@@ -292,7 +291,7 @@ class HomeViewModelImpl @Inject constructor(
 
                                 getReservedCarLocation(it.data.car)
                             }
-                             is OngoingRide -> {
+                            is OngoingRide -> {
                                 navigationState.emit(
                                     HomeNavigationState.NavigateToRideScreen
                                 )
@@ -324,7 +323,7 @@ class HomeViewModelImpl @Inject constructor(
                 is RequestState.Loading -> {
 
                 }
-               else ->{}
+                else ->{}
 
             }
         }
@@ -364,8 +363,8 @@ class HomeViewModelImpl @Inject constructor(
     }
 
     private suspend fun getNearbyCars(location:Location) {
-            carRepository.fetchNearby(location.latitude,location.longitude).collect {
-                nearbyCarsState.emit(it.toHomeViewModelState())
+        carRepository.fetchNearby(location.latitude,location.longitude).collect {
+            nearbyCarsState.emit(it.toHomeViewModelState())
         }
 
     }

@@ -3,6 +3,7 @@ package com.andrei.car_rental_android.screens.ride
 import com.andrei.car_rental_android.DTOs.FinishedRide
 import com.andrei.car_rental_android.DTOs.OngoingRide
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
+import com.andrei.car_rental_android.engine.repositories.CarRepository
 import com.andrei.car_rental_android.engine.repositories.RideRepository
 import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.ui.utils.unixTimeSeconds
@@ -22,9 +23,13 @@ import kotlin.time.toDuration
 abstract class RideViewModel(coroutineProvider: CoroutineScope?): BaseViewModel(coroutineProvider) {
 
     abstract fun finishRide()
+    abstract fun lockCar()
+    abstract fun unlockCar()
+
     abstract fun getOngoingRide()
     abstract val currentRideState:StateFlow<RideState>
     abstract val elapsedTime:StateFlow<Duration>
+    abstract val carLocked:StateFlow<Boolean>
 
     sealed class RideState{
         object Loading:RideState()
@@ -34,6 +39,7 @@ abstract class RideViewModel(coroutineProvider: CoroutineScope?): BaseViewModel(
         data class RideFinished(val finishedRide: FinishedRide):RideState()
         data class ErrorFinishingRide(val message: String):RideState()
     }
+
 
 
     companion object{
@@ -64,6 +70,7 @@ abstract class RideViewModel(coroutineProvider: CoroutineScope?): BaseViewModel(
 class RideViewModelImpl @Inject constructor(
     coroutineProvider: CoroutineScope?,
     private val rideRepository: RideRepository,
+    private val carRepository: CarRepository
 ): RideViewModel(coroutineProvider){
 
     private var timer:Timer? = null
@@ -71,6 +78,7 @@ class RideViewModelImpl @Inject constructor(
 
     override val currentRideState: MutableStateFlow<RideState> = MutableStateFlow(RideState.Loading)
     override val elapsedTime: MutableStateFlow<Duration> = MutableStateFlow(0.seconds)
+    override val carLocked: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     private val incrementTask = timerTask {
         elapsedTime.tryEmit(elapsedTime.value + 1.seconds)
@@ -116,6 +124,26 @@ class RideViewModelImpl @Inject constructor(
                   }
                }
            }
+        }
+    }
+
+    override fun lockCar() {
+        coroutineScope.launch {
+            carRepository.lockCar().collect {
+                if (it is RequestState.Success) {
+                    carLocked.emit(true)
+                }
+            }
+        }
+    }
+
+    override fun unlockCar() {
+        coroutineScope.launch {
+            carRepository.unlockCar().collect {
+                if (it is RequestState.Success) {
+                    carLocked.emit(false)
+                }
+            }
         }
     }
 

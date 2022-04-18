@@ -8,6 +8,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -78,7 +79,10 @@ private fun MainContent(
                 SuccessState(
                     ride = ride,
                     elapsedTime = viewModel.elapsedTime.collectAsState(),
-                    endRide = viewModel::finishRide
+                    endRide = viewModel::finishRide,
+                    carLocked = viewModel.carLocked.collectAsState(),
+                    lockCar = viewModel::lockCar,
+                    unlockCar = viewModel::unlockCar
                 )
             },
             loading = {
@@ -123,12 +127,17 @@ private fun PreviewSuccessState(){
     val elapsedTime:State<Duration> = remember {
         mutableStateOf(100.seconds)
     }
+    val carLocked = remember {
+        mutableStateOf(false)
+    }
 
     SuccessState(
         ride = ride,
         elapsedTime = elapsedTime,
-        endRide = {}
-
+        endRide = {},
+        lockCar = {},
+        unlockCar = {},
+        carLocked = carLocked
     )
 }
 
@@ -136,7 +145,10 @@ private fun PreviewSuccessState(){
 private fun SuccessState(
     ride:OngoingRide,
     elapsedTime: State<Duration>,
-    endRide:()->Unit
+    endRide:()->Unit,
+    carLocked:State<Boolean>,
+    lockCar:()->Unit,
+    unlockCar:()->Unit
 ){
     Column(
         modifier = Modifier.padding(
@@ -167,24 +179,47 @@ private fun SuccessState(
                 pricePerMinute = ride.car.pricePerMinute
             )
             BottomContent {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    CustomOutlinedButton(
-                        text = stringResource(R.string.screen_ride_lock),
-                        imageVector = Icons.Filled.Lock,
-                        onClick = endRide
-                    )
-                    CustomButton(
-                        text = stringResource(R.string.screen_ride_end_ride),
-                        onClick = endRide
-                    )
-                }
+                ActionButtons(
+                    carLocked = carLocked,
+                    endRide = endRide,
+                    lockCar = lockCar,
+                    unlockCar = unlockCar
+                )
             }
         }
     }
 
+}
+
+@Composable
+private fun ActionButtons(
+    carLocked: State<Boolean>,
+    lockCar: () -> Unit,
+    unlockCar: () -> Unit,
+    endRide: () -> Unit
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        if(carLocked.value) {
+            CustomOutlinedButton(
+                text = stringResource(R.string.screen_ride_unlock),
+                imageVector = Icons.Filled.LockOpen,
+                onClick = unlockCar
+            )
+        }else{
+            CustomOutlinedButton(
+                text = stringResource(R.string.screen_ride_lock),
+                imageVector = Icons.Filled.Lock,
+                onClick = lockCar
+            )
+        }
+        CustomButton(
+            text = stringResource(R.string.screen_ride_end_ride),
+            onClick = endRide
+        )
+    }
 }
 
 @Composable

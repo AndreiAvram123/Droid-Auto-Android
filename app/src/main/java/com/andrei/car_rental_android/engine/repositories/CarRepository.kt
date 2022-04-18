@@ -13,6 +13,7 @@ import javax.inject.Inject
 interface CarRepository{
     fun fetchNearby(latitude:Double,longitude:Double):Flow<RequestState<List<CarWithLocation>>>
     fun unlockCar():Flow<RequestState<OngoingRide>>
+    fun lockCar():Flow<RequestState<Nothing>>
     fun getCarLocation(car:Car):Flow<RequestState<LatLng?>>
 }
 
@@ -30,6 +31,10 @@ class CarRepositoryImpl @Inject constructor(
 
     override fun unlockCar(): Flow<RequestState<OngoingRide>> = requestExecutor.performRequest {
        return@performRequest carService.unlockCar()
+    }
+
+    override fun lockCar(): Flow<RequestState<Nothing>>  = requestExecutor.performRequest{
+        carService.lockCar()
     }
 
     override fun getCarLocation(car:Car): Flow<RequestState<LatLng?>> = requestExecutor.performRequest{
