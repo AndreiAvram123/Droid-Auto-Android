@@ -9,7 +9,10 @@ import com.andrei.car_rental_android.baseConfig.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,14 +20,14 @@ abstract class CreatePasswordViewModel(coroutineProvider:CoroutineScope?):BaseVi
     abstract val password:StateFlow<String>
     abstract val reenteredPassword:StateFlow<String>
     abstract val reenteredPasswordValidation:StateFlow<ReenteredPasswordValidation>
-    abstract val passwordStrength:StateFlow<List<PasswordStrengthCriteria>>
+    abstract val passwordStrength:StateFlow<List<PasswordRequirement>>
     abstract val nextButtonEnabled:StateFlow<Boolean>
 
     abstract fun setPassword(newPassword:String)
     abstract fun setReenteredPassword(newReenteredPassword: String)
 
 
-    enum class PasswordStrengthCriteria{
+    enum class PasswordRequirement{
         IncludesLowercaseLetter,
         IncludesUppercaseLetter,
         IncludesNumber,
@@ -51,7 +54,7 @@ class CreatePasswordViewModelImpl @Inject constructor(
     override val reenteredPassword: MutableStateFlow<String> = MutableStateFlow("")
 
     override val reenteredPasswordValidation: MutableStateFlow<ReenteredPasswordValidation> = MutableStateFlow(ReenteredPasswordValidation.NotValidated)
-    override val passwordStrength: MutableStateFlow<List<PasswordStrengthCriteria>> = MutableStateFlow(emptyList())
+    override val passwordStrength: MutableStateFlow<List<PasswordRequirement>> = MutableStateFlow(emptyList())
     override val nextButtonEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 
@@ -92,7 +95,7 @@ class CreatePasswordViewModelImpl @Inject constructor(
         coroutineScope.launch {
             combine(reenteredPasswordValidation, passwordStrength) { passwordValidation, strength ->
                 passwordValidation is ReenteredPasswordValidation.Valid && strength.containsAll(
-                    PasswordStrengthCriteria.values().toList()
+                    PasswordRequirement.values().toList()
                 )
             }.collect {
                 nextButtonEnabled.emit(it)
@@ -102,37 +105,39 @@ class CreatePasswordViewModelImpl @Inject constructor(
 
 
     private fun evaluatePasswordStrength() {
-        passwordStrength.tryEmit(emptyList())
         val password = password.value
+         if(password.isBlank()){
+             passwordStrength.tryEmit(emptyList())
+         }
 
         if (password.isNotBlank()) {
-            val passwordStrengthList = mutableListOf<PasswordStrengthCriteria>()
-            PasswordStrengthCriteria.values().forEach { criteria ->
+            val passwordStrengthList = mutableListOf<PasswordRequirement>()
+            PasswordRequirement.values().forEach { criteria ->
                 when (criteria) {
-                    PasswordStrengthCriteria.IncludesLowercaseLetter ->{
+                    PasswordRequirement.IncludesLowercaseLetter ->{
                         if (password.hasLowercaseLetter()) {
-                            passwordStrengthList.add(PasswordStrengthCriteria.IncludesLowercaseLetter)
+                            passwordStrengthList.add(PasswordRequirement.IncludesLowercaseLetter)
                         }
                     }
-                    PasswordStrengthCriteria.IncludesUppercaseLetter -> {
+                    PasswordRequirement.IncludesUppercaseLetter -> {
                         if (password.hasUppercaseLetter()) {
-                            passwordStrengthList.add(PasswordStrengthCriteria.IncludesUppercaseLetter)
+                            passwordStrengthList.add(PasswordRequirement.IncludesUppercaseLetter)
                         }
                     }
-                    PasswordStrengthCriteria.IncludesNumber ->{
+                    PasswordRequirement.IncludesNumber ->{
                        if(password.hasDigit()){
-                           passwordStrengthList.add(PasswordStrengthCriteria.IncludesNumber)
+                           passwordStrengthList.add(PasswordRequirement.IncludesNumber)
                        }
                     }
-                    PasswordStrengthCriteria.IncludesSpecialCharacter -> {
+                    PasswordRequirement.IncludesSpecialCharacter -> {
                         if(password.hasSpecialChar()){
-                            passwordStrengthList.add(PasswordStrengthCriteria.IncludesSpecialCharacter)
+                            passwordStrengthList.add(PasswordRequirement.IncludesSpecialCharacter)
                         }
                     }
 
-                    PasswordStrengthCriteria.IncludesMinNumberCharacters -> {
+                    PasswordRequirement.IncludesMinNumberCharacters -> {
                        if(password.hasMinRequiredLength()){
-                           passwordStrengthList.add(PasswordStrengthCriteria.IncludesMinNumberCharacters)
+                           passwordStrengthList.add(PasswordRequirement.IncludesMinNumberCharacters)
                        }
                     }
                 }

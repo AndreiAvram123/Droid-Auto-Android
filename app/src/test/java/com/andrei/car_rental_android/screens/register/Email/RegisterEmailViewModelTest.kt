@@ -5,15 +5,10 @@ import com.andrei.car_rental_android.BaseViewModelTest
 import com.andrei.car_rental_android.engine.repositories.RegisterRepository
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestMethodOrder
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.Random::class)
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
 class RegisterEmailViewModelTest : BaseViewModelTest() {
 
@@ -98,9 +93,11 @@ class RegisterEmailViewModelTest : BaseViewModelTest() {
         )
 
         val alreadyTakenEmail = "avramandreitiberi@gmail.com"
+
         returnSuccess {
             registerRepository.checkIfEmailIsUsed(alreadyTakenEmail)
         }
+
         sut.emailValidationState.test(5.seconds) {
             assert(awaitItem() is RegisterEmailViewModel.EmailValidationState.Default)
             sut.setEmail(alreadyTakenEmail)

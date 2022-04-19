@@ -164,7 +164,7 @@ private fun ReenterPasswordTextField(
 @Composable
 private fun PasswordStrengthIndicators(
     modifier: Modifier = Modifier,
-    passwordStrengthState:State<List<CreatePasswordViewModel.PasswordStrengthCriteria>>,
+    passwordStrengthState:State<List<CreatePasswordViewModel.PasswordRequirement>>,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -172,7 +172,7 @@ private fun PasswordStrengthIndicators(
     ) {
         val passwordStrength = passwordStrengthState.value
 
-        CreatePasswordViewModel.PasswordStrengthCriteria.values().forEach { criteria ->
+        CreatePasswordViewModel.PasswordRequirement.values().forEach { criteria ->
             PasswordStrengthIndicator(
                 text = stringResource(getHintResourceForCriteria(criteria)),
                 state = when {
@@ -185,13 +185,13 @@ private fun PasswordStrengthIndicators(
 
     }
 }
-fun getHintResourceForCriteria(criteria:CreatePasswordViewModel.PasswordStrengthCriteria):Int{
+fun getHintResourceForCriteria(criteria:CreatePasswordViewModel.PasswordRequirement):Int{
     return when(criteria){
-        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesLowercaseLetter-> R.string.screen_password_include_lowercase_letter
-        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesUppercaseLetter-> R.string.screen_password_include_uppercase_letter
-        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesNumber -> R.string.screen_password_include_number
-        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesSpecialCharacter -> R.string.screen_password_include_special_character
-        CreatePasswordViewModel.PasswordStrengthCriteria.IncludesMinNumberCharacters -> R.string.screen_password_include_8_characters
+        CreatePasswordViewModel.PasswordRequirement.IncludesLowercaseLetter-> R.string.screen_password_include_lowercase_letter
+        CreatePasswordViewModel.PasswordRequirement.IncludesUppercaseLetter-> R.string.screen_password_include_uppercase_letter
+        CreatePasswordViewModel.PasswordRequirement.IncludesNumber -> R.string.screen_password_include_number
+        CreatePasswordViewModel.PasswordRequirement.IncludesSpecialCharacter -> R.string.screen_password_include_special_character
+        CreatePasswordViewModel.PasswordRequirement.IncludesMinNumberCharacters -> R.string.screen_password_include_8_characters
     }
 }
 
