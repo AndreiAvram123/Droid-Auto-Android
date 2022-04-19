@@ -6,6 +6,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.andrei.car_rental_android.ui.Dimens
 
 
@@ -15,6 +16,7 @@ fun TextFieldErrorMessage(errorMessage:String){
         text = errorMessage,
         color = MaterialTheme.colors.error,
         style = MaterialTheme.typography.caption,
+        fontSize = Dimens.medium.sp,
         modifier = Modifier.padding(start = Dimens.small.dp)
     )
 }

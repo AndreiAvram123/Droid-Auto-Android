@@ -6,4 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 
 abstract class BaseViewModel(coroutineProvider: CoroutineScope? ) : ViewModel() {
     val coroutineScope = coroutineProvider ?: this.viewModelScope
+
+
 }

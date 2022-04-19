@@ -1,15 +1,13 @@
 package com.andrei.car_rental_android.screens.register.Email
 
-import android.util.Patterns
 import com.andrei.car_rental_android.baseConfig.BaseViewModel
-import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.engine.repositories.RegisterRepository
+import com.andrei.car_rental_android.engine.request.RequestState
+import com.andrei.car_rental_android.ui.utils.emailRegex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject
 
 abstract class RegisterEmailViewModel(coroutineProvider:CoroutineScope?) : BaseViewModel(coroutineProvider) {
@@ -33,7 +31,7 @@ abstract class RegisterEmailViewModel(coroutineProvider:CoroutineScope?) : BaseV
 }
 
 @HiltViewModel
-class RegisterEmailViewModelImpl @Inject constructor(
+class RegisterEmailViewModelImpl @Inject  constructor(
     coroutineProvider: CoroutineScope?,
     private val registerRepository: RegisterRepository
 ):RegisterEmailViewModel(coroutineProvider){
@@ -44,19 +42,19 @@ class RegisterEmailViewModelImpl @Inject constructor(
     override val nextButtonEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     override fun setEmail(newValue: String) {
-        coroutineScope.launch {
-            emailValidationState.emit(EmailValidationState.Default)
-            email.emit(newValue)
-        }
+          email.tryEmit(newValue)
     }
     private var validationJob: Job? = null
 
     init {
         coroutineScope.launch {
-            email.collectLatest {
+            email.collect {
+                emailValidationState.emit(EmailValidationState.Default)
                 cancelPreviousValidation()
-                delay(validationOffsetTime)
-                validateEmail()
+                if(it.isNotBlank()){
+                    delay(validationOffsetTime)
+                    validateEmail()
+                }
             }
         }
         coroutineScope.launch {
@@ -72,6 +70,7 @@ class RegisterEmailViewModelImpl @Inject constructor(
         validationJob?.cancel("Need to cancel previous validation")
     }
     private fun validateEmail(){
+
         if(email.value.isNotBlank()) {
             if(email.value.isEmailValid()) {
                 validationJob = coroutineScope.launch {
@@ -108,6 +107,6 @@ class RegisterEmailViewModelImpl @Inject constructor(
             }
         }
     }
-    private fun String.isEmailValid():Boolean = this.matches(Patterns.EMAIL_ADDRESS.toRegex())
+    private fun String.isEmailValid():Boolean = this.matches(emailRegex)
 
 }

@@ -826,7 +826,7 @@ private fun CarImage(
 @Composable
 private fun PricePerMinute(
     modifier :Modifier = Modifier,
-    price:Double
+    price:Long
 ){
     Text(
         modifier = modifier,

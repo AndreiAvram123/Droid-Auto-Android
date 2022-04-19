@@ -11,7 +11,8 @@ data class CarWithLocation(
 data class Car(
      var id: Long = 0,
      var model:CarModel,
-     val pricePerMinute:Double
+     //prince per minute in the smallest currency unit . In this case pence
+     val pricePerMinute:Long
 )
 
 fun LatLng.toAndroidLocation():Location{

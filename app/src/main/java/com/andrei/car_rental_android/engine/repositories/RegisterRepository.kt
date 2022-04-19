@@ -1,5 +1,6 @@
 package com.andrei.car_rental_android.engine.repositories
 
+import com.andrei.car_rental_android.engine.configuration.NoData
 import com.andrei.car_rental_android.engine.configuration.RequestExecutor
 import com.andrei.car_rental_android.engine.request.RegisterUserRequest
 import com.andrei.car_rental_android.engine.request.RequestState
@@ -8,8 +9,8 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface RegisterRepository {
-    fun checkIfEmailIsUsed(email:String): Flow<RequestState<Nothing>>
-    fun registerUser(registerUserRequest: RegisterUserRequest):Flow<RequestState<Nothing>>
+    fun checkIfEmailIsUsed(email:String): Flow<RequestState<NoData>>
+    fun registerUser(registerUserRequest: RegisterUserRequest):Flow<RequestState<NoData>>
 
     companion object{
         const val errorEmailUsed = "Email already used"

@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.flow
 
 typealias RepositoryCall<DataType> = MockKMatcherScope.() -> Flow<RequestState<DataType>>
 
-
 abstract class BaseViewModelTest : BaseTest() {
 
     protected inline fun <reified DataType> returnSuccess(crossinline repositoryCall: RepositoryCall<DataType>) {
@@ -29,8 +28,11 @@ abstract class BaseViewModelTest : BaseTest() {
             emit(RequestState.Loading)
         }
     }
-    protected inline fun <reified DataType> returnFailure(errorCode: Int, crossinline repositoryCall: RepositoryCall<DataType>) {
-        val response = RequestState.Error(code = errorCode, message = "")
+    protected inline fun <reified DataType> returnFailure(
+        errorCode: Int,
+        message :String ? = null,
+        crossinline repositoryCall: RepositoryCall<DataType>) {
+        val response = RequestState.Error(code = errorCode, message = message ?: "")
         coEvery {
             repositoryCall()
         } returns flow {

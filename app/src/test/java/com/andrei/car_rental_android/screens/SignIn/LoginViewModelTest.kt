@@ -16,7 +16,7 @@ import org.junit.jupiter.api.TestMethodOrder
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.Random::class)
 @OptIn(ExperimentalCoroutinesApi::class)
-class LoginViewModelTest : BaseViewModelTest(){
+    class LoginViewModelTest : BaseViewModelTest(){
 
 
     private val loginRepository: LoginRepository = mockk(relaxed = true)
@@ -27,7 +27,7 @@ class LoginViewModelTest : BaseViewModelTest(){
 
 
     @Test
-    fun `loginUiState state flow has the default value of Default when the viewModel is created`() = runTest {
+        fun `loginUiState state flow has the default value of Default when the viewModel is created`() = runTest {
         val sut: LoginViewModel  = LoginViewModelImpl(
             coroutineProvider = this,
             loginRepository = loginRepository

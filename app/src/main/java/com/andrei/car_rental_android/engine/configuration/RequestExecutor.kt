@@ -16,6 +16,8 @@ import javax.inject.Singleton
 
 //the service call alias is a suspend function that returns a response of type response wrapper
 typealias ServiceCall<DataType> = suspend () -> Response<ResponseWrapper<DataType>>
+typealias NoData = Any
+
 
 interface RequestExecutor{
     fun <DataType> performRequest(

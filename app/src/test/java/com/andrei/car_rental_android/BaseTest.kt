@@ -1,29 +1,22 @@
 package com.andrei.car_rental_android
 
-import androidx.annotation.CallSuper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import kotlinx.coroutines.test.*
 import org.junit.jupiter.api.TestInstance
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 open class BaseTest {
-    val dispatcher = UnconfinedTestDispatcher()
+    protected val testScope = TestScope()
+    private val  testDispatcher = StandardTestDispatcher(testScope.testScheduler)
 
-
-    @BeforeAll
-    @CallSuper
-    open fun setUp() {
-        Dispatchers.setMain(dispatcher)
-    }
-
-    @AfterAll
-    fun cleanUp() {
+    protected fun runDroidAutoTest(
+        testBody: suspend TestScope.() -> Unit
+    ) {
+        Dispatchers.setMain(testDispatcher)
+        // this should really be testScope.runTest() but that doesn't work
+        runTest(testDispatcher, dispatchTimeoutMs = 1234, testBody = testBody)
         Dispatchers.resetMain()
     }
 }

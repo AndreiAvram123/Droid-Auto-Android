@@ -277,9 +277,9 @@ private fun RideOngoingAnimation(
 @Composable
 private fun TotalCost(
     elapsedTime: State<Duration>,
-    pricePerMinute:Double
+    pricePerMinute:Long
 ){
-    val rideCost = elapsedTime.value.inWholeMinutes * pricePerMinute
+    val rideCost = elapsedTime.value.inWholeMinutes * (pricePerMinute/100)
     InformationBox {
         StartLabel(
             text = stringResource(R.string.screen_ride_total_cost),

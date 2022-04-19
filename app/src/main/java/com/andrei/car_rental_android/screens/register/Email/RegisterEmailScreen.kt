@@ -1,20 +1,23 @@
 package com.andrei.car_rental_android.screens.register.Email
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
+import com.andrei.car_rental_android.screens.register.Email.RegisterEmailViewModel.EmailValidationState.EmailValidationError
 import com.andrei.car_rental_android.screens.register.base.BackButton
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
 import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
@@ -62,31 +65,23 @@ private fun TopContent(
         BackButton {
             navigateBack()
         }
-        Headings(
-            modifier = Modifier.padding(top = Dimens.medium.dp)
-        )
+        Heading(text = stringResource(R.string.screen_email_heading1))
+
     }
 
 }
-@Composable
-private fun Headings(
-   modifier:Modifier = Modifier
-){
-    Column(
-        modifier = modifier
-    ) {
-        Text(
-            modifier =Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            text = stringResource(R.string.screen_email_heading1)
-        )
-        Text(
-            modifier =Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            text = stringResource(R.string.screen_email_heading2)
-        )
-    }
 
+@Composable
+private fun Heading(
+    modifier:Modifier = Modifier,
+    text:String
+){
+    Text(
+        modifier =modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center,
+        fontSize = Dimens.large.sp,
+        text = text
+    )
 }
 
 @Composable
@@ -98,8 +93,8 @@ private fun CenterContent(viewModel: RegisterEmailViewModel){
     ) {
         EmailTextFieldColumn(
             modifier = Modifier.fillMaxWidth(),
-            state = viewModel.email.collectAsState()
-            , onValueChanged ={
+            state = viewModel.email.collectAsState(),
+            onValueChanged ={
                 viewModel.setEmail(it.trim())
             },
             validationState = viewModel.emailValidationState.collectAsState()
@@ -133,35 +128,63 @@ private fun EmailTextFieldColumn(
     validationState:State<RegisterEmailViewModel.EmailValidationState>
 ){
     val invalid = when(validationState.value){
-        is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> true
+        is EmailValidationError.EmailAlreadyTaken -> true
+        is EmailValidationError.InvalidFormat -> true
         else -> false
     }
+
     Column(modifier = Modifier.fillMaxWidth()) {
+        FieldAboveLabel(text = stringResource(
+            R.string.screen_email_email_label_above)
+        )
+        var showLabel by remember{
+            mutableStateOf(true)
+        }
         OutlinedTextField(
-            modifier = modifier,
+            modifier = modifier.onFocusChanged {
+                showLabel = !it.isFocused
+            },
             value = state.value,
             onValueChange = {
                 onValueChanged(it.trim())
             },
             isError = invalid,
             placeholder = {
-                TextFieldLabel(text = stringResource(R.string.screen_email_enter_email_hint))
+                TextFieldLabel(text = stringResource(R.string.screen_email_type))
+            },
+            label = {
+                if(showLabel) {
+                    TextFieldLabel(
+                        text = stringResource(
+                            R.string.screen_email_email_label_field
+                        )
+                    )
+                }
             }
         )
         EmailValidationError(validationState)
     }
+}
 
+@Composable
+private fun FieldAboveLabel(
+    text:String
+){
+    Text(
+        text = text,
+        fontSize = Dimens.big.sp,
+    )
 }
 @Composable
 fun EmailValidationError(
     validationState:State<RegisterEmailViewModel.EmailValidationState>
 ){
-    if(validationState.value is RegisterEmailViewModel.EmailValidationState.EmailValidationError){
+    if(validationState.value is EmailValidationError){
         val errorMessage = when(validationState.value){
-            is RegisterEmailViewModel.EmailValidationState.EmailValidationError.InvalidFormat -> stringResource(
+            is EmailValidationError.InvalidFormat -> stringResource(
                 R.string.screen_email_invalid_email_format
             )
-            is RegisterEmailViewModel.EmailValidationState.EmailValidationError.EmailAlreadyTaken -> stringResource(
+            is EmailValidationError.EmailAlreadyTaken -> stringResource(
                 R.string.screen_email_already_taken
             )
             else -> stringResource(R.string.screen_email_unknown_error)

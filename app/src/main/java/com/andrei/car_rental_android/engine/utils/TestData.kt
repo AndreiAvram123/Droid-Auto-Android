@@ -20,7 +20,7 @@ object TestData {
                 url = "https://bucketeer-e0a505ee-6ef4-428f-b27b-4a4571cf883e.s3.amazonaws.com/public/lambo.jpeg"
             )
         ),
-        pricePerMinute = 14.3,
+        pricePerMinute = 14,
     )
 
     val finishedRide = FinishedRide(

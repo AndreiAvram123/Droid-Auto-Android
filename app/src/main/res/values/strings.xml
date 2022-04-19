@@ -29,15 +29,19 @@
     <string name="screen_names_first_name">First name</string>
     <string name="screen_names_surname">Surname</string>
     <string name="screen_names_continue">Continue</string>
-    <string name="screen_names_beautiful_name">That`s a really beautiful name</string>
+    <string name="screen_names_beautiful_name">That\'s a really beautiful name</string>
 
     <!--Screen email -->
-    <string name="screen_email_enter_email_hint">Email</string>
+
+    <string name="screen_email_email_label_field">Type your email here</string>
+    <string name="screen_email_email_label_above">Enter your email below</string>
+    <string name="screen_email_type">Start typing</string>
+
     <string name="screen_email_invalid_email_format">Uups..Seems like that\'s not a valid email</string>
     <string name="screen_email_already_taken">Hmmm..Seems like this email is already used</string>
     <string name="screen_email_unknown_error">That\'s on our side.It seems like we have a problem verifying this email </string>
     <string name="screen_email_heading1">We promise we won\'t send any marketing offers</string>
-    <string name="screen_email_heading2">But you might need to reset your password </string>
+    <string name="screen_email_heading2">But we still need your email</string>
 
     <!--Screen password-->
     <string name="screen_password_choose_password_title">Let\'s choose a password</string>
