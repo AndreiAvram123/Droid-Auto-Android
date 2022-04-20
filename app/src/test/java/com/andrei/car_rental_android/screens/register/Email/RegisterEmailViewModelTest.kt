@@ -73,7 +73,7 @@ class RegisterEmailViewModelTest : BaseViewModelTest() {
 
         val alreadyTakenEmail = "avramandreitiberi@gmail.com"
 
-        returnFailure(errorCode = 406, message = RegisterRepository.errorEmailUsed){
+        returnError(errorCode = 406, message = RegisterRepository.errorEmailUsed){
             registerRepository.checkIfEmailIsUsed(alreadyTakenEmail)
         }
         sut.emailValidationState.test(5.seconds) {

@@ -28,7 +28,7 @@ abstract class BaseViewModelTest : BaseTest() {
             emit(RequestState.Loading)
         }
     }
-    protected inline fun <reified DataType> returnFailure(
+    protected inline fun <reified DataType> returnError(
         errorCode: Int,
         message :String ? = null,
         crossinline repositoryCall: RepositoryCall<DataType>) {

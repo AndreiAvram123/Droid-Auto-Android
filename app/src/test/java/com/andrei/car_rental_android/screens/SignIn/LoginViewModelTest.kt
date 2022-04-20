@@ -89,7 +89,7 @@ import org.junit.jupiter.api.TestMethodOrder
         sut.setEmail(loginRequest.email)
         sut.setPassword(loginRequest.password)
 
-        returnFailure(errorCode = 401) {
+        returnError(errorCode = 401) {
             loginRepository.login(loginRequest)
         }
         sut.loginUiState.test {

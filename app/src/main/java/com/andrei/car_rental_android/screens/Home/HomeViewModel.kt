@@ -16,8 +16,8 @@ import com.andrei.car_rental_android.helpers.LocationHelper
 import com.andrei.car_rental_android.screens.Home.HomeNavigator.HomeNavigationState
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState.Companion.toState
-import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
-import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState.Companion.toHomeViewModelState
+import com.andrei.car_rental_android.screens.Home.states.NearbyCarsState
+import com.andrei.car_rental_android.screens.Home.states.NearbyCarsState.Companion.toHomeViewModelState
 import com.andrei.car_rental_android.screens.Home.states.SelectedCarState
 import com.andrei.car_rental_android.screens.Home.states.UnlockPaymentState
 import com.andrei.car_rental_android.screens.Home.useCases.CancelReservationUseCase
@@ -25,6 +25,7 @@ import com.andrei.car_rental_android.screens.Home.useCases.MakeReservationUseCas
 import com.stripe.android.paymentsheet.PaymentSheetResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -40,7 +41,7 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
 
     abstract fun checkLocationSettings(locationSettingsLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>, onLocationEnabled: () -> Unit)
 
-    abstract val nearbyCarsState: StateFlow<HomeViewModelState>
+    abstract val nearbyCarsState: StateFlow<NearbyCarsState>
     abstract val locationState: StateFlow<LocationState>
     abstract val locationRequirements: StateFlow<Set<LocationRequirement>>
     abstract val directionsState: StateFlow<DirectionsState>
@@ -61,6 +62,7 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     abstract fun reserveCar(car: Car)
     abstract fun cancelReservation()
     protected abstract fun startRide()
+    abstract fun retryGetLocation()
 
 
     sealed class LocationState {
@@ -94,7 +96,7 @@ class HomeViewModelImpl @Inject constructor(
         onLocationEnabled: () -> Unit
     ) = locationHelper.checkLocationSettings(locationSettingsLauncher,onLocationEnabled)
 
-    override val nearbyCarsState: MutableStateFlow<HomeViewModelState> = MutableStateFlow(HomeViewModelState.Loading)
+    override val nearbyCarsState: MutableStateFlow<NearbyCarsState> = MutableStateFlow(NearbyCarsState.Loading)
 
     override val locationState: MutableStateFlow<LocationState> = MutableStateFlow(LocationState.NotRequested)
 
@@ -165,6 +167,12 @@ class HomeViewModelImpl @Inject constructor(
         }
     }
 
+    override fun retryGetLocation() {
+        coroutineScope.launch {
+            getLastKnownLocation()
+        }
+    }
+
 
     override fun startUnlockPaymentProcess() {
         coroutineScope.launch {
@@ -197,6 +205,7 @@ class HomeViewModelImpl @Inject constructor(
     }
 
     init {
+        var fistLocationJob: Job? = null
 
         coroutineScope.launch {
             locationRequirements.collect{
@@ -206,14 +215,21 @@ class HomeViewModelImpl @Inject constructor(
             }
         }
 
-        coroutineScope.launch {
-            val firstResolvedLocation =  locationState.first{state->
-                state is LocationState.Resolved
-            }
-            if(firstResolvedLocation is LocationState.Resolved){
-                cameraPosition.emit(firstResolvedLocation.location)
-                getNearbyCars(firstResolvedLocation.location)
-
+        fistLocationJob = coroutineScope.launch {
+             locationState.collect{
+                 when(it){
+                     is LocationState.Resolved -> {
+                         cameraPosition.emit(it.location)
+                         getNearbyCars(it.location)
+                         fistLocationJob?.cancel()
+                     }
+                     LocationState.Unknown -> {
+                         nearbyCarsState.emit(NearbyCarsState.ErrorUnknownLocation)
+                     }
+                     else ->{
+                         //no action
+                     }
+                 }
             }
         }
         coroutineScope.launch {
@@ -363,7 +379,7 @@ class HomeViewModelImpl @Inject constructor(
     }
 
     private suspend fun getNearbyCars(location:Location) {
-        carRepository.fetchNearby(location.latitude,location.longitude).collect {
+        carRepository.getNearbyCars(location).collect {
             nearbyCarsState.emit(it.toHomeViewModelState())
         }
 
@@ -385,7 +401,7 @@ class HomeViewModelImpl @Inject constructor(
 
     private fun getCarLocationOnMap(car:Car):Location?{
         val nearbyCarsStateValue = nearbyCarsState.value
-        if(nearbyCarsStateValue is HomeViewModelState.Success){
+        if(nearbyCarsStateValue is NearbyCarsState.Success){
             val nearbyCars = nearbyCarsStateValue.data
             return nearbyCars.find { it.car == car }?.location?.toAndroidLocation()
         }

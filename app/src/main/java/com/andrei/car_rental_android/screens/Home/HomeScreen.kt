@@ -37,7 +37,7 @@ import com.andrei.car_rental_android.composables.LoadingAlert
 import com.andrei.car_rental_android.engine.response.DirectionStep
 import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState
-import com.andrei.car_rental_android.screens.Home.states.HomeViewModelState
+import com.andrei.car_rental_android.screens.Home.states.NearbyCarsState
 import com.andrei.car_rental_android.screens.Home.states.SelectedCarState
 import com.andrei.car_rental_android.screens.Home.states.UnlockPaymentState
 import com.andrei.car_rental_android.ui.Dimens
@@ -267,7 +267,7 @@ private fun LocationRequirements(
 private fun Map(
     reservedCarLocationState: State<Location?>,
     cameraLocation:State<Location?>,
-    state: State<HomeViewModelState>,
+    state: State<NearbyCarsState>,
     directionsState: State<DirectionsState>,
     onCarSelected:(car:Car)->Unit,
 ){
@@ -297,7 +297,7 @@ private fun Map(
     ) {
         MapContent(
             reservedCarLocationState =reservedCarLocationState ,
-            homeViewModelStateCompose = state,
+            nearbyCarsStateCompose = state,
             directionsState = directionsState
         ){
             onCarSelected(it)
@@ -324,18 +324,18 @@ private fun MapCameraPosition(
 @Composable
 private fun MapContent(
     reservedCarLocationState:State<Location?>,
-    homeViewModelStateCompose : State<HomeViewModelState>,
+    nearbyCarsStateCompose : State<NearbyCarsState>,
     directionsState:State<DirectionsState>,
     onMarkerClicked: (car: Car) -> Unit
 ){
 
     val reservedCarLocation = reservedCarLocationState.value
-    val homeViewModelState = homeViewModelStateCompose.value
+    val homeViewModelState = nearbyCarsStateCompose.value
     when{
         reservedCarLocation != null ->{
             ReservedCarMarker(carLocation = reservedCarLocation)
         }
-        homeViewModelState is HomeViewModelState.Success -> {
+        homeViewModelState is NearbyCarsState.Success -> {
             NearbyCarsMarkers(
                 nearbyCars = homeViewModelState.data,
                 onMarkerClicked = onMarkerClicked

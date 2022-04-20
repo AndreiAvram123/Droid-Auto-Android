@@ -1,5 +1,6 @@
 package com.andrei.car_rental_android.engine.repositories
 
+import android.location.Location
 import com.andrei.car_rental_android.DTOs.Car
 import com.andrei.car_rental_android.DTOs.CarWithLocation
 import com.andrei.car_rental_android.DTOs.OngoingRide
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface CarRepository{
-    fun fetchNearby(latitude:Double,longitude:Double):Flow<RequestState<List<CarWithLocation>>>
+    fun getNearbyCars(location:Location):Flow<RequestState<List<CarWithLocation>>>
     fun unlockCar():Flow<RequestState<OngoingRide>>
     fun lockCar():Flow<RequestState<Nothing>>
     fun getCarLocation(car:Car):Flow<RequestState<LatLng?>>
@@ -22,10 +23,10 @@ class CarRepositoryImpl @Inject constructor(
     private val carService: CarService
 ): CarRepository {
 
-    override fun fetchNearby(latitude:Double, longitude: Double): Flow<RequestState<List<CarWithLocation>>>  = requestExecutor.performRequest {
+    override fun getNearbyCars(location: Location): Flow<RequestState<List<CarWithLocation>>>  = requestExecutor.performRequest {
         carService.getNearbyCars(
-            latitude = latitude,
-            longitude = longitude
+            latitude = location.latitude,
+            longitude = location.longitude
         )
     }
 

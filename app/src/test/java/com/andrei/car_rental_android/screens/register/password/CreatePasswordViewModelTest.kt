@@ -25,18 +25,21 @@ class CreatePasswordViewModelTest : BaseViewModelTest(){
     }
 
     @Test
-    fun `Given password with  lowercase letter, the password should only meet the lowercase letter requirement`() = runDroidAutoTest {
+    fun `Given password with lowercase letter, the password should only meet the lowercase letter requirement`() = runDroidAutoTest {
         val sut = CreatePasswordViewModelImpl(
             coroutineProvider = testScope,
         )
         val password = "a"
+        val expectedRequirements = listOf(
+            CreatePasswordViewModel.PasswordRequirement.IncludesLowercaseLetter
+        )
         sut.passwordStrength.test {
+            //default
+            awaitItem()
             sut.setPassword(password)
             val requirementsMet = awaitItem()
-            println(requirementsMet)
-            assert(requirementsMet.size == 1 &&
-                    requirementsMet.contains(CreatePasswordViewModel.PasswordRequirement.IncludesLowercaseLetter)
-            )
+
+            assert(requirementsMet == expectedRequirements)
             expectNoEvents()
         }
     }
@@ -125,6 +128,35 @@ class CreatePasswordViewModelTest : BaseViewModelTest(){
             )
             assert(requirementsMet == expectedRequirements)
             expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `Given valid password and reentered password that don't match , the reentered password validation state flow contains the value INVALID`() = runDroidAutoTest{
+        val sut = CreatePasswordViewModelImpl(
+            coroutineProvider = testScope,
+        )
+        val password = "aA9!sdfsdfsdf"
+        val renteredPassword = "aA9!sdfsddfgdf"
+        sut.reenteredPasswordValidation.test {
+            sut.setPassword(password)
+            sut.setReenteredPassword(renteredPassword)
+            assert(awaitItem() is CreatePasswordViewModel.ReenteredPasswordValidation.NotValidated)
+            assert(awaitItem() is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid)
+        }
+    }
+    @Test
+    fun `Given valid password and reentered password that  match , the reentered password validation flow contains VALID`() = runDroidAutoTest{
+        val sut = CreatePasswordViewModelImpl(
+            coroutineProvider = testScope,
+        )
+        val password = "aA9!sdfsdfsdf"
+        val reenteredPassword = "aA9!sdfsdfsdf"
+        sut.reenteredPasswordValidation.test {
+            sut.setPassword(password)
+            sut.setReenteredPassword(reenteredPassword)
+            assert(awaitItem() is CreatePasswordViewModel.ReenteredPasswordValidation.NotValidated)
+            assert(awaitItem() is CreatePasswordViewModel.ReenteredPasswordValidation.Invalid)
         }
     }
 }
