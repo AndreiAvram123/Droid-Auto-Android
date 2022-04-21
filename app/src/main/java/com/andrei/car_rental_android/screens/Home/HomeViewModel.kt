@@ -26,7 +26,6 @@ import com.stripe.android.paymentsheet.PaymentSheetResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -65,16 +64,15 @@ abstract class HomeViewModel(coroutineProvider:CoroutineScope?): BaseViewModel(c
     abstract fun retryGetLocation()
 
 
-    sealed class LocationState {
-        object NotRequested : LocationState()
-        data class Resolved(val location: Location) : LocationState()
-        object Unknown : LocationState()
-        object Loading : LocationState()
-    }
-
     sealed class LocationRequirement {
         object PermissionNeeded : LocationRequirement()
         object LocationActive : LocationRequirement()
+    }
+    sealed class LocationState {
+        data class Resolved(val location: Location) : LocationState()
+        object Unknown : LocationState()
+        object Loading : LocationState()
+        object NotRequested:LocationState()
     }
 
 }
@@ -109,11 +107,8 @@ class HomeViewModelImpl @Inject constructor(
     override val directionsState: MutableStateFlow<DirectionsState> = MutableStateFlow(DirectionsState.Default)
     override val cameraPosition: MutableStateFlow<Location?> = MutableStateFlow(null)
     override val unlockPaymentState: MutableStateFlow<UnlockPaymentState> = MutableStateFlow(UnlockPaymentState.Default)
-    override val navigationState: MutableSharedFlow<HomeNavigationState> = MutableSharedFlow(
-        replay = 0,
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+    override val navigationState: MutableSharedFlow<HomeNavigationState> = MutableStateFlow(HomeNavigationState.Default)
+
 
     override val selectedCarState: MutableStateFlow<SelectedCarState> = MutableStateFlow(
         SelectedCarState.Default
@@ -194,13 +189,19 @@ class HomeViewModelImpl @Inject constructor(
     private var  reservationTimer:CountDownTimer? = null
 
     private suspend fun getLastKnownLocation(){
-        locationState.emit(LocationState.Loading)
-        val location = locationHelper.getLastKnownLocation()
-        if(location != null){
-            locationState.emit(LocationState.Resolved(location))
-            locationHelper.requestLocationUpdates(LocationHelper.highPrecisionHighIntervalRequest)
-        }else{
-            locationState.emit(LocationState.Unknown)
+        locationHelper.getLastKnownLocation().collect{
+            when(it){
+                is RequestState.Success ->{
+                    locationState.emit(LocationState.Resolved(it.data))
+                    locationHelper.requestLocationUpdates(LocationHelper.highPrecisionHighIntervalRequest)
+                }
+                 is RequestState.Loading -> {
+                     locationState.emit(LocationState.Loading)
+                 }
+                else -> {
+                    locationState.emit(LocationState.Unknown)
+                }
+            }
         }
     }
 

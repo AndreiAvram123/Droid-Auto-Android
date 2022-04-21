@@ -12,8 +12,12 @@ typealias RepositoryCall<DataType> = MockKMatcherScope.() -> Flow<RequestState<D
 
 abstract class BaseViewModelTest : BaseTest() {
 
-    protected inline fun <reified DataType> returnSuccess(crossinline repositoryCall: RepositoryCall<DataType>) {
-        val successfulResponse = RequestState.Success<DataType>(mockk(relaxed = true))
+    protected inline fun <reified DataType> returnSuccess(
+        crossinline repositoryCall: RepositoryCall<DataType?>,
+    ) {
+
+
+        val successfulResponse:RequestState<DataType> = RequestState.Success(mockk())
         coEvery {
             repositoryCall()
         } returns flow {
