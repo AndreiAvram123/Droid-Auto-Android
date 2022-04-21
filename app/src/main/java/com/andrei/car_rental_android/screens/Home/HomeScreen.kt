@@ -292,7 +292,8 @@ private fun Map(
 
         uiSettings = MapUiSettings(
             zoomControlsEnabled = false,
-            myLocationButtonEnabled = false
+            myLocationButtonEnabled = false,
+            compassEnabled = false
         )
     ) {
         MapContent(
