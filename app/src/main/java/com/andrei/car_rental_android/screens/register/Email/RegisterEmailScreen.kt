@@ -1,16 +1,17 @@
 package com.andrei.car_rental_android.screens.register.Email
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -19,6 +20,7 @@ import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.screens.register.Email.RegisterEmailViewModel.EmailValidationState.EmailValidationError
 import com.andrei.car_rental_android.screens.register.base.BackButton
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
+import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.ui.Dimens
 import com.andrei.car_rental_android.ui.composables.TextFieldErrorMessage
 
@@ -32,7 +34,9 @@ fun RegisterEmailScreen(
         navController = navController,
         navArgs = registerEmailNavArgs
     )
-    MainContent(navigator = navigator)
+    RegisterScreenSurface {
+        MainContent(navigator = navigator)
+    }
 }
 
 
@@ -41,31 +45,30 @@ private fun MainContent(
     navigator:RegisterEmailNavigator
 ){
     val viewModel:RegisterEmailViewModel = hiltViewModel<RegisterEmailViewModelImpl>()
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween
-
-    ) {
-        TopContent(navigateBack = navigator::navigateBack)
-        CenterContent(viewModel = viewModel)
-        BottomContent(
-            viewModel = viewModel,
-            navigateForward = {
-                navigator.navigateToPasswordScreen(viewModel.email.value)
-            }
-        )
+    TopContent {
+        navigator.navigateBack()
     }
+    CenterContent(viewModel = viewModel)
+    BottomContent(
+        viewModel = viewModel,
+        navigateForward = {
+            navigator.navigateToPasswordScreen(viewModel.email.value)
+        }
+    )
 }
 
 @Composable
 private fun TopContent(
     navigateBack:()->Unit
 ){
-    Column {
-        BackButton(navigateBack = navigateBack)
+    Column(modifier = Modifier.fillMaxSize()) {
+        BackButton {
+            navigateBack()
+        }
         Heading(text = stringResource(R.string.screen_email_heading1))
+
     }
+
 }
 
 @Composable
@@ -84,12 +87,10 @@ private fun Heading(
 @Composable
 private fun CenterContent(viewModel: RegisterEmailViewModel){
     Column(
-        modifier = Modifier
-            .padding(horizontal = Dimens.medium.dp),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-
-        ) {
+        verticalArrangement = Arrangement.Center
+    ) {
         EmailTextFieldColumn(
             modifier = Modifier.fillMaxWidth(),
             state = viewModel.email.collectAsState(),
@@ -106,8 +107,7 @@ private fun BottomContent(
     navigateForward:() -> Unit
 ){
     Column(
-        modifier = Modifier
-            .padding(horizontal = Dimens.medium.dp),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Bottom
     ) {
         ContinueButton(
@@ -134,23 +134,33 @@ private fun EmailTextFieldColumn(
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        FieldAboveLabel(
-            modifier = Modifier.padding(
-                bottom = Dimens.small.dp
-            ),
-            text = stringResource(R.string.screen_email_email_label_above)
+        FieldAboveLabel(text = stringResource(
+            R.string.screen_email_email_label_above)
         )
+        var showLabel by remember{
+            mutableStateOf(true)
+        }
         OutlinedTextField(
-            modifier = modifier,
+            modifier = modifier.onFocusChanged {
+                showLabel = !it.isFocused
+            },
             value = state.value,
-            singleLine = true,
             onValueChange = {
                 onValueChanged(it.trim())
             },
             isError = invalid,
             placeholder = {
-                TextFieldLabel(text = stringResource(R.string.screen_email_email_label_field))
+                TextFieldLabel(text = stringResource(R.string.screen_email_type))
             },
+            label = {
+                if(showLabel) {
+                    TextFieldLabel(
+                        text = stringResource(
+                            R.string.screen_email_email_label_field
+                        )
+                    )
+                }
+            }
         )
         EmailValidationError(validationState)
     }
@@ -158,11 +168,9 @@ private fun EmailTextFieldColumn(
 
 @Composable
 private fun FieldAboveLabel(
-    modifier: Modifier = Modifier,
     text:String
 ){
     Text(
-        modifier = modifier,
         text = text,
         fontSize = Dimens.big.sp,
     )

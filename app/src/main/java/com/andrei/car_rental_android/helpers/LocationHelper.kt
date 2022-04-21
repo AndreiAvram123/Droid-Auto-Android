@@ -9,16 +9,13 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.core.location.LocationRequestCompat.QUALITY_HIGH_ACCURACY
-import com.andrei.car_rental_android.engine.request.RequestState
 import com.andrei.car_rental_android.helpers.LocationHelper.Companion.highPrecisionLowIntervalRequest
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.CancellationTokenSource
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,7 +28,7 @@ interface LocationHelper{
     fun stopLocationUpdates()
      val lastKnownLocation:StateFlow<Location?>
 
-   suspend fun getLastKnownLocation():Flow<RequestState<Location>>
+   suspend fun getLastKnownLocation():Location?
 
    companion object{
         val highPrecisionLowIntervalRequest: LocationRequest  = LocationRequest.create().apply {
@@ -48,8 +45,6 @@ interface LocationHelper{
 
        }
    }
-
-
 }
 
 
@@ -75,23 +70,17 @@ class LocationHelperImpl @Inject constructor(
 
 
     @SuppressLint("MissingPermission")
-    override suspend fun getLastKnownLocation(): Flow<RequestState<Location>> = flow {
-        emit(RequestState.Loading)
+    override suspend fun getLastKnownLocation():Location? {
         val cancellationTokenSource = CancellationTokenSource()
-         val location = runCatching {
-               locationClient.getCurrentLocation (
+            val location = runCatching {
+                locationClient. getCurrentLocation (
                         QUALITY_HIGH_ACCURACY,
                 cancellationTokenSource.token
                 ).await()
             }.onFailure {
                 Timber.e(it)
-            }.getOrNull()
-
-          if(location != null){
-              emit(RequestState.Success(location))
-          }else{
-              emit(RequestState.Error("Location not available"))
-          }
+            }
+            return location.getOrNull()
     }
 
     override fun checkLocationSettings(
