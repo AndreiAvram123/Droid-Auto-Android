@@ -23,28 +23,28 @@ import javax.inject.Inject
 
 interface LocationHelper{
 
-    fun checkLocationSettings(locationSettingsLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,onLocationEnabled: () -> Unit)
+    suspend fun checkLocationSettings(locationSettingsLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,onLocationEnabled: () -> Unit)
     fun requestLocationUpdates(locationRequest: LocationRequest)
     fun stopLocationUpdates()
-     val lastKnownLocation:StateFlow<Location?>
+    val lastKnownLocation:StateFlow<Location?>
 
-   suspend fun getLastKnownLocation():Location?
+    suspend fun getLastKnownLocation():Location?
 
-   companion object{
+    companion object{
         val highPrecisionLowIntervalRequest: LocationRequest  = LocationRequest.create().apply {
-           interval = 1000
-           fastestInterval = 500
-           priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-           smallestDisplacement = 10f
-       }
+            interval = 1000
+            fastestInterval = 500
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            smallestDisplacement = 10f
+        }
         val highPrecisionHighIntervalRequest: LocationRequest = LocationRequest.create().apply {
-           interval = 6000
-           fastestInterval = 4000
-           priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-           smallestDisplacement = 10f
+            interval = 6000
+            fastestInterval = 4000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            smallestDisplacement = 10f
 
-       }
-   }
+        }
+    }
 }
 
 
@@ -72,41 +72,42 @@ class LocationHelperImpl @Inject constructor(
     @SuppressLint("MissingPermission")
     override suspend fun getLastKnownLocation():Location? {
         val cancellationTokenSource = CancellationTokenSource()
-            val location = runCatching {
-                locationClient. getCurrentLocation (
-                        QUALITY_HIGH_ACCURACY,
+        val location = runCatching {
+            locationClient. getCurrentLocation (
+                QUALITY_HIGH_ACCURACY,
                 cancellationTokenSource.token
-                ).await()
-            }.onFailure {
-                Timber.e(it)
-            }
-            return location.getOrNull()
+            ).await()
+        }.onFailure {
+            Timber.e(it)
+        }
+        return location.getOrNull()
     }
 
-    override fun checkLocationSettings(
+    override  suspend fun checkLocationSettings(
         locationSettingsLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,
         onLocationEnabled:()->Unit){
-        client.checkLocationSettings(builder).addOnSuccessListener {
-           onLocationEnabled()
-        }.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException){
-                // Location settings are not satisfied, but this can be fixed
-                // by showing the user a dialog.
+
+        runCatching{
+            client.checkLocationSettings(builder).await()
+            onLocationEnabled()
+        }.onFailure {
+            if (it is ResolvableApiException){
                 try {
-                    val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
+                    val intentSenderRequest = IntentSenderRequest.Builder(it.resolution).build()
                     locationSettingsLauncher.launch(intentSenderRequest)
-                } catch (sendEx: IntentSender.SendIntentException) {
+                }catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
                 }
             }
         }
+
     }
 
     @SuppressLint("MissingPermission")
     override fun requestLocationUpdates(locationRequest: LocationRequest) {
-          stopLocationUpdates()
+        stopLocationUpdates()
 
-          locationClient.requestLocationUpdates(locationRequest,locationCallback, Looper.getMainLooper())
+        locationClient.requestLocationUpdates(locationRequest,locationCallback, Looper.getMainLooper())
     }
 
     override fun stopLocationUpdates() {

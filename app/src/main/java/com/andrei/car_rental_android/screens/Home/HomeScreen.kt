@@ -330,14 +330,14 @@ private fun MapContent(
 ){
 
     val reservedCarLocation = reservedCarLocationState.value
-    val homeViewModelState = nearbyCarsStateCompose.value
+    val nearbyCarsState = nearbyCarsStateCompose.value
     when{
         reservedCarLocation != null ->{
             ReservedCarMarker(carLocation = reservedCarLocation)
         }
-        homeViewModelState is NearbyCarsState.Success -> {
+        nearbyCarsState is NearbyCarsState.Success -> {
             NearbyCarsMarkers(
-                nearbyCars = homeViewModelState.data,
+                nearbyCars = nearbyCarsState.data,
                 onMarkerClicked = onMarkerClicked
             )
             Directions(
@@ -579,7 +579,7 @@ private fun ReservationState(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = Dimens.small.dp),
-                price = currentPreviewedCar.pricePerMinute
+                pricePerMinutePence = currentPreviewedCar.pricePerMinute
             )
             ReserveButton(
                 modifier = Modifier
@@ -826,7 +826,7 @@ private fun CarImage(
 @Composable
 private fun PricePerMinute(
     modifier :Modifier = Modifier,
-    price:Long
+    pricePerMinutePence:Long
 ){
     Text(
         modifier = modifier,
@@ -834,6 +834,6 @@ private fun PricePerMinute(
         fontWeight = FontWeight.SemiBold,
         fontSize = Dimens.large.sp,
         color = Color.Black,
-        text = stringResource(R.string.screen_home_price_per_minute, price/100)
+        text = stringResource(R.string.screen_home_price_per_minute_pence, pricePerMinutePence/100.0)
     )
 }

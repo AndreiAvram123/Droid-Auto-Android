@@ -94,9 +94,16 @@ class HomeViewModelImpl @Inject constructor(
     override fun checkLocationSettings(
         locationSettingsLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,
         onLocationEnabled: () -> Unit
-    ) = locationHelper.checkLocationSettings(locationSettingsLauncher,onLocationEnabled)
+    ) {
+        coroutineScope.launch {
+            locationHelper.checkLocationSettings(locationSettingsLauncher,onLocationEnabled)
+        }
+    }
 
-    override val nearbyCarsState: MutableStateFlow<NearbyCarsState> = MutableStateFlow(NearbyCarsState.Loading)
+    //todo
+    //make sure that when location cannot be found appropriate error state is added
+
+    override val nearbyCarsState: MutableStateFlow<NearbyCarsState> = MutableStateFlow(NearbyCarsState.Default)
 
     override val locationState: MutableStateFlow<LocationState> = MutableStateFlow(LocationState.NotRequested)
 

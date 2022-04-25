@@ -4,6 +4,7 @@ import com.andrei.car_rental_android.DTOs.CarWithLocation
 import com.andrei.car_rental_android.engine.request.RequestState
 
 sealed class NearbyCarsState {
+    object Default : NearbyCarsState()
     data class Success(val data: List<CarWithLocation>) : NearbyCarsState()
     object Loading : NearbyCarsState()
     object Error : NearbyCarsState()

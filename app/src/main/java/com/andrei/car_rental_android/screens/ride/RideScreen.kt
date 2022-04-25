@@ -279,7 +279,7 @@ private fun TotalCost(
     elapsedTime: State<Duration>,
     pricePerMinute:Long
 ){
-    val rideCost = elapsedTime.value.inWholeMinutes * (pricePerMinute/100)
+    val rideCost = elapsedTime.value.inWholeMinutes * (pricePerMinute/100.0)
     InformationBox {
         StartLabel(
             text = stringResource(R.string.screen_ride_total_cost),

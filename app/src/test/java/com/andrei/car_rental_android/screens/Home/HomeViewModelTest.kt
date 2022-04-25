@@ -48,9 +48,9 @@ class HomeViewModelTest : BaseViewModelTest() {
  }
 
  @Test
- fun `When the viewModel is created the nearby cars state is Loading`() = runDroidAutoTest {
+ fun `When the viewModel is created the nearby cars state is Default`() = runDroidAutoTest {
   sut.nearbyCarsState.test {
-   assert(awaitItem() is NearbyCarsState.Loading)
+   assert(awaitItem() is NearbyCarsState.Default)
   }
  }
 
