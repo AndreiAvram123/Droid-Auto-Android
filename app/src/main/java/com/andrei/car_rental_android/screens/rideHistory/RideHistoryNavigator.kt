@@ -18,7 +18,8 @@ class RideHistoryNavigatorImpl(
         navController.navigateSafely(
             FinishedRideNavHelper.getDestination(
                 FinishedRideNavHelper.Args(
-                    rideID = finishedRide.id
+                    rideID = finishedRide.id,
+                    shouldNavigateHome = false
                 )
             )
         )

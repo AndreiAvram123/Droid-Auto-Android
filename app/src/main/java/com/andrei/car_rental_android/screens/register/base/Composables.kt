@@ -86,10 +86,12 @@ private fun ButtonContentLayout(content: @Composable () -> Unit){
 }
 @Composable
 fun CustomButton(
+    modifier :Modifier = Modifier,
     text: String,
     onClick: () -> Unit
 ) {
     Button(
+        modifier = Modifier,
         onClick = onClick,
         shape = RoundedCornerShape(Dimens.medium.dp)
     ) {
@@ -109,7 +111,6 @@ fun CustomButton(
     ) {
         Box(
             modifier = modifier
-                .fillMaxSize()
                 .background(MaterialTheme.colors.surface)
                 .padding(horizontal = Dimens.medium.dp)
         ) {

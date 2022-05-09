@@ -30,7 +30,7 @@ abstract class CreatePasswordViewModel(coroutineProvider:CoroutineScope?):BaseVi
     enum class PasswordRequirement{
         IncludesLowercaseLetter,
         IncludesUppercaseLetter,
-        IncludesNumber,
+        IncludesDigit,
         IncludesSpecialCharacter,
         IncludesMinNumberCharacters;
 
@@ -124,9 +124,9 @@ class CreatePasswordViewModelImpl @Inject constructor(
                             passwordStrengthList.add(PasswordRequirement.IncludesUppercaseLetter)
                         }
                     }
-                    PasswordRequirement.IncludesNumber ->{
+                    PasswordRequirement.IncludesDigit ->{
                        if(password.hasDigit()){
-                           passwordStrengthList.add(PasswordRequirement.IncludesNumber)
+                           passwordStrengthList.add(PasswordRequirement.IncludesDigit)
                        }
                     }
                     PasswordRequirement.IncludesSpecialCharacter -> {

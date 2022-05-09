@@ -32,6 +32,7 @@ import com.andrei.car_rental_android.DTOs.Image
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.engine.utils.TestData
 import com.andrei.car_rental_android.screens.register.base.BackButton
+import com.andrei.car_rental_android.screens.register.base.CustomButton
 import com.andrei.car_rental_android.ui.Dimens
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -42,8 +43,8 @@ fun FinishedRideScreen(
     navController: NavController
 ){
 
-
     val viewModel = hiltViewModel<FinishedRideViewModelImpl>()
+
     MainContent(
         viewModel = viewModel,
         navController = navController
@@ -64,12 +65,20 @@ private fun MainContent(
         modifier = Modifier.fillMaxSize()
     ) {
         Column{
-            BackButton{
-                navController.popBackStack()
+            if(!viewModel.shouldNavigateHome) {
+                BackButton {
+                    navController.popBackStack()
+                }
             }
             ScreenState(
                 finishedRideState = viewModel.rideState.collectAsState()
             )
+
+            if(viewModel.shouldNavigateHome) {
+                NavigateHomeButton {
+
+                }
+            }
         }
 
     }
@@ -93,6 +102,16 @@ private fun ScreenState(
     }
 }
 
+@Composable
+private fun NavigateHomeButton(
+    navigateHome:()->Unit
+){
+    CustomButton(
+        modifier = Modifier.fillMaxWidth(),
+        text = stringResource(R.string.screen_ride_end_ride),
+        onClick = navigateHome
+    )
+}
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 private fun PreviewSuccessContent(){

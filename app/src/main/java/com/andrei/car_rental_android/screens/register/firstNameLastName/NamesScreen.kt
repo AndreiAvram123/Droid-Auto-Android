@@ -1,8 +1,10 @@
 package com.andrei.car_rental_android.screens.register
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +26,6 @@ import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.TextFieldLabel
 import com.andrei.car_rental_android.screens.register.base.BackButton
 import com.andrei.car_rental_android.screens.register.base.ContinueButton
-import com.andrei.car_rental_android.screens.register.base.RegisterScreenSurface
 import com.andrei.car_rental_android.screens.register.firstNameLastName.FirstNameLastNameNavigator
 import com.andrei.car_rental_android.screens.register.firstNameLastName.FirstNameLastNameNavigatorImpl
 import com.andrei.car_rental_android.ui.Dimens
@@ -36,9 +37,7 @@ fun NamesScreen(
     navController: NavController,
 ) {
     val navigator = FirstNameLastNameNavigatorImpl(navController)
-    RegisterScreenSurface {
-        MainContent(navigator = navigator)
-    }
+    MainContent(navigator = navigator)
 
 }
 
@@ -46,15 +45,25 @@ fun NamesScreen(
 private fun MainContent(
     navigator:FirstNameLastNameNavigator
 ) {
-    val viewModel : FirstNameLastNameViewModel = hiltViewModel<FirstNameLastNameViewModelImpl>()
+    val viewModel: FirstNameLastNameViewModel = hiltViewModel<FirstNameLastNameViewModelImpl>()
 
-    TopSection(navigateBack = {
-        navigator.navigateBack()
-    })
+    Column (
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colors.surface),
+        verticalArrangement = Arrangement.SpaceBetween,
+
+        ){
+
+        TopSection(navigateBack = {
+            navigator.navigateBack()
+        })
+
         CenterSection(
+            modifier = Modifier.padding(horizontal = Dimens.medium.dp),
             viewModel = viewModel
         )
         BottomSection(
+            modifier = Modifier.padding(horizontal = Dimens.medium.dp),
             viewModel = viewModel,
             navigateForward = {
                 navigator.navigateToPasswordScreen(
@@ -63,29 +72,32 @@ private fun MainContent(
                 )
             }
         )
+
     }
+}
 
 
 @Composable
 private fun BottomSection(
+    modifier: Modifier = Modifier,
     viewModel: FirstNameLastNameViewModel,
     navigateForward:()->Unit
 ){
-    Column(modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Bottom
+    Column(
+        modifier = modifier
     ) {
         val nextButtonEnabled = viewModel.nextButtonEnabled.collectAsState().value
         if(nextButtonEnabled) {
-           BeautifulName(
-               modifier = Modifier.padding(vertical = Dimens.medium.dp)
-           )
-        }
-            ContinueButton(
-                enabled = nextButtonEnabled,
-                onClick = {
-                    navigateForward()
-                }
+            BeautifulName(
+                modifier = Modifier.padding(vertical = Dimens.medium.dp)
             )
+        }
+        ContinueButton(
+            enabled = nextButtonEnabled,
+            onClick = {
+                navigateForward()
+            }
+        )
 
     }
 }
@@ -105,11 +117,11 @@ private fun BeautifulName(
 
 @Composable
 private fun TopSection(
-     navigateBack:()->Unit
+    navigateBack:()->Unit
 ){
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column {
         BackButton {
-          navigateBack()
+            navigateBack()
         }
         ScreenHeadings()
 
@@ -122,7 +134,7 @@ private fun ScreenHeadings(modifier: Modifier = Modifier){
     Column(
         modifier = modifier.padding(
             top = Dimens.large.dp
-    )) {
+        )) {
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
@@ -140,11 +152,11 @@ private fun ScreenHeadings(modifier: Modifier = Modifier){
 
 @Composable
 private fun CenterSection(
+    modifier: Modifier = Modifier,
     viewModel: FirstNameLastNameViewModel
 ){
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         FirstNameField(

@@ -19,7 +19,7 @@
     <string name="screen_sign_in_login">Login</string>
     <string name="screen_sign_in_register">Register</string>
     <string name="screen_sign_in_invalid_credentials_dialog_title">Please try again…</string>
-    <string name="screen_sign_in_invalid_credentials_dialog_content">The email and password you entered do not match our records.Please double check and try again.</string>
+    <string name="screen_sign_in_invalid_credentials_dialog_content">The email and password entered did not  match our records.Please double check and try again.</string>
     <string name="screen_sign_in_invalid_credentials_dialog_positive_bt">OK</string>
 
 

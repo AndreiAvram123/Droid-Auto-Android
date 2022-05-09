@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,9 +23,13 @@ interface SessionManager {
     sealed class AuthenticationState{
         object NotAuthenticated:AuthenticationState()
         object Authenticating:AuthenticationState()
-        data class Authenticated(
-            val sessionUserState: StateFlow<SessionUserState>
-            ) : AuthenticationState()
+        sealed class Authenticated: AuthenticationState(){
+            object IdentifyNotVerified:Authenticated()
+            data class IdentityVerified(
+                val sessionUserState: StateFlow<SessionUserState>
+              ): Authenticated()
+        }
+
     }
 
 
@@ -39,7 +44,7 @@ class SessionManagerImpl @Inject constructor(
 ) : SessionManager{
 
     override val authenticationState: MutableStateFlow<SessionManager.AuthenticationState> = MutableStateFlow(SessionManager.AuthenticationState.Authenticating)
-    override val sessionUserState: MutableStateFlow<SessionUserState> = MutableStateFlow(SessionUserState.LoadingUser)
+    override val sessionUserState: MutableStateFlow<SessionUserState> = MutableStateFlow(SessionUserState.Default)
 
     override fun notifyLoginRequired() {
         coroutineScope.launch {
@@ -49,19 +54,18 @@ class SessionManagerImpl @Inject constructor(
 
     override fun signOut() {
         coroutineScope.launch {
-            localRepository.clearRefreshToken()
-            localRepository.clearAccessToken()
+            localRepository.clear()
         }
     }
 
     private fun getSessionUser(){
+
         coroutineScope.launch {
               userRepository.getCurrentUser().collect{requestState->
                   when(requestState){
                       is RequestState.Success -> sessionUserState.emit(SessionUserState.Loaded(
                           requestState.data
-                      )
-                      )
+                      ))
                       is RequestState.Loading -> {
                           sessionUserState.emit(
                               SessionUserState.LoadingUser
@@ -79,18 +83,25 @@ class SessionManagerImpl @Inject constructor(
 
     init {
         coroutineScope.launch {
-            localRepository.refreshTokenFlow.collect {
-                if(!it.isNullOrBlank() && jwtUtils.isTokenValid(it)){
-                    //authenticated but need to check credentials
-                    //assume for now that the details are verified
-                    authenticationState.emit(SessionManager.AuthenticationState.Authenticated(
+            combine(
+                localRepository.refreshTokenFlow,
+                localRepository.identityVerifiedFlow
+            ) { refreshToken, identityVerified ->
+                when {
+                    refreshToken.isNullOrBlank() || !jwtUtils.isTokenValid(refreshToken) -> SessionManager.AuthenticationState.NotAuthenticated
+                    identityVerified == false -> SessionManager.AuthenticationState.Authenticated.IdentifyNotVerified
+                    else -> SessionManager.AuthenticationState.Authenticated.IdentityVerified(
                         sessionUserState.asStateFlow()
-                    ))
-                    getSessionUser()
-                }else{
-                    authenticationState.emit(SessionManager.AuthenticationState.NotAuthenticated)
+                    )
                 }
+            }.collect {
+                authenticationState.emit(it)
+                if (it is SessionManager.AuthenticationState.Authenticated.IdentityVerified) {
+                    getSessionUser()
+                }
+
             }
+
         }
     }
 

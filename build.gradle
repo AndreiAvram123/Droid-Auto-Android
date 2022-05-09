@@ -1,8 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        compose_version = '1.2.0-alpha07'
-        kotlin_version = '1.6.10'
+        compose_version = '1.2.0-alpha08'
+        kotlin_version = '1.6.20'
         hilt_version = '2.41'
         easylauncher_version = "5.0.1"
         junitVersion = '5.8.2'
@@ -19,6 +19,11 @@ buildscript {
         maven {
             url  "https://mymavenrepo.com/repo/v2xm7gYVinuWT46Px3Xy/"
         }
+        maven {
+            // Maven repository for Persona Android SDK
+            url 'https://sdk.withpersona.com/android/releases'
+        }
+
 
     }
     dependencies {
@@ -35,6 +40,8 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
+
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

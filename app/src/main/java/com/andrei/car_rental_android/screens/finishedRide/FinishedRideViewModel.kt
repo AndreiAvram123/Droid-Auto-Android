@@ -16,6 +16,8 @@ abstract class FinishedRideViewModel(coroutineProvider:CoroutineScope?) : BaseVi
   abstract fun getReceipt()
   abstract val rideState:StateFlow<ScreenState>
 
+  abstract val shouldNavigateHome:Boolean
+
   sealed class ScreenState{
       data class Success(val finishedRide: FinishedRide):ScreenState()
       object Loading:ScreenState()
@@ -34,6 +36,9 @@ class FinishedRideViewModelImpl @Inject constructor(
         savedStateHandle
     )
     override val rideState: MutableStateFlow<ScreenState> = MutableStateFlow(ScreenState.Loading)
+    override val shouldNavigateHome: Boolean by lazy {
+        args.shouldNavigateHome
+    }
 
     override fun getReceipt() {
        coroutineScope.launch {

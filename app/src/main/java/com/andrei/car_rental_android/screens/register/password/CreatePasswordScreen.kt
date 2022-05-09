@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -189,7 +190,7 @@ fun getHintResourceForCriteria(criteria:CreatePasswordViewModel.PasswordRequirem
     return when(criteria){
         CreatePasswordViewModel.PasswordRequirement.IncludesLowercaseLetter-> R.string.screen_password_include_lowercase_letter
         CreatePasswordViewModel.PasswordRequirement.IncludesUppercaseLetter-> R.string.screen_password_include_uppercase_letter
-        CreatePasswordViewModel.PasswordRequirement.IncludesNumber -> R.string.screen_password_include_number
+        CreatePasswordViewModel.PasswordRequirement.IncludesDigit -> R.string.screen_password_include_number
         CreatePasswordViewModel.PasswordRequirement.IncludesSpecialCharacter -> R.string.screen_password_include_special_character
         CreatePasswordViewModel.PasswordRequirement.IncludesMinNumberCharacters -> R.string.screen_password_include_8_characters
     }
@@ -224,10 +225,10 @@ private fun PasswordStrengthCriteriaIcon(
 
         }
         is PasswordIndicatorState.Valid->{
-            Icon(modifier = modifier, imageVector = Icons.Filled.Check , contentDescription = null)
+            Icon(modifier = modifier, imageVector = Icons.Filled.Check , contentDescription = null, tint = Color.Green )
         }
         is PasswordIndicatorState.Invalid ->  {
-            Icon(modifier = modifier, imageVector = Icons.Filled.Close, contentDescription = null)
+            Icon(modifier = modifier, imageVector = Icons.Filled.Close, contentDescription = null, tint = Color.Red)
         }
     }
 }

@@ -26,12 +26,10 @@ import com.andrei.car_rental_android.screens.register.password.CreatePasswordNav
 import com.andrei.car_rental_android.screens.register.password.CreatePasswordScreen
 import com.andrei.car_rental_android.screens.ride.RideScreen
 import com.andrei.car_rental_android.screens.rideHistory.RideHistoryScreen
+import com.andrei.car_rental_android.screens.verification.DocumentVerificationScreen
 import com.andrei.car_rental_android.state.SessionManager
 
-sealed class NavGraph{
-    object MainGraph:NavGraph()
-    object LoginGraph:NavGraph()
-}
+
 
 
 @Composable
@@ -39,18 +37,12 @@ fun Navigation(
     currentLoginState: State<SessionManager.AuthenticationState>
 ) {
     val navController = rememberNavController()
-    val loginState = currentLoginState.value
-    val graph = when (loginState) {
-        is SessionManager.AuthenticationState.Authenticated -> NavGraph.MainGraph
-        else -> NavGraph.LoginGraph
-    }
-    when(graph){
-        is NavGraph.MainGraph -> {
-            val authenticatedState:SessionManager.AuthenticationState.Authenticated =
-                loginState as SessionManager.AuthenticationState.Authenticated
+
+    when(val loginState = currentLoginState.value){
+        is SessionManager.AuthenticationState.Authenticated.IdentityVerified-> {
 
             SideDrawer(
-                sessionUserStateCompose = authenticatedState.sessionUserState.collectAsState(),
+                sessionUserStateCompose = loginState.sessionUserState.collectAsState(),
                 navController = navController
             ){ openDrawer ->
                 MainGraph(
@@ -59,7 +51,10 @@ fun Navigation(
                 )
             }
         }
-        is NavGraph.LoginGraph ->{
+        is SessionManager.AuthenticationState.Authenticated.IdentifyNotVerified ->{
+            DocumentVerificationScreen()
+        }
+        else -> {
             LoginGraph(
                 navController = navController
             )

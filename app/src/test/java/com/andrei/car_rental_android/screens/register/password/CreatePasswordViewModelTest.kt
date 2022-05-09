@@ -79,7 +79,7 @@ class CreatePasswordViewModelTest : BaseViewModelTest(){
             val expectedRequirements = listOf(
                 CreatePasswordViewModel.PasswordRequirement.IncludesLowercaseLetter,
                 CreatePasswordViewModel.PasswordRequirement.IncludesUppercaseLetter,
-                CreatePasswordViewModel.PasswordRequirement.IncludesNumber,
+                CreatePasswordViewModel.PasswordRequirement.IncludesDigit,
             )
             assert(requirementsMet == expectedRequirements)
             expectNoEvents()
@@ -100,7 +100,7 @@ class CreatePasswordViewModelTest : BaseViewModelTest(){
             val expectedRequirements = listOf(
                 CreatePasswordViewModel.PasswordRequirement.IncludesLowercaseLetter,
                 CreatePasswordViewModel.PasswordRequirement.IncludesUppercaseLetter,
-                CreatePasswordViewModel.PasswordRequirement.IncludesNumber,
+                CreatePasswordViewModel.PasswordRequirement.IncludesDigit,
                 CreatePasswordViewModel.PasswordRequirement.IncludesSpecialCharacter,
             )
             assert(requirementsMet == expectedRequirements)
@@ -122,7 +122,7 @@ class CreatePasswordViewModelTest : BaseViewModelTest(){
             val expectedRequirements = listOf(
                 CreatePasswordViewModel.PasswordRequirement.IncludesLowercaseLetter,
                 CreatePasswordViewModel.PasswordRequirement.IncludesUppercaseLetter,
-                CreatePasswordViewModel.PasswordRequirement.IncludesNumber,
+                CreatePasswordViewModel.PasswordRequirement.IncludesDigit,
                 CreatePasswordViewModel.PasswordRequirement.IncludesSpecialCharacter,
                 CreatePasswordViewModel.PasswordRequirement.IncludesMinNumberCharacters,
             )

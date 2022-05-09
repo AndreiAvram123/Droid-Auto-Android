@@ -1,6 +1,6 @@
 package com.andrei.car_rental_android.screens.SignIn
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -14,7 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,6 +38,7 @@ import com.andrei.car_rental_android.ui.composables.ButtonText
 fun SignInScreen(navController: NavController) {
     val navigator = SignInNavigatorImpl(navController)
     val loginViewModel = hiltViewModel<LoginViewModelImpl>()
+
     MainContent(
         navigator = navigator,
         loginViewModel = loginViewModel
@@ -51,10 +54,19 @@ fun MainContent(
     loginViewModel: LoginViewModel
 ) {
 
-
     val loginUIState = loginViewModel.loginUiState.collectAsState()
     Box(
-       modifier = Modifier.background(Color.White).fillMaxSize()) {
+       modifier = Modifier
+           .fillMaxSize()) {
+
+        Image(
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.FillWidth,
+            painter = painterResource(R.drawable.sign_in_image),
+            contentDescription =null
+        )
+
+
         BottomColumn {
             EmailTextField(
                 viewModel = loginViewModel,

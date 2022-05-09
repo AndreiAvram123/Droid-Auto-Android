@@ -3,7 +3,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            // Maven repository for Persona Android SDK
+            url 'https://sdk.withpersona.com/android/releases'
+        }
     }
+
 }
 rootProject.name = "car-rental-android"
 include ':app'

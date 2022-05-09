@@ -14,7 +14,10 @@ class RideNavigatorImpl(
 ):RideNavigator{
     override fun navigateToReceiptScreen(finishedRide: FinishedRide) {
         navController.navigate(FinishedRideNavHelper.getDestination(
-            FinishedRideNavHelper.Args(rideID = finishedRide.id)
+            FinishedRideNavHelper.Args(
+                rideID = finishedRide.id,
+               shouldNavigateHome = true
+             ),
         )){
             popUpTo(Screen.RideScreen.route){
                 inclusive = true

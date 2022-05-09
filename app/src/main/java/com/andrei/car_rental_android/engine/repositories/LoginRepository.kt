@@ -27,6 +27,7 @@ class LoginRepositoryImpl @Inject constructor(
         if(requestState is RequestState.Success){
             localRepository.setAccessToken(requestState.data.accessToken)
             localRepository.setRefreshToken(requestState.data.refreshToken)
+            localRepository.setIdentityVerified(requestState.data.identityVerified)
         }
     }
 

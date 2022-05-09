@@ -146,6 +146,7 @@ android {
             applicationIdSuffix ".dev"
             manifestPlaceholders = [MAPS_API_KEY :  getMapsKey("DEV")]
             buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-dev.herokuapp.com/"'
+            buildConfigField 'String', 'VERIFICATION_TEMPLATE_ID', '"itmpl_hzSxrEP6XvUT1wBocRTa6PHs"'
         }
         qa {
             dimension "environment"
@@ -153,6 +154,7 @@ android {
             manifestPlaceholders = [MAPS_API_KEY : getMapsKey("QA")]
 
             buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-dev.herokuapp.com/"'
+            buildConfigField 'String', 'VERIFICATION_TEMPLATE_ID', '"itmpl_hzSxrEP6XvUT1wBocRTa6PHs"'
 
             //todo
             //once api is sorted change to QA
@@ -162,6 +164,8 @@ android {
             dimension "environment"
             manifestPlaceholders = [MAPS_API_KEY : getMapsKey("PROD")]
             buildConfigField 'String', 'BASE_URL', '"https://car-rental-api-prod.herokuapp.com/"'
+            buildConfigField 'String', 'VERIFICATION_TEMPLATE_ID', '"itmpl_hzSxrEP6XvUT1wBocRTa6PHs"'
+
         }
     }
 
@@ -199,7 +203,7 @@ dependencies {
     def coroutine_version = '1.6.1'
 
 
-
+    implementation 'com.withpersona.sdk2:inquiry:2.2.13'
 
     //logging
     implementation 'com.jakewharton.timber:timber:5.0.1'

@@ -34,7 +34,6 @@ import com.andrei.car_rental_android.DTOs.CarWithLocation
 import com.andrei.car_rental_android.DTOs.PaymentResponse
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.composables.LoadingAlert
-import com.andrei.car_rental_android.engine.response.DirectionStep
 import com.andrei.car_rental_android.helpers.PaymentConfigurationHelper
 import com.andrei.car_rental_android.screens.Home.states.DirectionsState
 import com.andrei.car_rental_android.screens.Home.states.NearbyCarsState
@@ -78,7 +77,7 @@ private fun MainContent(
     homeNavigator: HomeNavigator
 ) {
     val context = LocalContext.current
-    LaunchedEffect(key1 = null){
+    LaunchedEffect(true){
         viewModel.checkForReservationOrRide()
     }
 
@@ -334,14 +333,14 @@ private fun MapContent(
     when{
         reservedCarLocation != null ->{
             ReservedCarMarker(carLocation = reservedCarLocation)
+            Directions(
+                directionsState = directionsState
+            )
         }
         nearbyCarsState is NearbyCarsState.Success -> {
             NearbyCarsMarkers(
                 nearbyCars = nearbyCarsState.data,
                 onMarkerClicked = onMarkerClicked
-            )
-            Directions(
-                directionsState = directionsState
             )
         }
 
@@ -355,19 +354,16 @@ private fun Directions(
 ){
     val stateValue = directionsState.value
     if(stateValue is DirectionsState.Success ) {
-        stateValue.directions.forEach {
-            DirectionOnMap(directionStep = it)
-        }
+
+        val allPoints = stateValue.directions.flatMap { listOf(it.startLocation,it.endLocation) }
+        DirectionOnMap(allPoints)
     }
 }
 
 @Composable
-private fun DirectionOnMap(directionStep: DirectionStep){
+private fun DirectionOnMap(allPoints : List<LatLng>){
     Polyline(
-        points = listOf(
-            directionStep.startLocation,
-            directionStep.endLocation
-        ),
+        points = allPoints,
         color = Color.Blue,
         jointType = JointType.ROUND
     )
