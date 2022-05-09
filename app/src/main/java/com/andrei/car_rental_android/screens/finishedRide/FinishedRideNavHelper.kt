@@ -23,6 +23,9 @@ object FinishedRideNavHelper  : NavHelper {
     override fun getArguments():List<NamedNavArgument> = listOf(
         navArgument(Args::rideID.name){
             type = NavType.LongType
+        } ,
+        navArgument(Args::shouldNavigateHome.name){
+            type = NavType.BoolType
         }
     )
 
