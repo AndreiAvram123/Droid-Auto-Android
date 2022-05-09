@@ -78,6 +78,7 @@
     <!-- Screen finished ride -->
     <string name="screen_finished_ride_total_charge">Total charge</string>
     <string name="screen_finished_ride_started">Started</string>
+    <string name="screen_finished_ride_navigate_home">Navigate home</string>
 
     <string name="home">Home</string>
     <string name="settings">Settings</string>

@@ -91,7 +91,7 @@ fun CustomButton(
     onClick: () -> Unit
 ) {
     Button(
-        modifier = Modifier,
+        modifier = modifier,
         onClick = onClick,
         shape = RoundedCornerShape(Dimens.medium.dp)
     ) {

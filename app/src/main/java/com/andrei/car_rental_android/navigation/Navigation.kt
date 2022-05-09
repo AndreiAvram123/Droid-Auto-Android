@@ -90,7 +90,7 @@ private fun MainGraph(
         }
         composable(
             arguments = FinishedRideNavHelper.getArguments(),
-            route = Screen.ReceiptScreen.route){
+            route = Screen.FinishedRideScreen.route){
             FinishedRideScreen(navController)
         }
 

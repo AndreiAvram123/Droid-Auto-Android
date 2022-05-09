@@ -3,6 +3,7 @@ package com.andrei.car_rental_android.screens.finishedRide
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -31,9 +32,10 @@ import com.andrei.car_rental_android.DTOs.FinishedRide
 import com.andrei.car_rental_android.DTOs.Image
 import com.andrei.car_rental_android.R
 import com.andrei.car_rental_android.engine.utils.TestData
+import com.andrei.car_rental_android.navigation.Screen
 import com.andrei.car_rental_android.screens.register.base.BackButton
-import com.andrei.car_rental_android.screens.register.base.CustomButton
 import com.andrei.car_rental_android.ui.Dimens
+import com.andrei.car_rental_android.ui.composables.ButtonText
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -71,12 +73,18 @@ private fun MainContent(
                 }
             }
             ScreenState(
+                modifier = Modifier.padding(top = Dimens.tiny.dp),
                 finishedRideState = viewModel.rideState.collectAsState()
             )
 
             if(viewModel.shouldNavigateHome) {
-                NavigateHomeButton {
-
+                NavigateHomeButton(
+                    modifier = Modifier.padding( Dimens.medium.dp)) {
+                    navController.navigate(Screen.HomeScreen.route){
+                        popUpTo(Screen.FinishedRideScreen.route){
+                            inclusive = true
+                        }
+                    }
                 }
             }
         }
@@ -86,6 +94,7 @@ private fun MainContent(
 
 @Composable
 private fun ScreenState(
+    modifier: Modifier = Modifier,
     finishedRideState: State<FinishedRideViewModel.ScreenState>
 ){
     when(val state = finishedRideState.value){
@@ -103,14 +112,25 @@ private fun ScreenState(
 }
 
 @Composable
+@Preview
 private fun NavigateHomeButton(
-    navigateHome:()->Unit
+    modifier: Modifier = Modifier,
+    navigateHome:()->Unit = {}
 ){
-    CustomButton(
-        modifier = Modifier.fillMaxWidth(),
-        text = stringResource(R.string.screen_ride_end_ride),
-        onClick = navigateHome
-    )
+    Button(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                bottom = Dimens.huge.dp
+            ),
+        shape = RoundedCornerShape(Dimens.small.dp),
+        onClick = navigateHome,
+    ) {
+        ButtonText(
+            modifier = Modifier.padding(vertical = Dimens.tiny.dp),
+            text = stringResource(R.string.screen_finished_ride_navigate_home)
+        )
+    }
 }
 @Composable
 @Preview(showBackground = true, showSystemUi = true)

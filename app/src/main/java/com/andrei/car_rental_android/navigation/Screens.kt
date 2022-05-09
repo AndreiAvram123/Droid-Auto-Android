@@ -15,7 +15,7 @@ sealed class Screen(val route:String){
     object SignInScreen: Screen("SignIn")
     object RideScreen:Screen("RideScreen")
     object HomeScreen: Screen("Home")
-    object ReceiptScreen:Screen(FinishedRideNavHelper.route)
+    object FinishedRideScreen:Screen(FinishedRideNavHelper.route)
 
 
     sealed class RegistrationScreen(screenName:String) : Screen(screenName){
