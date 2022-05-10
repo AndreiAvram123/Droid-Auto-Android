@@ -7,8 +7,8 @@ import com.andrei.car_rental_android.engine.utils.JwtUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,11 +23,11 @@ interface SessionManager {
     sealed class AuthenticationState{
         object NotAuthenticated:AuthenticationState()
         object Authenticating:AuthenticationState()
-        sealed class Authenticated: AuthenticationState(){
-            object IdentifyNotVerified:Authenticated()
-            data class IdentityVerified(
-                val sessionUserState: StateFlow<SessionUserState>
-              ): Authenticated()
+        sealed class Authenticated(val sessionUserState: StateFlow<SessionUserState>): AuthenticationState(){
+            class IdentifyNotVerified(userState: StateFlow<SessionUserState>):Authenticated(userState)
+            class IdentityVerified(
+                 sessionUserState: StateFlow<SessionUserState>
+              ): Authenticated(sessionUserState)
         }
 
     }
@@ -88,15 +88,18 @@ class SessionManagerImpl @Inject constructor(
                 localRepository.identityVerifiedFlow
             ) { refreshToken, identityVerified ->
                 when {
-                    refreshToken.isNullOrBlank() || !jwtUtils.isTokenValid(refreshToken) -> SessionManager.AuthenticationState.NotAuthenticated
-                    identityVerified == false -> SessionManager.AuthenticationState.Authenticated.IdentifyNotVerified
+                    refreshToken.isNullOrBlank() || !jwtUtils.isTokenValid(refreshToken) ->{
+                        localRepository.clear()
+                        SessionManager.AuthenticationState.NotAuthenticated
+                    }
+                    identityVerified == false -> SessionManager.AuthenticationState.Authenticated.IdentifyNotVerified(sessionUserState)
                     else -> SessionManager.AuthenticationState.Authenticated.IdentityVerified(
-                        sessionUserState.asStateFlow()
+                        sessionUserState
                     )
                 }
-            }.collect {
+            }.distinctUntilChanged().collect {
                 authenticationState.emit(it)
-                if (it is SessionManager.AuthenticationState.Authenticated.IdentityVerified) {
+                if (it is SessionManager.AuthenticationState.Authenticated) {
                     getSessionUser()
                 }
 
