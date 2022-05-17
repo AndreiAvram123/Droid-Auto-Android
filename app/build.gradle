@@ -177,10 +177,11 @@ android {
 
         productFlavors {
             dev {
-                filters = [
-                        chromeLike(label: versionLabel),
-                        blueRibbonFilter()
-                ]
+//                filters = [
+//                        chromeLike(label: versionLabel),
+//                        blueRibbonFilter()
+//                ]
+                enable false
             }
             staging {
                 filters = [
