@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 abstract class LoginViewModel(coroutineProvider: CoroutineScope?) : BaseViewModel(coroutineProvider){
-    abstract val usernameState:StateFlow<String>
+    abstract val emailState:StateFlow<String>
     abstract val passwordState:StateFlow<String>
     abstract val loginUiState:StateFlow<LoginUIState>
     abstract fun resetUIState()
@@ -36,7 +36,7 @@ class LoginViewModelImpl @Inject constructor(
     private val loginRepository: LoginRepository
 ): LoginViewModel(coroutineProvider){
 
-    override val usernameState: MutableStateFlow<String> = MutableStateFlow("")
+    override val emailState: MutableStateFlow<String> = MutableStateFlow("")
     override val passwordState: MutableStateFlow<String> = MutableStateFlow("")
     override val loginUiState: MutableStateFlow<LoginUIState> = MutableStateFlow(LoginUIState.Default)
 
@@ -48,7 +48,7 @@ class LoginViewModelImpl @Inject constructor(
 
     override fun setEmail(username: String) {
         coroutineScope.launch {
-            usernameState.emit(username)
+            emailState.emit(username)
         }
     }
     override fun setPassword(password: String) {
@@ -59,7 +59,7 @@ class LoginViewModelImpl @Inject constructor(
 
     override fun login() {
          coroutineScope.launch {
-             val username = usernameState.value.trim()
+             val username = emailState.value.trim()
              val password = passwordState.value.trim()
 
              if (username.isNotBlank() && password.isNotBlank()) {

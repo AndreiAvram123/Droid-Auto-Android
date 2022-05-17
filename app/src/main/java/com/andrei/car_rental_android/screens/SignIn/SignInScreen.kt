@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,11 +16,13 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -66,31 +68,36 @@ fun MainContent(
             contentDescription =null
         )
 
+           BottomColumn {
+               EmailTextField(
+                   setEmail = {
+                       loginViewModel.setEmail(it)
+                   },
+                   emailState = loginViewModel.emailState.collectAsState(),
+                   modifier = Modifier.padding(bottom = Dimens.medium.dp)
+               )
+               PasswordTextField(
+                   passwordState = loginViewModel.passwordState.collectAsState(),
+                   setPassword = {
+                        loginViewModel.setPassword(it)
+                   },
+                   modifier = Modifier.padding(bottom = Dimens.large.dp)
+               )
 
-        BottomColumn {
-            EmailTextField(
-                viewModel = loginViewModel,
-                modifier = Modifier.padding(bottom = Dimens.medium.dp)
-            )
-            PasswordTextField(
-                viewModel = loginViewModel,
-                modifier = Modifier.padding(bottom = Dimens.large.dp)
-            )
+               val isAuthenticating = remember {
+                   derivedStateOf {
+                       loginUIState.value is LoginViewModel.LoginUIState.Loading
+                   }
+               }
 
-            val isAuthenticating = remember {
-                derivedStateOf {
-                    loginUIState.value is LoginViewModel.LoginUIState.Loading
-                }
-            }
+               AuthenticationButtons(
+                   isAuthenticatingState = isAuthenticating, performLogin = {
+                       loginViewModel.login()
+                   }, navigateToRegister = {
+                       navigator.navigateToRegister()
+                   })
+           }
 
-             AuthenticationButtons(
-                 isAuthenticatingState = isAuthenticating, performLogin = {
-                 loginViewModel.login()
-             }, navigateToRegister = {
-                 navigator.navigateToRegister()
-             })
-
-        }
 
         val dialogOpened = remember {
             derivedStateOf {
@@ -130,15 +137,19 @@ private fun BottomColumn(content: @Composable () -> Unit) {
 
 
 @Composable
-private fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) {
-    val usernameState = viewModel.usernameState.collectAsState()
+private fun EmailTextField(
+    modifier: Modifier = Modifier,
+    emailState:State<String>,
+    setEmail:(email:String)->Unit
+) {
 
     val focusManager = LocalFocusManager.current
 
     TextField(
         maxLines = 1,
         modifier = modifier.fillMaxWidth(),
-        value = usernameState.value,
+        value = emailState.value,
+        shape = RoundedCornerShape(Dimens.small.dp),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,
             imeAction = ImeAction.Next
@@ -147,27 +158,36 @@ private fun EmailTextField(viewModel: LoginViewModel, modifier: Modifier = Modif
             focusManager.moveFocus(FocusDirection.Down)
         }),
         onValueChange = {
-            viewModel.setEmail(it.trim())
+          setEmail(it.trim())
         },
-        label = {
+        placeholder = {
             TextFieldLabel(text = stringResource(R.string.screen_sign_in_email))
         },
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = Color.Transparent
-        ),
-        leadingIcon = {
-            Icon(imageVector = Icons.Filled.Email, contentDescription = null)
-        },
+            backgroundColor = colorResource(R.color.light_grey),
+            focusedIndicatorColor =  Color.Transparent, //hide the indicator,
+            unfocusedIndicatorColor = Color.Transparent
+        )
     )
 }
 
 
 @Composable
-fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) {
-    val passwordState = viewModel.passwordState.collectAsState()
+@Preview
+fun PreviewPasswordField(){
+    PasswordTextField(passwordState = remember {
+        mutableStateOf("")
+    }, setPassword = {})
+}
+
+
+@Composable
+fun PasswordTextField(
+    passwordState:State<String>,
+    setPassword:(password:String)->Unit,
+    modifier: Modifier = Modifier) {
     val focusManager = LocalFocusManager.current
 
-    Column {
         TextField(
             maxLines = 1,
             visualTransformation = PasswordVisualTransformation(),
@@ -175,26 +195,25 @@ fun PasswordTextField(viewModel: LoginViewModel, modifier: Modifier = Modifier) 
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
+            shape = RoundedCornerShape(Dimens.small.dp),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.clearFocus(true)
             }),
             modifier = modifier.fillMaxWidth(),
             value = passwordState.value,
             onValueChange = {
-                viewModel.setPassword(it.trim())
+                setPassword(it.trim())
             },
-            label = {
+            placeholder = {
                 TextFieldLabel(text = stringResource(R.string.screen_sign_in_password))
             },
-            leadingIcon = {
-                Icon(imageVector = Icons.Filled.Password, contentDescription = null)
-            },
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent
+                backgroundColor = colorResource(R.color.light_grey),
+                focusedIndicatorColor =  Color.Transparent, //hide the indicator,
+                unfocusedIndicatorColor = Color.Transparent
             )
         )
 
-    }
 }
 
 @Composable

@@ -76,7 +76,7 @@ private fun MainGraph(
     ) {
 
         composable(route = DrawerNavigationScreen.Settings.route){
-            SettingsScreen()
+            SettingsScreen(navController)
         }
         composable(route = Screen.HomeScreen.route) {
             HomeScreen(navController, openDrawer)

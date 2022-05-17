@@ -89,7 +89,6 @@ class SessionManagerImpl @Inject constructor(
             ) { refreshToken, identityVerified ->
                 when {
                     refreshToken.isNullOrBlank() || !jwtUtils.isTokenValid(refreshToken) ->{
-                        localRepository.clear()
                         SessionManager.AuthenticationState.NotAuthenticated
                     }
                     identityVerified == false -> SessionManager.AuthenticationState.Authenticated.IdentifyNotVerified(sessionUserState)
@@ -102,6 +101,7 @@ class SessionManagerImpl @Inject constructor(
                 if (it is SessionManager.AuthenticationState.Authenticated) {
                     getSessionUser()
                 }
+
 
             }
 
